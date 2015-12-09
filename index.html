@@ -101,6 +101,8 @@
 <script src="lib/console.js"></script>
 <script src="js/Storage.js"></script>
 <script src="js/View.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/simpleLexer.js"></script>
 <script src="js/script.js"></script>
 <script>
 
@@ -119,8 +121,8 @@
         }
     };
     window.onload = function() {
-        var lexical = new LexicalAnalyzer;
-        var ll = new LLParser();
+        // var lexical = new LexicalAnalyzer;
+        // var ll = new LLParser();
         var storage = Storage;
 
         var code = code = storage.getItem("code") || "";
@@ -128,8 +130,13 @@
         View.editor.save();
 
         document.getElementById("btn-compile").onclick = function() {
-            var processed = lexical.run(View.editor.getContent());
-            ll.run(processed);
+            // var processed = lexical.run(View.editor.getContent());
+            // ll.run(processed);
+            try{
+                parser.parse(View.editor.getContent());
+            } catch(err) {
+                View.console.error(err.toString());
+            }
         };
 
         var fr = new FileReader;

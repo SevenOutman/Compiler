@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Compiler</title>
+    <!-- Bootstrap -->
+    <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="js/rainbow-dev-custom/themes/monokai.css">
+    <link rel="stylesheet" href="lib/codemirror.css">
+    <link rel="stylesheet" href="lib/monokai-so.css">
+    <link rel="stylesheet" href="lib/codemirror/theme/base16-dark.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+    <nav class="navbar navbar-inverse navbar-static-top" style="margin-bottom: 0">
+        <div class="container-fluid" style="padding-right: 15px">
+            <div class="navbar-header">
+                <a href class="navbar-brand">
+                    <span class="glyphicon glyphicon-console"></span> Compiler
+                </a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <button class="btn navbar-btn-o" id="btn-save"><span
+                            class="glyphicon glyphicon-floppy-disk"></span> Save
+                    </button>
+                </li>
+                <li>
+                    <button class="btn navbar-btn" id="btn-tidy">Tidy</button>
+                </li>
+                <li>
+                    <label class="btn navbar-btn" id="btn-import" for="source_file"><span
+                            class="glyphicon glyphicon-import"></span> Import</label>
+                </li>
+                <li>
+                    <button class="btn navbar-btn" id="btn-compile"><span
+                            class="glyphicon glyphicon-download-alt"></span> Compile
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="main">
+        <div class="left-box">
+            <div class="editor-container">
+                <textarea id="editor"></textarea>
+            </div>
+            <div class="resizer horizontal"></div>
+            <div class="console-container">
+                <textarea id="console"></textarea>
+            </div>
+        </div>
+        <div class="resizer vertical"></div>
+        <div class="right-box">
+
+        </div>
+    </div>
+    <div id="footer">
+        <div id="other_div"></div>
+
+        <input type="file" name="" id="source_file" style="display: none;">
+    </div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<!--<script src="js/jquery-2.1.4.min.js"></script>-->
+<script src="js/datavjs/deps/jquery-1.7.1.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<!--<script src="lib/bootstrap/js/bootstrap.min.js"></script>-->
+<script type="text/javascript" src="js/datavjs/deps/d3.min.js"></script>
+<script type="text/javascript" src="js/datavjs/deps/d3.csv.js"></script>
+<script type="text/javascript" src="js/datavjs/deps/d3.layout.min.js"></script>
+<script type="text/javascript" src="js/datavjs/deps/raphael.min.js"></script>
+<script src="js/datavjs/deps/eventproxy.js"></script>
+<script src="js/datavjs/datav.js"></script>
+<script src="js/datavjs/libs/tree.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/Symbol.js"></script>
+<script src="js/Lexical.js"></script>
+<script src="js/LL.js"></script>
+<script src="lib/codemirror.js"></script>
+<script src="lib/codemirror/addon/edit/matchbrackets.js"></script>
+<script src="lib/codemirror/addon/edit/closebrackets.js"></script>
+<script src="lib/codemirror/mode/diff/diff.js"></script>
+<script src="lib/javascript.js"></script>
+<script src="lib/toy.js"></script>
+<script src="lib/console.js"></script>
+<script src="js/Storage.js"></script>
+<script src="js/View.js"></script>
+<script src="js/script.js"></script>
+<script>
+
+    CodeMirror.commands.save = function(cm) {
+        if (!cm.doc.isClean()) {
+            var code = cm.doc.getValue();
+            Storage.setItem("code", code);
+            cm.doc.markClean();
+            document.getElementById("btn-save").classList.remove("unsaved");
+        }
+    };
+
+    window.onbeforeunload = function() {
+        if (View.editor.needSave()) {
+            return "未保存的修改将丢失";
+        }
+    };
+    window.onload = function() {
+        var lexical = new LexicalAnalyzer;
+        var ll = new LLParser();
+        var storage = Storage;
+
+        var code = code = storage.getItem("code") || "";
+        View.editor.setContent(code);
+        View.editor.save();
+
+        document.getElementById("btn-compile").onclick = function() {
+            var processed = lexical.run(View.editor.getContent());
+            ll.run(processed);
+        };
+
+        var fr = new FileReader;
+        fr.onload = function() {
+            cmeditor.doc.setValue(this.result);
+        };
+        document.getElementById("source_file").onchange = function() {
+            fr.readAsText(this.files[0]);
+        };
+        document.getElementById("btn-save").onclick = function() {
+            View.editor.save();
+        };
+        var moving_resizer = null,
+            mouseOffsetY   = 0,
+            mouseOffsetX   = 0;
+        [].forEach.call(document.querySelectorAll(".resizer"), function(el) {
+            el.addEventListener("mousedown", function(e) {
+                moving_resizer = el;
+                mouseOffsetY = moving_resizer.offsetTop - e.clientY;
+                mouseOffsetX = moving_resizer.offsetLeft - e.clientX;
+            }, false);
+        });
+        document.addEventListener("mouseup", function() {
+            moving_resizer = null;
+        }, false);
+        document.addEventListener("mousemove", function(e) {
+            if (moving_resizer instanceof HTMLElement) {
+                if ($(moving_resizer).hasClass("horizontal")) {
+
+                    var mouseY      = e.clientY,
+                        upperHeight = mouseY + mouseOffsetY;
+                    if (upperHeight + $(moving_resizer).height() >= $("#main").height()) {
+                        upperHeight = $("#main").height() - $(moving_resizer).height();
+                    }
+                    if (upperHeight <= 0) {
+                        upperHeight = 0;
+                    }
+                    $(".editor-container").height(upperHeight);
+                    $(".console-container").height($("#main").height() -
+                                                   ($(".editor-container").height() + $(moving_resizer).height()));
+
+                } else if ($(moving_resizer).hasClass("vertical")) {
+
+                    var mouseX    = e.clientX,
+                        leftWidth = mouseX + mouseOffsetX;
+                    if (leftWidth + $(moving_resizer).width() >= $("#main").width()) {
+                        leftWidth = $("#main").width() - $(moving_resizer).width();
+                    }
+                    if (leftWidth <= 0) {
+                        leftWidth = 0;
+                    }
+                    $(".left-box").width(leftWidth);
+                    $(".right-box").width($("#main").width() -
+                                          ($(".left-box").width() + $(moving_resizer).width()));
+                }
+            }
+        }, false);
+    }
+</script>
+</body>
+
+</html>

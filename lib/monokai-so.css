@@ -1,7 +1,8 @@
 /* Based on Sublime Text's Monokai theme */
 
 .cm-s-monokai-so.CodeMirror {
-    background: #272822;
+    /*background: #272822;*/
+    background: rgb(43, 43, 43);
     color: #f8f8f2;
     height: 100%;
 }
@@ -19,7 +20,10 @@
 }
 
 .cm-s-monokai-so .CodeMirror-gutters {
-    background: #272822;
+    /*background: #272822;*/
+    background: rgb(49, 51, 53);
+    background: rgb(43, 43, 43);
+    /*border-right: 1px solid rgb(85, 85, 85);*/
     border-right: 0;
 }
 
@@ -30,10 +34,9 @@
 .cm-s-monokai-so .CodeMirror-guttermarker-subtle {
     color: #d0d0d0;
 }
-
 .cm-s-monokai-so .CodeMirror-linenumber {
-    color: #d0d0d0;
-    opacity: .3;
+    /*color: #d0d0d0;*/
+    color: rgba(136, 136, 136, .5);
 }
 
 .cm-s-monokai-so .CodeMirror-cursor {
@@ -106,7 +109,7 @@
 }
 
 .cm-s-monokai-so .CodeMirror-activeline-background {
-    background: #373831;
+    background: rgb(50, 50, 50);
 }
 
 .cm-s-monokai-so .CodeMirror-matchingbracket {

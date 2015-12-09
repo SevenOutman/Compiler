@@ -33,16 +33,16 @@ Object.prototype.clone = function () {
     return o;
 };
 
-//var _safe = function(V) {
-//    var v = V;
-//    return function(V) {
-//        return v = undefined !== V ? V : v;
-//    }
-//};
-
-var _ = function (_) {
-    var _ = _;
-    return function(__) {
-        return _ = undefined !== __ ? __ : _;
+Math.mid = function (x, y, z) {
+    if (arguments.length != 3) {
+        throw new Error("Math.mid requires exactly 3 arguments.");
     }
-}
+    return [x, y, z].sort(function (a, b){return a > b;})[1];
+};
+
+var _safe = function(V) {
+    var v = V;
+    return function(V) {
+        return v = undefined !== V ? V : v;
+    }
+};

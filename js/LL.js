@@ -181,7 +181,7 @@ function LLParser() {
         _program.node.children.push(_$.node);
         _treeArr.push([_treeId++, "program", ,]);
 
-        var datavTree = new Tree("other_div", {width: 1200, height: 1500, radius: 10});
+        //var datavTree = new Tree("other_div", {width: 1200, height: 1500, radius: 10});
 
         while (_stack.length > 0) {
         //setTimeout(_next, 0);
@@ -248,7 +248,7 @@ function LLParser() {
 
         console.log("Parsing finished", _tree.root, _treeArr);
 
-        datavTree.setSource(_treeArr);
-        datavTree.render();
+        //datavTree.setSource(_treeArr);
+        //datavTree.render();
     }
 }

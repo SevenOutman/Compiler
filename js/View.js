@@ -11,18 +11,19 @@ var View = (function() {
         lineWrapping:      true,
         autoCloseBrackets: true,
         matchBrackets:     true,
-        autofocus:         true
+        autofocus:         true,
+        styleActiveLine:   true
     });
 
-    _editor.getContent = function () {
+    _editor.getContent = function() {
         return _editor.cm.getValue();
     };
 
-    _editor.setContent = function (content) {
+    _editor.setContent = function(content) {
         return _editor.cm.setValue(content);
     };
 
-    _editor.save = function () {
+    _editor.save = function() {
         if (!_editor.cm.doc.isClean()) {
             var code = _editor.getContent();
             Storage.setItem("code", code);
@@ -31,7 +32,7 @@ var View = (function() {
         }
     };
 
-    _editor.needSave = function () {
+    _editor.needSave = function() {
         return !_editor.cm.doc.isClean();
     };
 
@@ -53,17 +54,29 @@ var View = (function() {
         readOnly:          "nocursor"
     });
 
+    function _preoutput(addon, para) {
+        var lines = para.split("\n"),
+            result = "";
+        for(var i = 0; i < lines.length; i++) {
+            result += addon + lines[i] + "\n";
+        }
+        return result;
+    }
+
     _console.log = function(str) {
         if (_console.cm) {
-            _console.cm.setValue(_console.cm.getValue() + ":" + str + "\n");
+            _console.cm.setValue(_console.cm.getValue() + _preoutput(": ", str));
         } else {
             window.console.log(str);
         }
     };
 
-    _console.error = function (str) {
+    _console.error = function(str) {
         if (_console.cm) {
-            _console.cm.setValue(_console.cm.getValue() + "-" + str + "\n");
+            if (str instanceof Object) {
+                str = str.toString();
+            }
+            _console.cm.setValue(_console.cm.getValue() + _preoutput("- ", str));
         } else {
             window.console.log(str);
         }
@@ -71,7 +84,7 @@ var View = (function() {
 
     _console.success = function(str) {
         if (_console.cm) {
-            _console.cm.setValue(_console.cm.getValue() + "+" + str + "\n");
+            _console.cm.setValue(_console.cm.getValue() + _preoutput("+ ", str));
         } else {
             window.console.log(str);
         }

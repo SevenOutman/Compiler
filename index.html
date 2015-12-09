@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="lib/codemirror/lib/codemirror.css">
     <link rel="stylesheet" href="lib/monokai-so.css">
     <link rel="stylesheet" href="lib/codemirror/theme/base16-dark.css">
+    <link rel="stylesheet" href="lib/codemirror/theme/dracula.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -25,7 +26,8 @@
 
 <body>
 <div class="wrapper">
-    <nav class="navbar navbar-inverse navbar-static-top" style="margin-bottom: 0">
+    <div id="resizing-mask"></div>
+    <nav class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
         <div class="container-fluid" style="padding-right: 15px">
             <div class="navbar-header">
                 <a href class="navbar-brand">
@@ -55,23 +57,31 @@
     </nav>
 
     <div id="main">
-        <div class="left-box">
-            <div class="editor-container">
-                <textarea id="editor"></textarea>
-            </div>
-            <div class="resizer horizontal"></div>
-            <div class="console-container">
-                <textarea id="console"></textarea>
-            </div>
+        <div class="left-box resizable">
+            <div class="resizer vertical"></div>
         </div>
-        <div class="resizer vertical"></div>
-        <div class="right-box">
 
+        <div class="right-box resizable">
+            <div class="resizer vertical"></div>
+        </div>
+        <div class="center-box">
+            <div class="editor-box">
+                <div class="editor-container">
+                    <textarea id="editor"></textarea>
+                </div>
+            </div>
+            <div class="bottom-box resizable">
+                <div class="resizer horizontal"></div>
+                <div class="console-container">
+                    <textarea id="console"></textarea>
+                </div>
+            </div>
         </div>
     </div>
     <div id="footer">
+    </div>
+    <div id="extra">
         <div id="other_div"></div>
-
         <input type="file" name="" id="source_file" style="display: none;">
     </div>
 </div>
@@ -94,6 +104,7 @@
 <script src="lib/codemirror/lib/codemirror.js"></script>
 <script src="lib/codemirror/addon/edit/matchbrackets.js"></script>
 <script src="lib/codemirror/addon/edit/closebrackets.js"></script>
+<script src="lib/codemirror/addon/selection/active-line.js"></script>
 <script src="lib/codemirror/mode/diff/diff.js"></script>
 <script src="lib/codemirror/mode/javascript/javascript.js"></script>
 <script src="lib/toy.js"></script>
@@ -131,9 +142,9 @@
         document.getElementById("btn-compile").onclick = function() {
             // var processed = lexical.run(View.editor.getContent());
             // ll.run(processed);
-            try{
+            try {
                 parser.parse(View.editor.getContent());
-            } catch(err) {
+            } catch (err) {
                 View.console.error(err.toString());
             }
         };
@@ -151,45 +162,51 @@
         var moving_resizer = null,
             mouseOffsetY   = 0,
             mouseOffsetX   = 0;
-        [].forEach.call(document.querySelectorAll(".resizer"), function(el) {
+        [].forEach.call($(".resizer"), function(el) {
             el.addEventListener("mousedown", function(e) {
                 moving_resizer = el;
-                mouseOffsetY = moving_resizer.offsetTop - e.clientY;
-                mouseOffsetX = moving_resizer.offsetLeft - e.clientX;
+                mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
+                mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
+                $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
+
             }, false);
         });
         document.addEventListener("mouseup", function() {
             moving_resizer = null;
+            $("#resizing-mask").hide();
         }, false);
-        document.addEventListener("mousemove", function(e) {
+        document.getElementById("resizing-mask").addEventListener("mousemove", function(e) {
             if (moving_resizer instanceof HTMLElement) {
-                if ($(moving_resizer).hasClass("horizontal")) {
+                var $box = $(moving_resizer).parent(".resizable");
+                if ($box[0] instanceof HTMLElement) {
+                    var $main   = $("#main"),
+                        $left   = $(".left-box"),
+                        $right  = $(".right-box"),
+                        $center = $(".center-box"),
+                        $bottom = $(".bottom-box"),
+                        $editor = $(".editor-box");
+                    if ($box.hasClass("left-box")) {
+                        var mouseX    = e.clientX,
+                            leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
+                                    0, $main.width() - $right.width() - 1);
 
-                    var mouseY      = e.clientY,
-                        upperHeight = mouseY + mouseOffsetY;
-                    if (upperHeight + $(moving_resizer).height() >= $("#main").height()) {
-                        upperHeight = $("#main").height() - $(moving_resizer).height();
-                    }
-                    if (upperHeight <= 0) {
-                        upperHeight = 0;
-                    }
-                    $(".editor-container").height(upperHeight);
-                    $(".console-container").height($("#main").height() -
-                                                   ($(".editor-container").height() + $(moving_resizer).height()));
+                        $box.width(leftWidth);
+                        $center.css("margin-left", leftWidth + "px");
 
-                } else if ($(moving_resizer).hasClass("vertical")) {
-
-                    var mouseX    = e.clientX,
-                        leftWidth = mouseX + mouseOffsetX;
-                    if (leftWidth + $(moving_resizer).width() >= $("#main").width()) {
-                        leftWidth = $("#main").width() - $(moving_resizer).width();
                     }
-                    if (leftWidth <= 0) {
-                        leftWidth = 0;
+                    if ($box.hasClass("right-box")) {
+                        var mouseX     = e.clientX,
+                            rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
+                                    0, $main.width() - $left.width() - 1);
+                        $box.width(rightWidth);
+                        $center.css("margin-right", rightWidth + "px");
                     }
-                    $(".left-box").width(leftWidth);
-                    $(".right-box").width($("#main").width() -
-                                          ($(".left-box").width() + $(moving_resizer).width()));
+                    if ($box.hasClass("bottom-box")) {
+                        var mouseY       = e.clientY,
+                            upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
+                                    0, $main.height());
+                        $editor.height(upperHeight);
+                    }
                 }
             }
         }, false);

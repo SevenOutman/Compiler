@@ -117,6 +117,7 @@ function LexicalAnalyzer() {
         }
 
         //SymbolTable.pushToken(Token.$);
+        console.log(SymbolTable.all());
 
         return processed.replace(/[ ]+/g, " ").trim();
         //_displayErrors();

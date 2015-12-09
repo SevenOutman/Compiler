@@ -95,88 +95,88 @@ case 1:
         //     console.log(undeclaredVariableTable[undeclaredVariable].name+' UNDECLARED VARIABLE.');
         // }
         // resetTables();
-        parser.parseTree = new Node(['program', $$[$0-1], '$'], this.$$, yy.lexer.matched, yy.lexer.matches);
+        parser.parseTree = new Node(['program', $$[$0-1], '$'], $$, yy.lexer.matched, yy.lexer.matches);
         return true;
     
 break;
 case 2:
 
-        return new Node(['program', '$'], this.$$, yy.lexer.matched, yy.lexer.matches);
+        return new Node(['program', '$'], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 3: case 4: case 5: case 6: case 7:
 
-        this.$ = new Node(['stmt', $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['stmt', $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 8:
 
-        this.$ = new Node(['compoundstmt', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['compoundstmt', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 9:
 
-        this.$ = new Node(['stmts', $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['stmts', $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 10:
 
-        this.$ = new Node(['stmts'], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['stmts'], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 11:
 
-        this.$ = new Node(['ifstms', $$[$0-7], $$[$0-6], $$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['ifstms', $$[$0-7], $$[$0-6], $$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 12:
 
-        this.$ = new Node(['whilestmt', $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['whilestmt', $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 13:
 
-        this.$ = new Node(['assgstmt', $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['assgstmt', $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 14:
 
-        this.$ = new Node(['decl', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['decl', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 15: case 16:
 
-        this.$ = new Node(['type', $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['type', $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 17:
 
-        this.$ = new Node(['list', new Node(['ID', $$[$0-1]]), $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['list', new Node(['ID', $$[$0-1]]), $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 18:
 
-        this.$ = new Node(['list1', $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['list1', $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 19:
 
-        this.$ = new Node(['list1'], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['list1'], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 20:
 
-        this.$ = new Node(['boolexpr', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['boolexpr', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 21:
 
-        this.$ = new Node(['arithexpr', $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['arithexpr', $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 22: case 23:
 
-        this.$ = new Node(['arithexprprime', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['arithexprprime', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 24:
@@ -186,27 +186,27 @@ case 24:
 break;
 case 25:
 
-        this.$ = new Node(['multexpr', $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['multexpr', $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 26: case 27:
 
-        this.$ = new Node(['multexprprime', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['multexprprime', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 28:
 
-        this.$ = new Node(['multexprprime'], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['multexprprime'], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 29: case 30:
 
-        this.$ = new Node(['simpleexpr', $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['simpleexpr', $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 31:
 
-        this.$ = new Node(['simpleexpr', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['simpleexpr', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 }
@@ -217,13 +217,7 @@ parseError: function parseError(str, hash) {
     if (hash.recoverable) {
         this.trace(str);
     } else {
-        function _parseError (msg, hash) {
-            this.message = msg;
-            this.hash = hash;
-        }
-        _parseError.prototype = new Error();
-
-        throw new _parseError(str, hash);
+        throw new Error(str);
     }
 },
 parse: function parse(input) {
@@ -256,14 +250,14 @@ parse: function parse(input) {
         lstack.length = lstack.length - n;
     }
     _token_stack:
-        var lex = function () {
+        function lex() {
             var token;
             token = lexer.lex() || EOF;
             if (typeof token !== 'number') {
                 token = self.symbols_[token] || token;
             }
             return token;
-        };
+        }
     var symbol, preErrorSymbol, state, action, a, r, yyval = {}, p, len, newState, expected;
     while (true) {
         state = stack[stack.length - 1];
@@ -407,6 +401,41 @@ parse: function parse(input) {
     parser.getProgress = function(){
         return parser.progress;
     }
+    parser.getProgressF = function(){
+        var progress = parser.getProgress();
+        var progressF="STACK          INPUT             ACTION\n";
+        var blanks = function(length){
+            s=""
+            while(length--){
+                s+=' '
+            }
+            return s;
+        }
+        for (i in progress) {
+            try{
+                if (progress[i][0]==undefined) {continue};
+                stack = "";
+                for(j in progress[i][0]) {
+                    if (progress[i][0][j] instanceof(Node)) {
+                        stack+=progress[i][0][j].nodeName
+                    }
+                    if(typeof(progress[i][0][j])==typeof('')){
+                        stack+=progress[i][0][j]
+                    }
+                    if(progress[i][0][j] == null){
+                        continue;
+                    }
+                    stack+=' '
+                }
+                progressF+=stack+blanks(20 - stack.length - progress[i][2].input.length)+progress[i][2].input+'\|\n';
+            }catch(err){
+                console.log('ERR')
+                progressF=err.toString();
+                break;
+            }
+        }
+        return progressF;
+    }
     var SymbolTable = function(){};
     SymbolTable.prototype.contain = function (symbol) {
             for (s in this) {
@@ -522,6 +551,7 @@ parse: function parse(input) {
     // }
 
     parser.lexOne = function (input, loc) {
+        //TODO
         this.restoreSymbolTable();
         var tokens = [
                 ["int",                 'int'   ],
@@ -563,7 +593,7 @@ parse: function parse(input) {
     parser._parse = function _parse(input) {
         parser.resetTables()
         parser.resetProgress();
-        parsed = parser.parse(input);
+        parsed = this.parse(input);
         parser.backupSymbolTable();
         return parsed;
     }

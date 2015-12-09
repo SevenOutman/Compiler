@@ -92,6 +92,9 @@
         </div>
     </div>
     <div id="footer">
+        <div class="footer-text">
+            <span id="current-line"></span>:<span id="current-ch"></span>
+        </div>
     </div>
     <div id="extra">
         <div id="other_div"></div>
@@ -156,6 +159,7 @@
         document.getElementById("btn-compile").onclick = function() {
             // var processed = lexical.run(View.editor.getContent());
             // ll.run(processed);
+            View.editor.save();
             try {
                 parser.parse(View.editor.getContent());
             } catch (err) {

@@ -32,7 +32,6 @@ Object.prototype.clone = function () {
     }
     return o;
 };
-
 Math.mid = function (x, y, z) {
     if (arguments.length != 3) {
         throw new Error("Math.mid requires exactly 3 arguments.");

@@ -1,4 +1,0 @@
-datavjs
-=======
-
-DataV repository.

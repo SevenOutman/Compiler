@@ -11,6 +11,15 @@ body {
 .CodeMirror {
     height: 100%;
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace !important;
+    font-size: 13px;
+}
+
+.CodeMirror-overlayscroll-horizontal div, .CodeMirror-overlayscroll-vertical div {
+    background: rgba(128, 128, 128, .7);
+}
+
+.console-container .CodeMirror {
+    font-size: 10px;
 }
 
 .wrapper {

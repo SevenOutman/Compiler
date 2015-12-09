@@ -11,7 +11,8 @@ var View = (function() {
         autoCloseBrackets: true,
         matchBrackets:     true,
         autofocus:         true,
-        styleActiveLine:   true
+        styleActiveLine:   true,
+        scrollbarStyle:    "overlay"
     });
 
     _editor.getContent = function() {
@@ -46,27 +47,28 @@ var View = (function() {
     _console.cm = CodeMirror.fromTextArea(document.getElementById("console"), {
         theme:             "monokai-so",
         mode:              "console",
-        //lineNumbers:       true,
         lineWrapping:      true,
         autoCloseBrackets: true,
         matchBrackets:     true,
-        readOnly:          "nocursor"
+        readOnly:          "nocursor",
+        scrollbarStyle:    null
+
     });
 
-    _console.scollToEnd = function () {
+    _console.scollToEnd = function() {
         _console.cm.scrollIntoView(_console.cm.doc.lastLine(), 1);
     };
 
-    _console.cm.on("change", function (cm) {
+    _console.cm.on("change", function(cm) {
         cm.scrollIntoView(cm.doc.lastLine(), 1);
     });
 
 
     function _preoutput(addon, para) {
-        var lines = para.split("\n"),
+        var lines  = para.split("\n"),
             result = "";
-        for(var i = 0; i < lines.length; i++) {
-            result += addon + lines[i] + "\n";
+        for (var i = 0; i < lines.length; i++) {
+            result += addon + lines[i].replace(/\s+$/, "") + "\n";
         }
         return result;
     }

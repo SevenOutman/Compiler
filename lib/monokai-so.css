@@ -61,6 +61,8 @@
 
 .cm-s-monokai-so span.cm-keyword {
     color: #f92672;
+    /*color: rgb(204, 120, 50);*/
+    font-weight: bold;
 }
 
 .cm-s-monokai-so span.cm-operator {

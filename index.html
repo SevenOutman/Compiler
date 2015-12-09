@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="lib/monokai-so.css">
     <link rel="stylesheet" href="lib/codemirror/theme/base16-dark.css">
     <link rel="stylesheet" href="lib/codemirror/theme/dracula.css">
+    <link rel="stylesheet" href="lib/codemirror/addon/scroll/simplescrollbars.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -19,11 +20,7 @@
     <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
     <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <style>
-
-    </style>
 </head>
-
 <body>
 <div class="wrapper">
     <div id="resizing-mask"></div>
@@ -34,6 +31,13 @@
                     <span class="glyphicon glyphicon-console"></span> Compiler
                 </a>
             </div>
+            <ul class="nav navbar-nav navbar-left">
+                <li>
+                    <button class="btn navbar-btn-o">
+                        <span class="glyphicon glyphicon-cog"></span>
+                    </button>
+                </li>
+            </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <button class="btn navbar-btn-o" id="btn-save"><span
@@ -114,6 +118,7 @@
 <script src="lib/codemirror/addon/edit/matchbrackets.js"></script>
 <script src="lib/codemirror/addon/edit/closebrackets.js"></script>
 <script src="lib/codemirror/addon/selection/active-line.js"></script>
+<script src="lib/codemirror/addon/scroll/simplescrollbars.js"></script>
 <script src="lib/codemirror/mode/diff/diff.js"></script>
 <script src="lib/codemirror/mode/javascript/javascript.js"></script>
 <script src="lib/toy.js"></script>
@@ -211,7 +216,7 @@
                         $center.css("margin-right", rightWidth + "px");
                     }
                     if ($box.hasClass("bottom-box")) {
-                        var mouseY       = e.clientY,
+                        var mouseY      = e.clientY,
                             upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
                                     0, $center.height() - $box.children(".box-header").height() - 1);
                         $box.height($center.height() - upperHeight);

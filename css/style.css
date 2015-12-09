@@ -158,13 +158,35 @@ body {
     /*box-shadow: 0 0 3px 0 rgba(0, 0, 0, .5);*/
 }
 
+.box-header {
+    width: 100%;
+    height: 23px;
+    background: -webkit-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Safari 5.1 - 6.0 */
+    background: -o-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Opera 11.1 - 12.0 */
+    background: -moz-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Firefox 3.6 - 15 */
+    background: linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* 标准的语法 */
+    border-top: 1px solid rgb(82, 85, 86);
+    border-bottom: 1px solid rgb(36, 38, 39);
+}
+
+.box-title {
+    float: left;
+    height: 100%;
+    padding: 5px;
+    font-size: 10px;
+    line-height: 10px;
+    color: rgb(128, 128, 128);
+    -webkit-user-select: none;
+    cursor: default;
+}
+
 .left-box {
     width: 200px;
     height: 100%;
     float: left;
     background: rgb(60, 63, 65);
     border-right: 1px solid rgb(40, 40, 40);
-
+    z-index: 300;
 }
 
 .right-box {
@@ -173,6 +195,7 @@ body {
     float: right;
     background: rgb(60, 63, 65);
     border-left: 1px solid rgb(40, 40, 40);
+    z-index: 300;
 }
 
 .center-box {
@@ -182,7 +205,7 @@ body {
 }
 
 .bottom-box {
-    height: 100%;
+    height: 30%;
     border-top: rgb(38, 40, 41);
 }
 

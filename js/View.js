@@ -8,7 +8,6 @@ var View = (function() {
         mode:              "toy",
         indentUnit:        4,
         theme:             "monokai-so",
-        lineWrapping:      true,
         autoCloseBrackets: true,
         matchBrackets:     true,
         autofocus:         true,
@@ -45,14 +44,23 @@ var View = (function() {
     var _console = {};
 
     _console.cm = CodeMirror.fromTextArea(document.getElementById("console"), {
-        theme:             "base16-dark",
+        theme:             "monokai-so",
         mode:              "console",
-        lineNumbers:       true,
+        //lineNumbers:       true,
         lineWrapping:      true,
         autoCloseBrackets: true,
         matchBrackets:     true,
         readOnly:          "nocursor"
     });
+
+    _console.scollToEnd = function () {
+        _console.cm.scrollIntoView(_console.cm.doc.lastLine(), 1);
+    };
+
+    _console.cm.on("change", function (cm) {
+        cm.scrollIntoView(cm.doc.lastLine(), 1);
+    });
+
 
     function _preoutput(addon, para) {
         var lines = para.split("\n"),

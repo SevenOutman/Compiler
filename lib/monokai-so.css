@@ -21,7 +21,7 @@
 
 .cm-s-monokai-so .CodeMirror-gutters {
     /*background: #272822;*/
-    background: rgb(49, 51, 53);
+    /*background: rgb(49, 51, 53);*/
     background: rgb(43, 43, 43);
     /*border-right: 1px solid rgb(85, 85, 85);*/
     border-right: 0;

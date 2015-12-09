@@ -59,10 +59,16 @@
     <div id="main">
         <div class="left-box resizable">
             <div class="resizer vertical"></div>
+            <div class="box-header">
+                <div class="box-title">Files</div>
+            </div>
         </div>
 
         <div class="right-box resizable">
             <div class="resizer vertical"></div>
+            <div class="box-header">
+                <div class="box-title">Symbol Table</div>
+            </div>
         </div>
         <div class="center-box">
             <div class="editor-box">
@@ -72,6 +78,9 @@
             </div>
             <div class="bottom-box resizable">
                 <div class="resizer horizontal"></div>
+                <div class="box-header">
+                    <div class="box-title">Console</div>
+                </div>
                 <div class="console-container">
                     <textarea id="console"></textarea>
                 </div>
@@ -204,8 +213,10 @@
                     if ($box.hasClass("bottom-box")) {
                         var mouseY       = e.clientY,
                             upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
-                                    0, $main.height());
+                                    0, $center.height() - $box.children(".box-header").height() - 1);
+                        $box.height($center.height() - upperHeight);
                         $editor.height(upperHeight);
+                        View.console.scollToEnd();
                     }
                 }
             }

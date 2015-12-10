@@ -66,6 +66,10 @@
             <div class="box-header">
                 <div class="box-title">Files</div>
             </div>
+            <div class="box-body">
+                <ul id="file-list">
+                </ul>
+            </div>
         </div>
 
         <div class="right-box resizable">
@@ -76,6 +80,13 @@
         </div>
         <div class="center-box">
             <div class="editor-box">
+                <div class="tab-bar">
+                    <button class="tab-new">&plus;</button>
+                    <div class="tab-row">
+                        <div class="tab-group">
+                        </div>
+                    </div>
+                </div>
                 <div class="editor-container">
                     <textarea id="editor"></textarea>
                 </div>
@@ -93,7 +104,7 @@
     </div>
     <div id="footer">
         <div class="footer-text">
-            <span id="current-line"></span>:<span id="current-ch"></span>
+            <span id="current-line">1</span>:<span id="current-ch">1</span>
         </div>
     </div>
     <div id="extra">
@@ -127,6 +138,8 @@
 <script src="lib/toy.js"></script>
 <script src="lib/console.js"></script>
 <script src="js/Storage.js"></script>
+<script src="js/Cache.js"></script>
+<script src="js/ToyFile.js"></script>
 <script src="js/View.js"></script>
 <script src="js/parser.js"></script>
 <script src="js/simpleLexer.js"></script>
@@ -134,12 +147,7 @@
 <script>
 
     CodeMirror.commands.save = function(cm) {
-        if (!cm.doc.isClean()) {
-            var code = cm.doc.getValue();
-            Storage.setItem("code", code);
-            cm.doc.markClean();
-            document.getElementById("btn-save").classList.remove("unsaved");
-        }
+        View.editor.save();
     };
 
     window.onbeforeunload = function() {
@@ -147,14 +155,69 @@
             return "未保存的修改将丢失";
         }
     };
+
+    window.onunload = function() {
+        Storage.setItem("last-editing", View.editor.currentSession().file.fileName());
+    };
+
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
-        var storage = Storage;
 
-        var code = code = storage.getItem("code") || "";
-        View.editor.setContent(code);
-        View.editor.save();
+//        Storage.setItem("stored-files", JSON.stringify(["test.toy"]));
+//        Storage.setItem("test.toy", JSON.stringify({name: "test.toy", content: "{\n    int a;\n}", id: "fsvdbigt"}));
+//        Storage.setItem("last-editing", "fsvdbigt");
+
+        Cache.files = [];
+        Cache.files.find = function(fileName) {
+            for (var i = 0; i < this.length; i++) {
+                if (this[i].fileName() === fileName) {
+                    return this[i];
+                }
+            }
+            return null;
+        }.bind(Cache.files);
+
+        Cache.files.sub("change", function() {
+            for (var i = 0; i < this.length; i++) {
+                var file = this[i],
+                    id   = "toy-" + file.name;
+                if ($("#" + id).length < 1) {
+                    var $li = $("<li></li>").attr("id", id).text(file.fileName());
+                    $li.on("click", function() {
+                        var $self = $(this);
+                        if (!$self.hasClass("active")) {
+                            $self.siblings(".active").removeClass("active");
+                            $self.addClass("active");
+                        }
+                    }).on("dblclick", (function(file) {
+                        return function() {
+                            View.editor.openFile(file);
+                        }
+                    })(file));
+                    $("#file-list").append($li);
+                }
+            }
+        });
+        Cache.storedFileNames = JSON.parse(Storage.getItem("stored-files") || "[]");
+        for (var i = 0; i < Cache.storedFileNames.length; i++) {
+            var item = Storage.getItem(Cache.storedFileNames[i]);
+            if (item) {
+                var file = JSON.parse(item);
+                Cache.files.push(new ToyFile(Cache.storedFileNames[i], file.content, file.id, false));
+            }
+        }
+        Cache.files.pub("change");
+
+
+        var last = Storage.getItem("last-editing");
+        if (last) {
+            var file = Cache.files.find(last);
+            if (file) {
+                View.editor.openFile(file);
+                $("#toy-" + file.name).trigger("click");
+            }
+        }
 
         document.getElementById("btn-compile").onclick = function() {
             // var processed = lexical.run(View.editor.getContent());
@@ -168,12 +231,27 @@
             }
         };
 
-        var fr = new FileReader;
+        $(".tab-new").on("click", function() {
+            View.editor.newFile();
+        });
+
+        var fr      = new FileReader,
+            tmpFile = null;
         fr.onload = function() {
-            cmeditor.doc.setValue(this.result);
+            if (null !== tmpFile) {
+                tmpFile.content = this.result;
+                Cache.files.push(tmpFile);
+                Cache.files.pub("change");
+                View.editor.openFile(tmpFile);
+                $("#toy-" + tmpFile.id).trigger("click");
+                tmpFile = null;
+            }
         };
         document.getElementById("source_file").onchange = function() {
-            fr.readAsText(this.files[0]);
+            var file = this.files[0];
+            tmpFile = new ToyFile(file.name.replace(/(\.\w+)?$/, ".toy"));
+            tmpFile.isNewFile = false;
+            fr.readAsText(file);
         };
         document.getElementById("btn-save").onclick = function() {
             View.editor.save();
@@ -207,7 +285,7 @@
                     if ($box.hasClass("left-box")) {
                         var mouseX    = e.clientX,
                             leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
-                                    0, $main.width() - $right.width() - 1);
+                                    1, $main.width() - $right.width() - 1);
 
                         $box.width(leftWidth);
                         $center.css("margin-left", leftWidth + "px");
@@ -216,7 +294,7 @@
                     if ($box.hasClass("right-box")) {
                         var mouseX     = e.clientX,
                             rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
-                                    0, $main.width() - $left.width() - 1);
+                                    1, $main.width() - $left.width() - 1);
                         $box.width(rightWidth);
                         $center.css("margin-right", rightWidth + "px");
                     }
@@ -231,6 +309,7 @@
                 }
             }
         }, false);
+        View.console.log("Compiler lauched at " + new Date().toTimeString());
     }
 </script>
 </body>

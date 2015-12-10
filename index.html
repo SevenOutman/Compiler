@@ -212,7 +212,7 @@
             var file = Cache.files.find(last);
             if (file) {
                 View.editor.bringFileToFront(file);
-                $("#toy-" + file.name).trigger("click");
+                $("#toy-" + file.id).trigger("click");
             }
         }
 //        View.editor.setContent(code);

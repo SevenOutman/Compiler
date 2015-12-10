@@ -34,6 +34,12 @@ var View = (function() {
         return _editor.cm.setValue(content);
     };
 
+    function FileSession (file) {
+        this.file = file;
+        this.saved = true;
+        this.content = file.content;
+        this.cursorPosition = {line: 0, ch: 0};
+    }
 
     _editor.openedFiles = [];
     _editor.openedFiles.find = function(fileId) {
@@ -124,9 +130,6 @@ var View = (function() {
     _console.cm = CodeMirror.fromTextArea(document.getElementById("console"), {
         theme:             "monokai-so",
         mode:              "console",
-        lineWrapping:      true,
-        autoCloseBrackets: true,
-        matchBrackets:     true,
         readOnly:          "nocursor",
         scrollbarStyle:    null
 
@@ -145,7 +148,7 @@ var View = (function() {
         var lines  = para.split("\n"),
             result = "";
         for (var i = 0; i < lines.length; i++) {
-            result += addon + lines[i].replace(/\s+$/, "") + "\n";
+            result += (i == 0 ? addon : "  ") + lines[i].replace(/\s+$/, "") + "\n";
         }
         return result;
     }

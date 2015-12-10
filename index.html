@@ -163,7 +163,10 @@
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
-        var storage = Storage;
+
+        Storage.setItem("stored-files", JSON.stringify(["test.toy"]));
+        Storage.setItem("test.toy", JSON.stringify({name: "test.toy", content: "{\n    int a;\n}", id: "fsvdbigt"}));
+        Storage.setItem("last-editing", "fsvdbigt");
 
         Cache.files = [];
         Cache.files.find = function(fileId) {

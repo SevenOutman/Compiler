@@ -403,7 +403,6 @@ parse: function parse(input) {
     }
     parser.getProgressF = function(){
         var progress = parser.getProgress();
-        var progressF="STACK          INPUT             ACTION\n";
         var blanks = function(length){
             s=""
             while(length--){
@@ -411,6 +410,7 @@ parse: function parse(input) {
             }
             return s;
         }
+        var progressF="STACK"+blanks(10)+"INPUT"+blanks(10)+"ACTION\n";
         for (i in progress) {
             try{
                 if (progress[i][0]==undefined) {continue};
@@ -427,7 +427,7 @@ parse: function parse(input) {
                     }
                     stack+=' '
                 }
-                progressF+=stack+blanks(20 - stack.length - progress[i][2].input.length)+progress[i][2].input+'\|\n';
+                progressF+=stack+blanks(20 - stack.length - progress[i][2].input.length)+progress[i][2].input+blanks(10)+'\n';
             }catch(err){
                 console.log('ERR')
                 progressF=err.toString();

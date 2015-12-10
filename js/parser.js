@@ -95,88 +95,88 @@ case 1:
         //     console.log(undeclaredVariableTable[undeclaredVariable].name+' UNDECLARED VARIABLE.');
         // }
         // resetTables();
-        parser.parseTree = new Node(['program', $$[$0-1], '$'], $$, yy.lexer.matched, yy.lexer.matches);
+        parser.parseTree = new Node(['program', $$[$0-1], '$'], this.$$, yy.lexer.matched, yy.lexer.matches);
         return true;
     
 break;
 case 2:
 
-        return new Node(['program', '$'], $$, yy.lexer.matched, yy.lexer.matches);
+        return new Node(['program', '$'], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 3: case 4: case 5: case 6: case 7:
 
-        this.$ = new Node(['stmt', $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['stmt', $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 8:
 
-        this.$ = new Node(['compoundstmt', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['compoundstmt', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 9:
 
-        this.$ = new Node(['stmts', $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['stmts', $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 10:
 
-        this.$ = new Node(['stmts'], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['stmts'], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 11:
 
-        this.$ = new Node(['ifstms', $$[$0-7], $$[$0-6], $$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['ifstms', $$[$0-7], $$[$0-6], $$[$0-5], $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 12:
 
-        this.$ = new Node(['whilestmt', $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['whilestmt', $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 13:
 
-        this.$ = new Node(['assgstmt', $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['assgstmt', $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 14:
 
-        this.$ = new Node(['decl', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['decl', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 15: case 16:
 
-        this.$ = new Node(['type', $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['type', $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 17:
 
-        this.$ = new Node(['list', new Node(['ID', $$[$0-1]]), $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['list', new Node(['ID', $$[$0-1]]), $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 18:
 
-        this.$ = new Node(['list1', $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['list1', $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 19:
 
-        this.$ = new Node(['list1'], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['list1'], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 20:
 
-        this.$ = new Node(['boolexpr', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['boolexpr', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 21:
 
-        this.$ = new Node(['arithexpr', $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['arithexpr', $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 22: case 23:
 
-        this.$ = new Node(['arithexprprime', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['arithexprprime', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 24:
@@ -186,27 +186,27 @@ case 24:
 break;
 case 25:
 
-        this.$ = new Node(['multexpr', $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['multexpr', $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 26: case 27:
 
-        this.$ = new Node(['multexprprime', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['multexprprime', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 28:
 
-        this.$ = new Node(['multexprprime'], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['multexprprime'], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 29: case 30:
 
-        this.$ = new Node(['simpleexpr', $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['simpleexpr', $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 case 31:
 
-        this.$ = new Node(['simpleexpr', $$[$0-2], $$[$0-1], $$[$0]], $$, yy.lexer.matched, yy.lexer.matches);
+        this.$ = new Node(['simpleexpr', $$[$0-2], $$[$0-1], $$[$0]], this.$$, yy.lexer.matched, yy.lexer.matches);
     
 break;
 }
@@ -402,7 +402,6 @@ parse: function parse(input) {
         return parser.progress;
     }
     parser.getProgressF = function(){
-        var progress = parser.getProgress();
         var blanks = function(length){
             s=""
             while(length--){
@@ -410,6 +409,7 @@ parse: function parse(input) {
             }
             return s;
         }
+        var progress = parser.getProgress();
         var progressF="STACK"+blanks(10)+"INPUT"+blanks(10)+"ACTION\n";
         for (i in progress) {
             try{
@@ -952,32 +952,34 @@ case 10:parser.foundSymbol(new Symbol(yy_.yytext, '{',      yy_.yylloc)); return
 break;
 case 11:parser.foundSymbol(new Symbol(yy_.yytext, '}',      yy_.yylloc)); return 13;
 break;
-case 12:parser.foundSymbol(new Symbol(yy_.yytext, ';',      yy_.yylloc)); return 24;
+case 12:parser.foundSymbol(new Symbol(yy_.yytext, ',',      yy_.yylloc)); return 30;
 break;
-case 13:parser.foundSymbol(new Symbol(yy_.yytext, '+',      yy_.yylloc)); return 34;
+case 13:parser.foundSymbol(new Symbol(yy_.yytext, ';',      yy_.yylloc)); return 24;
 break;
-case 14:parser.foundSymbol(new Symbol(yy_.yytext, '-',      yy_.yylloc)); return 35;
+case 14:parser.foundSymbol(new Symbol(yy_.yytext, '+',      yy_.yylloc)); return 34;
 break;
-case 15:parser.foundSymbol(new Symbol(yy_.yytext, '*',      yy_.yylloc)); return 38;
+case 15:parser.foundSymbol(new Symbol(yy_.yytext, '-',      yy_.yylloc)); return 35;
 break;
-case 16:parser.foundSymbol(new Symbol(yy_.yytext, '/',      yy_.yylloc)); return 39;
+case 16:parser.foundSymbol(new Symbol(yy_.yytext, '*',      yy_.yylloc)); return 38;
 break;
-case 17:parser.foundSymbol(new Symbol(yy_.yytext, 'boolop', yy_.yylloc)); return 31;
+case 17:parser.foundSymbol(new Symbol(yy_.yytext, '/',      yy_.yylloc)); return 39;
 break;
-case 18:parser.foundSymbol(new Symbol(yy_.yytext, '=',      yy_.yylloc)); return 22
+case 18:parser.foundSymbol(new Symbol(yy_.yytext, 'boolop', yy_.yylloc)); return 31;
 break;
-case 19:parser.foundSymbol(new Symbol(yy_.yytext, 'num',    yy_.yylloc)); return 40;
+case 19:parser.foundSymbol(new Symbol(yy_.yytext, '=',      yy_.yylloc)); return 22
 break;
 case 20:parser.foundSymbol(new Symbol(yy_.yytext, 'num',    yy_.yylloc)); return 40;
 break;
-case 21:parser.foundSymbol(new Symbol(yy_.yytext, 'EOF',    yy_.yylloc)); return 5;
+case 21:parser.foundSymbol(new Symbol(yy_.yytext, 'num',    yy_.yylloc)); return 40;
 break;
-case 22:throw  'UNDEFINED SYMBOL AT '+yy_.yylloc.first_line+', '+yy_.yylloc.first_column;
+case 22:parser.foundSymbol(new Symbol(yy_.yytext, 'EOF',    yy_.yylloc)); return 5;
+break;
+case 23:throw  'UNDEFINED SYMBOL '+ yy_.yytext +' AT '+yy_.yylloc.first_line+', '+yy_.yylloc.first_column;
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:int\b)/,/^(?:real\b)/,/^(?:if\b)/,/^(?:then\b)/,/^(?:else\b)/,/^(?:while\b)/,/^(?:[a-zA-Z][a-zA-Z0-9]*)/,/^(?:\()/,/^(?:\))/,/^(?:\{)/,/^(?:\})/,/^(?:;)/,/^(?:\+)/,/^(?:-)/,/^(?:\*)/,/^(?:\/)/,/^(?:<=|<|==|>=|>|!=)/,/^(?:=)/,/^(?:(([0-9])+)\.(([0-9])+))/,/^(?:(([0-9])+))/,/^(?:$)/,/^(?:.*)/],
-conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"inclusive":true}}
+rules: [/^(?:\s+)/,/^(?:int\b)/,/^(?:real\b)/,/^(?:if\b)/,/^(?:then\b)/,/^(?:else\b)/,/^(?:while\b)/,/^(?:[a-zA-Z][a-zA-Z0-9]*)/,/^(?:\()/,/^(?:\))/,/^(?:\{)/,/^(?:\})/,/^(?:,)/,/^(?:;)/,/^(?:\+)/,/^(?:-)/,/^(?:\*)/,/^(?:\/)/,/^(?:<=|<|==|>=|>|!=)/,/^(?:=)/,/^(?:(([0-9])+)\.(([0-9])+))/,/^(?:(([0-9])+))/,/^(?:$)/,/^(?:.+)/],
+conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],"inclusive":true}}
 });
 return lexer;
 })();

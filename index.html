@@ -161,7 +161,7 @@
             // ll.run(processed);
             View.editor.save();
             try {
-                parser.parse(View.editor.getContent());
+                parser._parse(View.editor.getContent());
                 View.console.log(parser.getProgressF());
             } catch (err) {
                 View.console.error(err.toString());

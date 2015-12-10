@@ -305,6 +305,15 @@ button:focus:active {
     line-height: 10px;
     padding: 6px 0 5px 0;
     border-radius: 0;
+    cursor: default;
+}
+
+.tab-new:hover {
+    background: rgb(81, 86, 88);
+}
+
+.tab-new:active {
+    background: rgb(43, 43, 43);
 }
 
 .tab-row {
@@ -329,6 +338,11 @@ button:focus:active {
     text-shadow: 0 1px 0 rgba(0, 0, 0, .5);
     border-bottom: 1px solid rgb(40, 40, 40);
     display: table-cell;
+    -webkit-transition: all .3s;
+    -moz-transition: all .3s;
+    -ms-transition: all .3s;
+    -o-transition: all .3s;
+    transition: all .3s;
 }
 
 .tab-cell.active {
@@ -351,6 +365,16 @@ button:focus:active {
     cursor: default;
     text-decoration: none;
     -webkit-user-select: none;
+}
+
+.tab-dismiss {
+    float: right;
+    margin-right: 5px;
+    font-weight: bolder;
+    color: rgb(121, 121, 121);
+}
+.tab-dismiss:hover {
+    color: rgb(135,135,135);
 }
 
 .editor-container {

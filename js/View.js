@@ -16,6 +16,10 @@ var View = (function() {
     });
     _editor.cm.on("change", function(cm, change) {
         var session = _editor.currentSession();
+        if (null === session) {
+            document.getElementById("btn-save").classList.remove("unsaved");
+            return;
+        }
         if (session.saved) {
             session.saved = false;
         }
@@ -70,14 +74,21 @@ var View = (function() {
             var session = this[i],
                 id      = "session-" + session.id;
             if ($("#" + id).length < 1) {
-                var $a  = $("<a></a>").attr("id", id).text(session.file.fileName()),
-                    $li = $("<div></div>").addClass("tab-cell");
+                var $a    = $("<a></a>").text(session.file.fileName()),
+                    $span = $("<span></span>").addClass("tab-dismiss").html("&times;"),
+                    $li   = $("<div></div>").attr("id", id).addClass("tab-cell");
+                $span.on("click", (function(session) {
+                    return function() {
+                        View.editor.closeSession(session);
+                        return false;
+                    }
+                })(session));
                 $li.on("click", (function(session) {
                     return function() {
                         View.editor.bringSessionToFront(session);
                     }
                 })(session));
-                $(".tab-group").append($li.append($a));
+                $(".tab-group").append($li.append($a.append($span)));
             }
         }
     });
@@ -93,12 +104,14 @@ var View = (function() {
                 _editor.setContent(_current.content);
                 _editor.cm.doc.setCursor(_current.cursorPosition);
                 var id  = "session-" + _current.id,
-                    $a  = $("#" + id),
-                    $li = $a.parents(".tab-cell");
+                    $li = $("#" + id);
                 if (!$li.hasClass("active")) {
                     $li.siblings(".active").removeClass("active");
                     $li.addClass("active");
                 }
+            } else if (null === session) {
+                _current = null;
+                _editor.setContent("");
             }
             return _current;
         }
@@ -108,12 +121,23 @@ var View = (function() {
         var saved = session.saved;
         _editor.currentSession(session);
         _editor.cm.focus();
+
         if (saved) {
-            View.editor.save();
+            View.editor.save(true);
         }
     };
 
-
+    _editor.closeSession = function(session) {
+        _editor.openedSessions.remove(session);
+        var id  = "session-" + session.id,
+            $li = $("#" + id),
+            li  = $li[0];
+        li.parentNode.removeChild(li);
+        if (_editor.currentSession() == session) {
+            var s = _editor.openedSessions.front();
+            _editor.currentSession(undefined === s ? null : s);
+        }
+    };
 
     _editor.openFile = function(file) {
         var session = file.isNewFile ? null : _editor.openedSessions.findFile(file.fileName());
@@ -131,22 +155,32 @@ var View = (function() {
         _editor.openFile(new ToyFile);
     };
 
+    _editor.save = function(force) {
+        var session = _editor.currentSession();
+        if (session) {
+            if (!force) {
+                if (session.file.isNewFile) {
+                    if (session.saved) {
 
-    _editor.save = function() {
-        if (!_editor.cm.doc.isClean()) {
-            var session = _editor.currentSession();
-            if (session) {
+                    }
+                    return;
+                }
+            }
+
+            if (!_editor.cm.doc.isClean()) {
                 session.file.content = session.content = _editor.getContent();
                 Storage.setItem(session.file.fileName(), session.file.serialize());
                 session.saved = true;
+                _editor.cm.doc.markClean();
+                document.getElementById("btn-save").classList.remove("unsaved");
             }
-            _editor.cm.doc.markClean();
-            document.getElementById("btn-save").classList.remove("unsaved");
         }
     };
 
     _editor.needSave = function() {
-        if (!_editor.currentSession()) return false;
+        if (!_editor.currentSession()) {
+            return false;
+        }
         return !_editor.currentSession().saved;
     };
 

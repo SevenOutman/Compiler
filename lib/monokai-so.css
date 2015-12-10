@@ -47,7 +47,8 @@
 }
 
 .cm-s-monokai-so span.cm-comment {
-    color: #75715e;
+    /*color: #75715e;*/
+    color: rgba(136, 136, 136, 1);
 }
 
 .cm-s-monokai-so span.cm-atom {

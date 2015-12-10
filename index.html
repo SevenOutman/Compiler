@@ -214,7 +214,7 @@
         if (last) {
             var file = Cache.files.find(last);
             if (file) {
-                View.editor.bringFileToFront(file);
+                View.editor.openFile(file);
                 $("#toy-" + file.id).trigger("click");
             }
         }

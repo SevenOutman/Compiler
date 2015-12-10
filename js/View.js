@@ -34,7 +34,8 @@ var View = (function() {
         return _editor.cm.setValue(content);
     };
 
-    function FileSession (file) {
+    function FileSession(file) {
+        this.id = _randomString(8);
         this.file = file;
         this.saved = true;
         this.content = file.content;
@@ -68,6 +69,7 @@ var View = (function() {
         }
     });
 
+
     _editor.currentFile = (function() {
         var _current = null;
         return function(file) {
@@ -86,6 +88,69 @@ var View = (function() {
         }
     })();
 
+    _editor.openedSessions = [];
+    _editor.openedSessions.find = function(sessionId) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i].id === sessionId) {
+                return this[i];
+            }
+        }
+        return null;
+    }.bind(_editor.openedSessions);
+
+    _editor.openedSessions.findFile = function(fileName) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i].file.fileName() === fileName) {
+                return this[i];
+            }
+        }
+        return null;
+    }.bind(_editor.openedSessions);
+
+    _editor.openedSessions.sub("change", function() {
+        for (var i = 0; i < this.length; i++) {
+            var session = this[i],
+                id      = "session-" + session.id;
+            if ($("#" + id).length < 1) {
+                var $a  = $("<a></a>").attr("id", id).text(session.file.fileName()),
+                    $li = $("<div></div>").addClass("tab-cell");
+                $li.on("click", (function(session) {
+                    return function() {
+                        View.editor.bringSessionToFront(session);
+                    }
+                })(session));
+                $(".tab-group").append($li.append($a));
+            }
+        }
+    });
+    _editor.currentSession = (function() {
+        var _current = null;
+        return function(session) {
+            if (session && session !== _current) {
+                if (null !== _current) {
+                    _current.content = _editor.getContent();
+                    _current.cursorPosition = _editor.cm.doc.getCursor();
+                }
+                _current = session;
+                _editor.setContent(_current.content);
+                _editor.cm.doc.setCursor(_current.cursorPosition);
+                var id  = "session-" + _current.id,
+                    $a  = $("#" + id),
+                    $li = $a.parents(".tab-cell");
+                if (!$li.hasClass("active")) {
+                    $li.siblings(".active").removeClass("active");
+                    $li.addClass("active");
+                }
+            }
+            return _current;
+        }
+    })();
+
+    _editor.bringSessionToFront = function(session) {
+        _editor.currentSession(session);
+        _editor.cm.focus();
+    };
+
     _editor.bringFileToFront = function(file, force) {
         if (!force && null === _editor.openedFiles.find(file.id)) {
             _editor.openFile(file);
@@ -96,11 +161,15 @@ var View = (function() {
 
 
     _editor.openFile = function(file) {
-        if (null === _editor.openedFiles.find(file.id)) {
-            _editor.openedFiles.push(file);
-            _editor.openedFiles.pub("change");
+        var session = file.isNewFile ? null : _editor.openedSessions.findFile(file.fileName());
+
+        if (null === session) {
+            session = new FileSession(file);
+            _editor.openedSessions.push(session);
+            _editor.openedSessions.pub("change");
         }
-        _editor.bringFileToFront(file, true);
+
+        _editor.bringSessionToFront(session);
     };
 
     _editor.newFile = function() {
@@ -128,10 +197,10 @@ var View = (function() {
     var _console = {};
 
     _console.cm = CodeMirror.fromTextArea(document.getElementById("console"), {
-        theme:             "monokai-so",
-        mode:              "console",
-        readOnly:          "nocursor",
-        scrollbarStyle:    null
+        theme:          "monokai-so",
+        mode:           "console",
+        readOnly:       "nocursor",
+        scrollbarStyle: null
 
     });
 

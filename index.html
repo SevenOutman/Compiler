@@ -45,7 +45,9 @@
                     </button>
                 </li>
                 <li>
-                    <button class="btn navbar-btn" id="btn-tidy">Tidy</button>
+                    <button class="btn navbar-btn" id="btn-tidy"><span
+                            class="glyphicon glyphicon-flash"></span> Tidy
+                    </button>
                 </li>
                 <li>
                     <label class="btn navbar-btn" id="btn-import" for="source_file"><span
@@ -158,6 +160,11 @@
 
     window.onunload = function() {
         Storage.setItem("last-editing", View.editor.currentSession().file.fileName());
+        var storedFiles = [];
+        for (var i = 0; i < Cache.files.length; i++) {
+            storedFiles.push(Cache.files[i].fileName());
+        }
+        Storage.setItem("stored-files", JSON.stringify(storedFiles));
     };
 
     window.onload = function() {
@@ -166,7 +173,7 @@
 
 //        Storage.setItem("stored-files", JSON.stringify(["test.toy"]));
 //        Storage.setItem("test.toy", JSON.stringify({name: "test.toy", content: "{\n    int a;\n}", id: "fsvdbigt"}));
-//        Storage.setItem("last-editing", "fsvdbigt");
+//        Storage.setItem("last-editing", "test.toy");
 
         Cache.files = [];
         Cache.files.find = function(fileName) {
@@ -218,6 +225,39 @@
                 $("#toy-" + file.name).trigger("click");
             }
         }
+
+        document.getElementById("btn-tidy").onclick = function() {
+            var code      = View.editor.getContent().replace(/\n/g, " "),
+                processed = "",
+                buffer    = "";
+            var findOperatorReg  = /(\+|\-|\*|\/|!=|>=?|<=?|==?)/g,
+                findDelimiterReg = /(\(|\)|\{|}|;|\$)/g;
+            code = code.replace(findOperatorReg, " $1 ")
+                           .replace(findDelimiterReg, " $1 ")
+                           .replace(/[ ]+/g, " ")
+                           .replace(/(else|then) \{/g, "$1{")
+                           .trim() + " ";
+            for (var i = 0; i < code.length; i++) {
+                if (code[i] == " ") {
+                    processed += buffer + " ";
+
+                    if (["then", "else", "then{", "else{", "{", "}", ";"].has(buffer)) {
+                        processed += "\n";
+                    }
+
+                    buffer = "";
+                } else {
+                    buffer += code[i];
+                }
+            }
+            processed = processed.replace(/\s+(;|\))/g, "$1")
+                    .replace(/\(\s+/g, "(")
+                    .replace(/(then|else)\{/g, "$1 {");
+            View.editor.setContent(processed);
+            for (var i = 0; i < View.editor.cm.doc.lastLine(); i++) {
+                View.editor.cm.indentLine(i, "smart");
+            }
+        };
 
         document.getElementById("btn-compile").onclick = function() {
             // var processed = lexical.run(View.editor.getContent());

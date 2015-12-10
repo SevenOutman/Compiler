@@ -18,6 +18,8 @@ var View = (function() {
         var session = _editor.currentSession();
         if (session.saved) {
             session.saved = false;
+        }
+        if (!document.getElementById("btn-save").classList.hasOwnProperty("unsaved")) {
             document.getElementById("btn-save").classList.add("unsaved");
         }
     });
@@ -103,8 +105,12 @@ var View = (function() {
     })();
 
     _editor.bringSessionToFront = function(session) {
+        var saved = session.saved;
         _editor.currentSession(session);
         _editor.cm.focus();
+        if (saved) {
+            View.editor.save();
+        }
     };
 
 

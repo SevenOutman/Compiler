@@ -273,7 +273,7 @@
                     if ($box.hasClass("left-box")) {
                         var mouseX    = e.clientX,
                             leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
-                                    0, $main.width() - $right.width() - 1);
+                                    1, $main.width() - $right.width() - 1);
 
                         $box.width(leftWidth);
                         $center.css("margin-left", leftWidth + "px");
@@ -282,7 +282,7 @@
                     if ($box.hasClass("right-box")) {
                         var mouseX     = e.clientX,
                             rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
-                                    0, $main.width() - $left.width() - 1);
+                                    1, $main.width() - $left.width() - 1);
                         $box.width(rightWidth);
                         $center.css("margin-right", rightWidth + "px");
                     }
@@ -297,6 +297,7 @@
                 }
             }
         }, false);
+        View.console.log("Compiler lauched at " + new Date().toTimeString());
     }
 </script>
 </body>

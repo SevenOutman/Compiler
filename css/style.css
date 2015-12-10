@@ -145,7 +145,7 @@ button:focus:active {
 
 .resizable {
     position: relative;
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 
 .resizer {
@@ -187,6 +187,8 @@ button:focus:active {
     background: linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* 标准的语法 */
     border-top: 1px solid rgb(82, 85, 86);
     border-bottom: 1px solid rgb(36, 38, 39);
+    overflow: hidden;
+
 }
 
 .box-title {
@@ -198,10 +200,13 @@ button:focus:active {
     color: rgb(128, 128, 128);
     -webkit-user-select: none;
     cursor: default;
+    white-space: nowrap;
 }
 
 .box-body {
     /*padding-left: 20px;*/
+    overflow: hidden;
+
 }
 
 .left-box {

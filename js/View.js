@@ -34,10 +34,81 @@ var View = (function() {
         return _editor.cm.setValue(content);
     };
 
+
+    _editor.openedFiles = [];
+    _editor.openedFiles.find = function(fileId) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i].id === fileId) {
+                return this[i];
+            }
+        }
+        return null;
+    }.bind(_editor.openedFiles);
+
+    _editor.openedFiles.sub("change", function() {
+        for (var i = 0; i < this.length; i++) {
+            var file = this[i],
+                id   = "opentoy-" + file.id;
+            if ($("#" + id).length < 1) {
+                var $a  = $("<a></a>").attr("id", id).text(file.fileName()),
+                    $li = $("<div></div>").addClass("tab-cell");
+                $li.on("click", (function(file) {
+                    return function() {
+                        View.editor.bringFileToFront(file);
+                    }
+                })(file));
+                $(".tab-group").append($li.append($a));
+            }
+        }
+    });
+
+    _editor.currentFile = (function() {
+        var _current = null;
+        return function(file) {
+            if (file) {
+                _current = file;
+                _editor.setContent(_current.content);
+                var id  = "opentoy-" + file.id,
+                    $a  = $("#" + id),
+                    $li = $a.parents(".tab-cell");
+                if (!$li.hasClass("active")) {
+                    $li.siblings(".active").removeClass("active");
+                    $li.addClass("active");
+                }
+            }
+            return _current;
+        }
+    })();
+
+    _editor.bringFileToFront = function(file, force) {
+        if (!force && null === _editor.openedFiles.find(file.id)) {
+            _editor.openFile(file);
+        }
+        _editor.currentFile(file);
+        _editor.cm.focus();
+    };
+
+
+    _editor.openFile = function(file) {
+        if (null === _editor.openedFiles.find(file.id)) {
+            _editor.openedFiles.push(file);
+            _editor.openedFiles.pub("change");
+        }
+        _editor.bringFileToFront(file, true);
+    };
+
+    _editor.newFile = function() {
+        _editor.openFile(new ToyFile);
+    };
+
+
     _editor.save = function() {
         if (!_editor.cm.doc.isClean()) {
-            var code = _editor.getContent();
-            Storage.setItem("code", code);
+            var file = _editor.currentFile();
+            if (file) {
+                file.content = _editor.getContent();
+                Storage.setItem(file.fileName(), file.serialize());
+            }
             _editor.cm.doc.markClean();
             document.getElementById("btn-save").classList.remove("unsaved");
         }
@@ -45,27 +116,6 @@ var View = (function() {
 
     _editor.needSave = function() {
         return !_editor.cm.doc.isClean();
-    };
-
-    _editor.currentFile = (function () {
-        var _current = null;
-        return function (file) {
-            if (undefined !== file) {
-                _current = file;
-                _editor.setContent(_current.content);
-            }
-            return _current;
-        }
-    })();
-
-    _editor.openFile = function (fileName) {
-        for (var i = 0; i < Cache.files.length; i++) {
-            var file = Cache.files[i];
-            if (file.fileName() === fileName) {
-                _editor.currentFile(file);
-                break;
-            }
-        }
     };
 
 

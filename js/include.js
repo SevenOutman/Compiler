@@ -67,6 +67,16 @@ Math.mid = function(x, y, z) {
     })[1];
 };
 
+function _randomString(len) {
+    var result = "";
+    while(result.length < len) {
+        var letter = Math.floor(Math.random() * 26),
+            ca = Math.random() < 0.5 ? 0 : 1;
+        result += String.fromCharCode(65 + letter + ca * 32)
+    }
+    return result;
+}
+
 var _safe = function(V) {
     var v = V;
     return function(V) {

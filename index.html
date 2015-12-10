@@ -234,12 +234,23 @@
             View.editor.newFile();
         });
 
-        var fr = new FileReader;
+        var fr      = new FileReader,
+            tmpFile = null;
         fr.onload = function() {
-            cmeditor.doc.setValue(this.result);
+            if (null !== tmpFile) {
+                tmpFile.content = this.result;
+                Cache.files.push(tmpFile);
+                Cache.files.pub("change");
+                View.editor.openFile(tmpFile);
+                $("#toy-" + tmpFile.id).trigger("click");
+                tmpFile = null;
+            }
         };
         document.getElementById("source_file").onchange = function() {
-            fr.readAsText(this.files[0]);
+            var file = this.files[0];
+            tmpFile = new ToyFile(file.name.replace(/(\.\w+)?$/, ".toy"));
+            tmpFile.isNewFile = false;
+            fr.readAsText(file);
         };
         document.getElementById("btn-save").onclick = function() {
             View.editor.save();

@@ -71,7 +71,7 @@ var View = (function() {
     _editor.currentFile = (function() {
         var _current = null;
         return function(file) {
-            if (file) {
+            if (file && file !== _current) {
                 _current = file;
                 _editor.setContent(_current.content);
                 var id  = "opentoy-" + file.id,

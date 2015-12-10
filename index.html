@@ -66,6 +66,10 @@
             <div class="box-header">
                 <div class="box-title">Files</div>
             </div>
+            <div class="box-body">
+                <ul id="file-list">
+                </ul>
+            </div>
         </div>
 
         <div class="right-box resizable">
@@ -80,14 +84,14 @@
                     <button class="tab-new">&plus;</button>
                     <div class="tab-row">
                         <div class="tab-group">
-                            <div class="tab-cell">
+                            <div class="tab-cell active">
                                 <a>tab1</a>
                             </div>
                             <div class="tab-cell">
-                                <a>tab1</a>
+                                <a>tab2</a>
                             </div>
                             <div class="tab-cell">
-                                <a>tab1</a>
+                                <a>tab3</a>
                             </div>
                         </div>
                     </div>
@@ -109,7 +113,7 @@
     </div>
     <div id="footer">
         <div class="footer-text">
-            <span id="current-line"></span>:<span id="current-ch"></span>
+            <span id="current-line">1</span>:<span id="current-ch">1</span>
         </div>
     </div>
     <div id="extra">
@@ -143,6 +147,8 @@
 <script src="lib/toy.js"></script>
 <script src="lib/console.js"></script>
 <script src="js/Storage.js"></script>
+<script src="js/Cache.js"></script>
+<script src="js/ToyFile.js"></script>
 <script src="js/View.js"></script>
 <script src="js/parser.js"></script>
 <script src="js/simpleLexer.js"></script>
@@ -163,13 +169,63 @@
             return "未保存的修改将丢失";
         }
     };
+
+    window.onunload = function () {
+        Storage.setItem("last-editing", View.editor.currentFile().fileName());
+    };
+
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
         var storage = Storage;
 
-        var code = code = storage.getItem("code") || "";
-        View.editor.setContent(code);
+        Cache.files = [];
+        Cache.files.find = function (fileName) {
+            for(var i = 0; i < this.length; i ++) {
+                if (this[i].fileName() === fileName) {
+                    return this[i];
+                }
+            }
+            return null;
+        }.bind(Cache.files);
+
+        Cache.files.sub("change", function() {
+            for (var i = 0; i < this.length; i++) {
+                var file = this[i],
+                    $li  = $("<li></li>").attr("id", "toy-" + file.name).text(file.fileName());
+                $li.on("click", function() {
+                    var $self = $(this);
+                    if (!$self.hasClass("active")) {
+                        $self.siblings(".active").removeClass("active");
+                        $self.addClass("active");
+                    }
+                }).on("dblclick", (function(file) {
+                    return function() {
+                        View.editor.openFile(file.fileName());
+                    }
+                })(file));
+                $("#file-list").append($li);
+            }
+        });
+        var storedFileNames = JSON.parse(Storage.getItem("stored-files") || "[]");
+        for (var i = 0; i < storedFileNames.length; i++) {
+            var content = Storage.getItem(storedFileNames[i]);
+            if (content) {
+                Cache.files.push(new ToyFile(storedFileNames[i], content, false));
+            }
+        }
+        Cache.files.pub("change");
+
+
+        var last  = Storage.getItem("last-editing");
+        if (last) {
+            var file = Cache.files.find(last);
+            if (file) {
+                View.editor.currentFile(file);
+                $("#toy-" + file.name).trigger("click");
+            }
+        }
+//        View.editor.setContent(code);
         View.editor.save();
 
         document.getElementById("btn-compile").onclick = function() {

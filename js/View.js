@@ -14,6 +14,17 @@ var View = (function() {
         styleActiveLine:   true,
         scrollbarStyle:    "overlay"
     });
+    _editor.cm.on("change", function(cm, change) {
+        if (_editor.needSave()) {
+            document.getElementById("btn-save").classList.add("unsaved");
+        }
+    });
+
+    _editor.cm.on("cursorActivity", function(cm) {
+        var pos = cm.doc.getCursor();
+        $("#current-line").text(pos.line + 1);
+        $("#current-ch").text(pos.ch + 1);
+    });
 
     _editor.getContent = function() {
         return _editor.cm.getValue();
@@ -36,17 +47,27 @@ var View = (function() {
         return !_editor.cm.doc.isClean();
     };
 
-    _editor.cm.on("change", function(cm, change) {
-        if (_editor.needSave()) {
-            document.getElementById("btn-save").classList.add("unsaved");
+    _editor.currentFile = (function () {
+        var _current = null;
+        return function (file) {
+            if (undefined !== file) {
+                _current = file;
+                _editor.setContent(_current.content);
+            }
+            return _current;
         }
-    });
+    })();
 
-    _editor.cm.on("cursorActivity", function (cm) {
-        var pos = cm.doc.getCursor();
-        $("#current-line").text(pos.line + 1);
-        $("#current-ch").text(pos.ch + 1);
-    });
+    _editor.openFile = function (fileName) {
+        for (var i = 0; i < Cache.files.length; i++) {
+            var file = Cache.files[i];
+            if (file.fileName() === fileName) {
+                _editor.currentFile(file);
+                break;
+            }
+        }
+    };
+
 
     var _console = {};
 

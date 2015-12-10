@@ -180,7 +180,7 @@ button:focus:active {
 
 .box-header {
     width: 100%;
-    height: 23px;
+    height: 22px;
     background: -webkit-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Safari 5.1 - 6.0 */
     background: -o-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Opera 11.1 - 12.0 */
     background: -moz-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Firefox 3.6 - 15 */
@@ -214,6 +214,7 @@ button:focus:active {
     height: 100%;
     float: left;
     background: rgb(60, 63, 65);
+    border-top: 1px solid rgb(38, 40, 41);
     border-right: 1px solid rgb(40, 40, 40);
     z-index: 300;
 }
@@ -244,6 +245,7 @@ button:focus:active {
     height: 100%;
     float: right;
     background: rgb(60, 63, 65);
+    border-top: 1px solid rgb(38, 40, 41);
     border-left: 1px solid rgb(40, 40, 40);
     z-index: 300;
 }
@@ -256,7 +258,7 @@ button:focus:active {
 
 .bottom-box {
     height: 30%;
-    border-top: rgb(38, 40, 41);
+    border-top: 1px solid rgb(38, 40, 41);
 }
 
 .left-box.resizable .resizer {
@@ -323,11 +325,15 @@ button:focus:active {
 .tab-cell {
     background: rgb(60, 62, 63);
     text-align: center;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .5);
+    border-bottom: 1px solid rgb(40, 40, 40);
     display: table-cell;
 }
 
 .tab-cell.active {
     background: rgb(81, 86, 88);
+    border-bottom: 1px solid rgb(81, 86, 88);
+
 }
 
 .tab-cell>a {

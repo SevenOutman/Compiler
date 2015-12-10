@@ -20,6 +20,14 @@ Array.prototype.front = function() {
     return this[0];
 };
 
+Array.prototype.remove = function (elem) {
+    for (var i = 0; i < this.length; i++) {
+        if (this[i] === elem) {
+            this.splice(i, 1);
+        }
+    }
+};
+
 Object.prototype.clone = function() {
     var o = this instanceof Array ? [] : {};
     for (var prop in this) {

@@ -157,21 +157,21 @@
     };
 
     window.onunload = function() {
-        Storage.setItem("last-editing", View.editor.currentFile().id);
+        Storage.setItem("last-editing", View.editor.currentSession().file.fileName());
     };
 
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
 
-        Storage.setItem("stored-files", JSON.stringify(["test.toy"]));
-        Storage.setItem("test.toy", JSON.stringify({name: "test.toy", content: "{\n    int a;\n}", id: "fsvdbigt"}));
-        Storage.setItem("last-editing", "fsvdbigt");
+//        Storage.setItem("stored-files", JSON.stringify(["test.toy"]));
+//        Storage.setItem("test.toy", JSON.stringify({name: "test.toy", content: "{\n    int a;\n}", id: "fsvdbigt"}));
+//        Storage.setItem("last-editing", "fsvdbigt");
 
         Cache.files = [];
-        Cache.files.find = function(fileId) {
+        Cache.files.find = function(fileName) {
             for (var i = 0; i < this.length; i++) {
-                if (this[i].id === fileId) {
+                if (this[i].fileName() === fileName) {
                     return this[i];
                 }
             }
@@ -181,7 +181,7 @@
         Cache.files.sub("change", function() {
             for (var i = 0; i < this.length; i++) {
                 var file = this[i],
-                    id   = "toy-" + file.id;
+                    id   = "toy-" + file.name;
                 if ($("#" + id).length < 1) {
                     var $li = $("<li></li>").attr("id", id).text(file.fileName());
                     $li.on("click", function() {
@@ -215,7 +215,7 @@
             var file = Cache.files.find(last);
             if (file) {
                 View.editor.openFile(file);
-                $("#toy-" + file.id).trigger("click");
+                $("#toy-" + file.name).trigger("click");
             }
         }
 //        View.editor.setContent(code);

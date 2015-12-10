@@ -8,6 +8,16 @@ body {
     /*overflow-y: auto;*/
 }
 
+button,
+button:hover,
+button:active,
+button:visited,
+button:focus,
+button:focus:active {
+    -webkit-appearance: none;
+    outline: none;
+}
+
 .CodeMirror {
     height: 100%;
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace !important;
@@ -135,6 +145,7 @@ body {
 
 .resizable {
     position: relative;
+    overflow: hidden;
 }
 
 .resizer {
@@ -234,15 +245,78 @@ body {
 }
 
 .editor-box {
+    position: relative;
     height: 70%;
+}
+
+.tab-bar {
+    position: absolute;
+    width: 100%;
+    height: 23px;
+    left: 0;
+    top: 0;
+    background: rgb(60, 63, 65);
+    border-bottom: 1px solid rgb(40, 40, 40);
+}
+
+.tab-new {
+    -webkit-appearance: none;
+    float: right;
+    width: 23px;
+    height: 100%;
+    background: rgb(60, 62, 63);
+    color: rgb(201, 201, 201);
+    border: none;
+    border-top: 1px solid rgb(40, 40, 40);
+    font-size: 10px;
+    line-height: 10px;
+    padding: 6px 0 5px 0;
+    border-radius: 0;
+}
+
+.tab-row {
+    position: relative;
+    width: auto;
+    height: 100%;
+    margin-right: 23px;
+    background: rgb(40, 40, 40);
+}
+
+.tab-group {
+    width: 100%;
+    height: 100%;
+    display: table;
+    border-collapse: separate;
+    border-spacing: 1px;
+}
+
+.tab-cell {
+    display: table-cell;
+}
+
+.tab-cell>a {
+    width: 100%;
+    height: 21px;
+    background: rgb(60, 62, 63);
+    color: rgb(201, 201, 201);
+    border-radius: 0;
+    text-align: center;
+    font-size: 10px;
+    line-height: 10px;
+    padding: 6px 0 5px 0;
+    border: none;
+    display: block;
 }
 
 .editor-container {
     height: 100%;
+    padding-top: 23px;
+    overflow: hidden;
 }
 
 .console-container {
     height: 100%;
+    overflow: hidden;
 }
 
 #footer {

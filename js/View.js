@@ -41,6 +41,7 @@ var View = (function() {
             document.getElementById("btn-save").classList.add("unsaved");
         }
     });
+
     _editor.cm.on("cursorActivity", function (cm) {
         var pos = cm.doc.getCursor();
         $("#current-line").text(pos.line + 1);

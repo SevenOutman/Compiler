@@ -86,7 +86,7 @@
         <div class="center-box">
             <div class="editor-box">
                 <div class="editor-cover">
-
+                    Choose a file from workspace or <a id="cover-open">open a new file</a>
                 </div>
                 <div class="tab-bar">
                     <button class="tab-new">&plus;</button>
@@ -177,7 +177,13 @@
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
-
+        document.getElementById("cover-open").addEventListener("click", function () {
+            var cover = this.parentNode;
+            if (!cover.classList.hasOwnProperty("hidden")) {
+                cover.classList.add("hidden");
+                View.editor.newFile();
+            }
+        }, false);
         Cache.files = [];
         Cache.files.find = function(fileName) {
             for (var i = 0; i < this.length; i++) {

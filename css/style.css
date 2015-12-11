@@ -279,8 +279,10 @@ button:focus:active {
 }
 
 .bottom-box {
-    height: 30%;
+    /*height: 30%;*/
+    height: 23px;
     border-top: 1px solid rgb(38, 40, 41);
+    z-index: 200;
 }
 
 .left-box.resizable .resizer {
@@ -300,17 +302,37 @@ button:focus:active {
 
 .editor-box {
     position: relative;
-    height: 70%;
+    /*height: 70%;*/
+    height: calc(100% - 23px);
 }
 
 .editor-cover {
     position: absolute;
+    overflow: hidden;
     width: 100%;
     height: 100%;
     left: 0;
     top: 0;
+    text-align: center;
+    color: rgb(187, 187, 187);
+    padding-top: 35vh;
+    font-size: 24px;
     background: rgb(40, 40, 41);
-    z-index: 205;
+    white-space: nowrap;
+    z-index: 195;
+}
+
+.editor-cover.hidden {
+    display: none;
+}
+
+
+#cover-open {
+    cursor: pointer;
+}
+
+#cover-open:hover {
+    color: #6cf;
 }
 
 .tab-bar {

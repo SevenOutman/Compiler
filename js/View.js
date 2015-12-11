@@ -112,6 +112,8 @@ var View = (function() {
             } else if (null === session) {
                 _current = null;
                 _editor.setContent("");
+                var $cover = $(".editor-cover");
+                $cover.removeClass("hidden");
             }
             return _current;
         }

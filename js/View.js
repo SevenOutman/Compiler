@@ -148,6 +148,9 @@ var View = (function() {
             _editor.openedSessions.pub("change");
         }
 
+        var id  = "toy-" + file.name,
+            $li = $("#" + id);
+        $li.trigger("click");
         _editor.bringSessionToFront(session);
     };
 
@@ -197,6 +200,10 @@ var View = (function() {
                                 Cache.files.push(file);
                                 Cache.files.pub("change");
                                 close();
+                                var cursor = _editor.cm.doc.getCursor();
+                                _editor.closeSession(session);
+                                _editor.openFile(file);
+                                _editor.cm.doc.setCursor(cursor);
                             }
                         },
                         onClose: function () {
@@ -211,7 +218,7 @@ var View = (function() {
             if (force || !session.saved) {
                 session.file.content = session.content = _editor.getContent();
                 Storage.setItem(session.file.fileName(), session.file.serialize());
-                if (!force) _console.log("save to " + session.file.fileName());
+                if (!force) _console.log("Saved to '" + session.file.fileName() + "'");
                 session.saved = true;
                 //_editor.cm.doc.markClean();
                 document.getElementById("btn-save").classList.remove("unsaved");

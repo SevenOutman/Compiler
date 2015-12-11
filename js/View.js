@@ -166,7 +166,7 @@ var View = (function() {
     input.size = "untitled".length;
     input.value = "untitled";
     input.oninput = function() {
-        input.size = Math.max(input.value.length, 4);
+        input.size = Math.max(input.value.length, 1);
     };
     span.innerHTML = ".toy";
     dialog.appendChild(input);
@@ -185,11 +185,14 @@ var View = (function() {
                             if (event.which == 13) {
                                 event.preventDefault();
                                 event.stopPropagation();
-                                if (value.length < 0) {
+                                if (value.length < 1) {
                                     return false;
                                 }
                                 if (null !== Cache.files.find(value + ".toy")) {
-                                    return false;
+                                    if (!confirm("File '" + value + ".toy' already exists. Want to overwrite?")) {
+                                        input.select();
+                                        return false;
+                                    }
                                 }
                                 var file = session.file;
                                 file.name = value;
@@ -211,6 +214,7 @@ var View = (function() {
                             input.value = "untitled";
                         }
                     });
+                    input.select();
                     return;
                 }
             }

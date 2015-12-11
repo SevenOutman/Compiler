@@ -218,9 +218,17 @@ button:focus:active {
 }
 
 .box-body {
-    /*padding-left: 20px;*/
+    position: relative;
+    height: calc(100% - 22px);
     overflow: hidden;
+}
 
+.box-body .placeholder {
+    width: 100%;
+    padding-top: 35vh;
+    text-align: center;
+    white-space: nowrap;
+    color: rgb(187, 187, 187);
 }
 
 .left-box {
@@ -293,6 +301,16 @@ button:focus:active {
 .editor-box {
     position: relative;
     height: 70%;
+}
+
+.editor-cover {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgb(40, 40, 41);
+    z-index: 205;
 }
 
 .tab-bar {

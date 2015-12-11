@@ -67,11 +67,10 @@
         <div class="left-box resizable">
             <div class="resizer vertical"></div>
             <div class="box-header">
-                <div class="box-title">Files</div>
+                <div class="box-title">Workspace</div>
             </div>
             <div class="box-body">
-                <ul id="file-list">
-                </ul>
+                <div class="placeholder">Nothing to show</div>
             </div>
         </div>
 
@@ -80,9 +79,15 @@
             <div class="box-header">
                 <div class="box-title">Symbol Table</div>
             </div>
+            <div class="box-body">
+                <div class="placeholder">Nothing to show</div>
+            </div>
         </div>
         <div class="center-box">
             <div class="editor-box">
+                <div class="editor-cover">
+
+                </div>
                 <div class="tab-bar">
                     <button class="tab-new">&plus;</button>
                     <div class="tab-row">
@@ -184,6 +189,12 @@
         }.bind(Cache.files);
 
         Cache.files.sub("change", function() {
+            if ($("#file-list").length < 1 && this.length > 0) {
+                var $ul         = $("<ul></ul>").attr("id", "file-list"),
+                    placeholder = $(".left-box .placeholder")[0];
+                placeholder.parentNode.removeChild(placeholder);
+                $ul.appendTo($(".left-box"));
+            }
             for (var i = 0; i < this.length; i++) {
                 var file = this[i],
                     id   = "toy-" + file.name;

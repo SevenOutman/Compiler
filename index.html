@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="lib/monokai-so.css">
     <link rel="stylesheet" href="lib/codemirror/theme/base16-dark.css">
     <link rel="stylesheet" href="lib/codemirror/theme/dracula.css">
+    <link rel="stylesheet" href="lib/codemirror/addon/dialog/dialog.css">
     <link rel="stylesheet" href="lib/codemirror/addon/scroll/simplescrollbars.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -131,6 +132,7 @@
 <script src="js/Lexical.js"></script>
 <script src="js/LL.js"></script>
 <script src="lib/codemirror/lib/codemirror.js"></script>
+<script src="lib/codemirror/addon/dialog/dialog.js"></script>
 <script src="lib/codemirror/addon/edit/matchbrackets.js"></script>
 <script src="lib/codemirror/addon/edit/closebrackets.js"></script>
 <script src="lib/codemirror/addon/selection/active-line.js"></script>
@@ -211,7 +213,7 @@
             var item = Storage.getItem(Cache.storedFileNames[i]);
             if (item) {
                 var file = JSON.parse(item);
-                Cache.files.push(new ToyFile(Cache.storedFileNames[i], file.content, file.id, false));
+                Cache.files.push(new ToyFile(Cache.storedFileNames[i], file.content, false));
             }
         }
         Cache.files.pub("change");
@@ -239,10 +241,12 @@
                            .trim() + " ";
             for (var i = 0; i < code.length; i++) {
                 if (code[i] == " ") {
-                    processed += buffer + " ";
+                    processed += buffer;
 
                     if (["then", "else", "then{", "else{", "{", "}", ";"].has(buffer)) {
                         processed += "\n";
+                    } else {
+                        processed += " ";
                     }
 
                     buffer = "";
@@ -257,12 +261,14 @@
             for (var i = 0; i < View.editor.cm.doc.lastLine(); i++) {
                 View.editor.cm.indentLine(i, "smart");
             }
+            View.editor.cm.focus();
         };
 
         document.getElementById("btn-compile").onclick = function() {
             // var processed = lexical.run(View.editor.getContent());
             // ll.run(processed);
             View.editor.save();
+            View.console.log("Compile '" + View.editor.currentSession().file.fileName() + "'...");
             try {
                 parser._parse(View.editor.getContent());
                 View.console.log(parser.getProgressF());

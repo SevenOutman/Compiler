@@ -45,6 +45,20 @@ button:focus:active {
     padding-bottom: 20px;
 }
 
+#dialog-save {
+    color: #000;
+    text-align: center;
+    background: #FEDD31;
+}
+
+#dialog-save input {
+    width: auto;
+    position: relative;
+    font-family: inherit;
+    text-decoration: underline;
+}
+
+
 #resizing-mask {
     position: absolute;
     width: 100%;

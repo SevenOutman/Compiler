@@ -155,23 +155,65 @@ var View = (function() {
         _editor.openFile(new ToyFile);
     };
 
+    var dialog = document.createElement("div"),
+        input  = document.createElement("input"),
+        span   = document.createElement("span");
+    dialog.id = "dialog-save";
+    dialog.innerHTML = "File name: ";
+    input.size = "untitled".length;
+    input.value = "untitled";
+    input.oninput = function() {
+        input.size = Math.max(input.value.length, 4);
+    };
+    span.innerHTML = ".toy";
+    dialog.appendChild(input);
+    dialog.appendChild(span);
+
     _editor.save = function(force) {
         var session = _editor.currentSession();
         if (session) {
             if (!force) {
                 if (session.file.isNewFile) {
-                    if (session.saved) {
+                    _editor.cm.openDialog(dialog, function() {
 
-                    }
+                    }, {
+                        closeOnEnter: false,
+                        onKeyDown:    function(event, value, close) {
+                            if (event.which == 13) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                if (value.length < 0) {
+                                    return false;
+                                }
+                                if (null !== Cache.files.find(value + ".toy")) {
+                                    return false;
+                                }
+                                var file = session.file;
+                                file.name = value;
+                                //file.content = _editor.getContent();
+                                file.isNewFile = false;
+                                session.saved = false;
+                                _editor.save();
+                                Cache.files.push(file);
+                                Cache.files.pub("change");
+                                close();
+                            }
+                        },
+                        onClose: function () {
+                            input.size = "untitled".length;
+                            input.value = "untitled";
+                        }
+                    });
                     return;
                 }
             }
 
-            if (!_editor.cm.doc.isClean()) {
+            if (force || !session.saved) {
                 session.file.content = session.content = _editor.getContent();
                 Storage.setItem(session.file.fileName(), session.file.serialize());
+                if (!force) _console.log("save to " + session.file.fileName());
                 session.saved = true;
-                _editor.cm.doc.markClean();
+                //_editor.cm.doc.markClean();
                 document.getElementById("btn-save").classList.remove("unsaved");
             }
         }
@@ -205,7 +247,7 @@ var View = (function() {
 
 
     function _preoutput(addon, para) {
-        var lines  = para.split("\n"),
+        var lines  = (para + "").split("\n"),
             result = "";
         for (var i = 0; i < lines.length; i++) {
             result += (i == 0 ? addon : "  ") + lines[i].replace(/\s+$/, "") + "\n";

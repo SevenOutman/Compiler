@@ -166,7 +166,13 @@
     };
 
     window.onunload = function() {
-        Storage.setItem("last-editing", View.editor.currentSession().file.fileName());
+        var session = View.editor.currentSession();
+        if (session && session.file) {
+
+            Storage.setItem("last-editing", session.file.fileName());
+        } else {
+            Storage.removeItem("last-editing");
+        }
         var storedFiles = [];
         for (var i = 0; i < Cache.files.length; i++) {
             storedFiles.push(Cache.files[i].fileName());

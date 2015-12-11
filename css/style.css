@@ -320,6 +320,7 @@ button:focus:active {
     background: rgb(40, 40, 41);
     white-space: nowrap;
     z-index: 195;
+    text-shadow: 1px 1px 0 #000;
 }
 
 #cover-open {

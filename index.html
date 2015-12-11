@@ -85,7 +85,7 @@
         </div>
         <div class="center-box">
             <div class="editor-box">
-                <div class="editor-cover">
+                <div class="editor-placeholder">
                     Choose a file from workspace or <a id="cover-open">open a new file</a>
                 </div>
                 <div class="tab-bar">
@@ -178,12 +178,7 @@
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
         document.getElementById("cover-open").addEventListener("click", function() {
-            var cover = this.parentNode;
-            if (!cover.classList.hasOwnProperty("hidden")) {
-                cover.classList.add("hidden");
-                $("#cursor-position").show();
-                View.editor.newFile();
-            }
+            View.editor.newFile();
         }, false);
         Cache.files = [];
         Cache.files.find = function(fileName) {
@@ -237,8 +232,6 @@
         if (last) {
             var file = Cache.files.find(last);
             if (file) {
-                $(".editor-cover").addClass("hidden");
-                $("#cursor-position").show();
                 View.editor.openFile(file);
                 $("#toy-" + file.name).trigger("click");
             }
@@ -319,8 +312,6 @@
                 tmpFile.content = this.result;
                 Cache.files.push(tmpFile);
                 Cache.files.pub("change");
-                $(".editor-cover").addClass("hidden");
-                $("#cursor-position").show();
                 View.editor.openFile(tmpFile);
                 $("#toy-" + tmpFile.id).trigger("click");
                 tmpFile = null;

@@ -306,7 +306,7 @@ button:focus:active {
     height: calc(100% - 23px);
 }
 
-.editor-cover {
+.editor-placeholder {
     position: absolute;
     overflow: hidden;
     width: 100%;
@@ -321,11 +321,6 @@ button:focus:active {
     white-space: nowrap;
     z-index: 195;
 }
-
-.editor-cover.hidden {
-    display: none;
-}
-
 
 #cover-open {
     cursor: pointer;

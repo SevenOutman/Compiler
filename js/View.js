@@ -112,8 +112,10 @@ var View = (function() {
             } else if (null === session) {
                 _current = null;
                 _editor.setContent("");
-                $(".editor-cover").removeClass("hidden");
+                $(".editor-placeholder").show();
                 $("#cursor-position").hide();
+                $(".editor-box").css("height", "calc(100% - 23px)");
+                $(".bottom-box").height(23);
             }
             return _current;
         }
@@ -137,11 +139,17 @@ var View = (function() {
         li.parentNode.removeChild(li);
         if (_editor.currentSession() == session) {
             var s = _editor.openedSessions.front();
-            _editor.currentSession(undefined === s ? null : s);
+            if (undefined === s) {
+                _editor.currentSession(null);
+            } else {
+                _editor.bringSessionToFront(s);
+            }
         }
     };
 
     _editor.openFile = function(file) {
+        $(".editor-placeholder").hide();
+        $("#cursor-position").show();
         var session = file.isNewFile ? null : _editor.openedSessions.findFile(file.fileName());
 
         if (null === session) {
@@ -211,7 +219,7 @@ var View = (function() {
                                 _editor.cm.doc.setCursor(cursor);
                             }
                         },
-                        onClose: function () {
+                        onClose:      function() {
                             input.size = "untitled".length;
                             input.value = "untitled";
                         }
@@ -224,7 +232,9 @@ var View = (function() {
             if (force || !session.saved) {
                 session.file.content = session.content = _editor.getContent();
                 Storage.setItem(session.file.fileName(), session.file.serialize());
-                if (!force) _console.log("Saved to '" + session.file.fileName() + "'");
+                if (!force) {
+                    _console.log("Saved to '" + session.file.fileName() + "'");
+                }
                 session.saved = true;
                 //_editor.cm.doc.markClean();
                 document.getElementById("btn-save").classList.remove("unsaved");

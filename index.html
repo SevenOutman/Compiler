@@ -111,7 +111,7 @@
         </div>
     </div>
     <div id="footer">
-        <div class="footer-text">
+        <div class="footer-text" id="cursor-position" style="display: none">
             <span id="current-line">1</span>:<span id="current-ch">1</span>
         </div>
     </div>
@@ -181,6 +181,7 @@
             var cover = this.parentNode;
             if (!cover.classList.hasOwnProperty("hidden")) {
                 cover.classList.add("hidden");
+                $("#cursor-position").show();
                 View.editor.newFile();
             }
         }, false);

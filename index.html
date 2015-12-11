@@ -237,6 +237,8 @@
         if (last) {
             var file = Cache.files.find(last);
             if (file) {
+                $(".editor-cover").addClass("hidden");
+                $("#cursor-position").show();
                 View.editor.openFile(file);
                 $("#toy-" + file.name).trigger("click");
             }

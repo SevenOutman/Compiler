@@ -200,7 +200,7 @@
                 var $ul         = $("<ul></ul>").attr("id", "file-list"),
                     placeholder = $(".left-box .placeholder")[0];
                 placeholder.parentNode.removeChild(placeholder);
-                $ul.appendTo($(".left-box"));
+                $ul.appendTo($(".left-box .box-body"));
             }
             for (var i = 0; i < this.length; i++) {
                 var file = this[i],
@@ -319,6 +319,8 @@
                 tmpFile.content = this.result;
                 Cache.files.push(tmpFile);
                 Cache.files.pub("change");
+                $(".editor-cover").addClass("hidden");
+                $("#cursor-position").show();
                 View.editor.openFile(tmpFile);
                 $("#toy-" + tmpFile.id).trigger("click");
                 tmpFile = null;

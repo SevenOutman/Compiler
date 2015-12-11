@@ -177,7 +177,7 @@
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
-        document.getElementById("cover-open").addEventListener("click", function () {
+        document.getElementById("cover-open").addEventListener("click", function() {
             var cover = this.parentNode;
             if (!cover.classList.hasOwnProperty("hidden")) {
                 cover.classList.add("hidden");
@@ -280,13 +280,28 @@
         document.getElementById("btn-compile").onclick = function() {
             // var processed = lexical.run(View.editor.getContent());
             // ll.run(processed);
-            View.editor.save();
-            View.console.log("Compile '" + View.editor.currentSession().file.fileName() + "'...");
-            try {
-                parser._parse(View.editor.getContent());
-                View.console.log(parser.getProgressF());
-            } catch (err) {
-                View.console.error(err.toString());
+            var session = View.editor.currentSession();
+            if (null !== session) {
+
+                if ($(".bottom-box").height() <= 30) {
+                    $(".editor-box").css("height", "70%");
+                    $(".bottom-box").css("height", "30%");
+                }
+                if (!session.file.isNewFile) {
+
+                    View.editor.save();
+                    View.console.log("Compile '" + session.file.fileName() + "'...");
+
+                } else {
+                    View.console.log("Compile 'untitled'...");
+                }
+                try {
+                    parser._parse(View.editor.getContent());
+                    View.console.log(parser.getProgressF());
+                } catch (err) {
+                    View.console.error(err.toString());
+                }
+
             }
         };
 

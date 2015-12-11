@@ -294,6 +294,7 @@ var View = (function() {
             window.console.log(str);
         }
     };
+
     return {
         editor:  _editor,
         console: _console

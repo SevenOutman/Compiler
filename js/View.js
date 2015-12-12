@@ -70,7 +70,7 @@ var View = (function() {
         return null;
     }.bind(_editor.openedSessions);
 
-    _editor.openedSessions.sub("change", function() {
+    Sub(_editor.openedSessions).to("change", function() {
         for (var i = 0; i < this.length; i++) {
             var session = this[i],
                 id      = "session-" + session.id;
@@ -155,7 +155,7 @@ var View = (function() {
         if (null === session) {
             session = new FileSession(file);
             _editor.openedSessions.push(session);
-            _editor.openedSessions.pub("change");
+            Pub("change").on(_editor.openedSessions);
         }
 
         var id  = "toy-" + file.name,

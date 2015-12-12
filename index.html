@@ -122,8 +122,8 @@
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <!--<script src="js/jquery-2.1.4.min.js"></script>-->
-<script src="lib/datavjs/deps/jquery-1.7.1.js"></script>
-<!--<script src="lib/jquery-2.1.4.min.js"></script>-->
+<!--<script src="lib/datavjs/deps/jquery-1.7.1.js"></script>-->
+<script src="lib/jquery-2.1.4.min.js"></script>
 
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <!--<script src="lib/bootstrap/js/bootstrap.min.js"></script>-->
@@ -149,6 +149,7 @@
 <script src="lib/codemirror/mode/javascript/javascript.js"></script>
 <script src="lib/toy.js"></script>
 <script src="lib/console.js"></script>
+<script src="js/PubSub.js"></script>
 <script src="js/Storage.js"></script>
 <script src="js/Cache.js"></script>
 <script src="js/ToyFile.js"></script>
@@ -200,7 +201,7 @@
             return null;
         }.bind(Cache.files);
 
-        Cache.files.sub("change", function() {
+        Sub(Cache.files).to("change", function() {
             if ($("#file-list").length < 1 && this.length > 0) {
                 var $ul         = $("<ul></ul>").attr("id", "file-list"),
                     placeholder = $(".left-box .placeholder")[0];
@@ -235,7 +236,7 @@
                 Cache.files.push(new ToyFile(Cache.storedFileNames[i], file.content, false));
             }
         }
-        Cache.files.pub("change");
+        Pub("change").on(Cache.files);
 
 
         var last = Storage.getItem("last-editing");

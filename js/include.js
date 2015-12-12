@@ -28,43 +28,6 @@ Array.prototype.remove = function (elem) {
     }
 };
 
-Object.prototype.clone = function() {
-    var o = this instanceof Array ? [] : {};
-    for (var prop in this) {
-        var val = this[prop];
-        if (typeof {} === typeof val && null !== val) {
-            o[prop] = arguments.callee.apply(val);
-        } else {
-            o[prop] = val;
-        }
-    }
-    return o;
-};
-
-Object.prototype._subs = {};
-
-Object.prototype.sub = function(type, act) {
-    if ("function" === typeof act) {
-        if (undefined === this._subs[type]) {
-            this._subs[type] = [];
-        }
-        this._subs[type].push(act.bind(this));
-    }
-};
-
-Object.prototype.unsub = function(type) {
-    if (undefined !== this._subs[type]) {
-        delete this._subs[type];
-    }
-};
-
-Object.prototype.pub = function(type) {
-    if (undefined !== this._subs[type] && this._subs[type] instanceof Array) {
-        for (var i = 0; i < this._subs[type].length; i++) {
-            this._subs[type][i]();
-        }
-    }
-};
 
 Math.mid = function(x, y, z) {
     if (arguments.length != 3) {

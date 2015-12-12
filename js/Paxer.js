@@ -88,11 +88,13 @@ var Lexer = {
         function tryMatch (input) {
             var rule;
             for (rule in rules) {
-                if (input.match(rules[rule].regExp)) {
-                    return {
-                        "lexem": input,
-                        "type": rules[rule].type,
-                        "position": pointer.get()
+                if (rules.hasOwnProperty(rule)) {
+                    if (input.match(rules[rule].regExp)) {
+                        return {
+                            "lexem": input,
+                            "type": rules[rule].type,
+                            "position": pointer.get()
+                        }
                     }
                 }
             }

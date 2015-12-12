@@ -18,6 +18,15 @@ button:focus:active {
     outline: none;
 }
 
+a,
+a:hover,
+a:active,
+a:visited,
+a:focus,
+a:focus:active {
+    outline: none;
+}
+
 .CodeMirror {
     height: 100%;
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace !important;
@@ -229,6 +238,8 @@ button:focus:active {
     text-align: center;
     white-space: nowrap;
     color: rgb(187, 187, 187);
+    cursor: default;
+    -webkit-user-select: none;
 }
 
 .left-box {
@@ -458,4 +469,25 @@ button:focus:active {
     font-size: 10px;
     line-height: 10px;
     cursor: default;
+}
+
+/*------ context.css -------*/
+.dropdown-context::after, .dropdown-context::before {
+    display: none;
+}
+
+.dropdown-context {
+    background: rgba(60, 63, 65, .99);
+    border-radius: 0;
+    -webkit-box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
+}
+
+.dropdown-context > li > a {
+    color: rgb(183, 183, 183);
+}
+.dropdown-context>li>a:hover {
+    color: rgb(249, 249, 249);
+    background: rgb(47, 99, 198);
 }

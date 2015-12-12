@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="lib/codemirror/theme/dracula.css">
     <link rel="stylesheet" href="lib/codemirror/addon/dialog/dialog.css">
     <link rel="stylesheet" href="lib/codemirror/addon/scroll/simplescrollbars.css">
+    <link rel="stylesheet" href="lib/contextjs/context.bootstrap.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -24,6 +25,7 @@
 </head>
 <body>
 <div class="wrapper">
+    <div id="tree-mask"></div>
     <div id="resizing-mask"></div>
     <nav class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
         <div class="container-fluid" style="padding-right: 15px">
@@ -155,6 +157,7 @@
 <script src="js/ToyFile.js"></script>
 <script src="js/View.js"></script>
 <script src="js/Paxer.js"></script>
+<script src="lib/contextjs/context.js"></script>
 <script src="js/script.js"></script>
 <script>
 
@@ -219,6 +222,8 @@
                             $self.siblings(".active").removeClass("active");
                             $self.addClass("active");
                         }
+                    }).on("contextmenu", function() {
+                        $(this).trigger("click");
                     }).on("dblclick", (function(file) {
                         return function() {
                             View.editor.openFile(file);
@@ -313,89 +318,102 @@
                     View.console.log(lexer.getErrMsg());
                 }
             }
-            ;
+        }
 
-            $(".tab-new").on("click", function() {
-                View.editor.newFile();
-            });
+        $(".tab-new").on("click", function() {
+            View.editor.newFile();
+        });
 
-            var fr      = new FileReader,
+        var fr      = new FileReader,
+            tmpFile = null;
+        fr.onload = function() {
+            if (null !== tmpFile) {
+                tmpFile.content = this.result;
+                Cache.files.push(tmpFile);
+                Cache.files.pub("change");
+                View.editor.openFile(tmpFile);
+                $("#toy-" + tmpFile.id).trigger("click");
                 tmpFile = null;
-            fr.onload = function() {
-                if (null !== tmpFile) {
-                    tmpFile.content = this.result;
-                    Cache.files.push(tmpFile);
-                    Cache.files.pub("change");
-                    View.editor.openFile(tmpFile);
-                    $("#toy-" + tmpFile.id).trigger("click");
-                    tmpFile = null;
-                }
-            };
-            document.getElementById("source_file").onchange = function() {
-                var file = this.files[0];
-                tmpFile = new ToyFile(file.name.replace(/(\.\w+)?$/, ".toy"));
-                tmpFile.isNewFile = false;
-                fr.readAsText(file);
-            };
-            document.getElementById("btn-save").onclick = function() {
-                View.editor.save();
-            };
-            var moving_resizer = null,
-                mouseOffsetY   = 0,
-                mouseOffsetX   = 0;
-            [].forEach.call($(".resizer"), function(el) {
-                el.addEventListener("mousedown", function(e) {
-                    moving_resizer = el;
-                    mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
-                    mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
-                    $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
+            }
+        };
+        document.getElementById("source_file").onchange = function() {
+            var file = this.files[0];
+            tmpFile = new ToyFile(file.name.replace(/(\.\w+)?$/, ".toy"));
+            tmpFile.isNewFile = false;
+            fr.readAsText(file);
+        };
+        document.getElementById("btn-save").onclick = function() {
+            View.editor.save();
+        };
+        var moving_resizer = null,
+            mouseOffsetY   = 0,
+            mouseOffsetX   = 0;
+        [].forEach.call($(".resizer"), function(el) {
+            el.addEventListener("mousedown", function(e) {
+                moving_resizer = el;
+                mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
+                mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
+                $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
 
-                }, false);
-            });
-            document.addEventListener("mouseup", function() {
-                moving_resizer = null;
-                $("#resizing-mask").hide();
             }, false);
-            document.getElementById("resizing-mask").addEventListener("mousemove", function(e) {
-                if (moving_resizer instanceof HTMLElement) {
-                    var $box = $(moving_resizer).parent(".resizable");
-                    if ($box[0] instanceof HTMLElement) {
-                        var $main   = $("#main"),
-                            $left   = $(".left-box"),
-                            $right  = $(".right-box"),
-                            $center = $(".center-box"),
-                            $bottom = $(".bottom-box"),
-                            $editor = $(".editor-box");
-                        if ($box.hasClass("left-box")) {
-                            var mouseX    = e.clientX,
-                                leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
-                                        1, $main.width() - $right.width() - 1);
+        });
+        document.addEventListener("mouseup", function() {
+            moving_resizer = null;
+            $("#resizing-mask").hide();
+        }, false);
+        document.getElementById("resizing-mask").addEventListener("mousemove", function(e) {
+            if (moving_resizer instanceof HTMLElement) {
+                var $box = $(moving_resizer).parent(".resizable");
+                if ($box[0] instanceof HTMLElement) {
+                    var $main   = $("#main"),
+                        $left   = $(".left-box"),
+                        $right  = $(".right-box"),
+                        $center = $(".center-box"),
+                        $bottom = $(".bottom-box"),
+                        $editor = $(".editor-box");
+                    if ($box.hasClass("left-box")) {
+                        var mouseX    = e.clientX,
+                            leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
+                                    1, $main.width() - $right.width() - 1);
 
-                            $box.width(leftWidth);
-                            $center.css("margin-left", leftWidth + "px");
+                        $box.width(leftWidth - 1);
+                        $center.css("margin-left", leftWidth + "px");
 
-                        }
-                        if ($box.hasClass("right-box")) {
-                            var mouseX     = e.clientX,
-                                rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
-                                        1, $main.width() - $left.width() - 1);
-                            $box.width(rightWidth);
-                            $center.css("margin-right", rightWidth + "px");
-                        }
-                        if ($box.hasClass("bottom-box")) {
-                            var mouseY      = e.clientY,
-                                upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
-                                        0, $center.height() - $box.children(".box-header").height() - 1);
-                            $box.height($center.height() - upperHeight);
-                            $editor.height(upperHeight);
-                            View.console.scollToEnd();
-                        }
+                    }
+                    if ($box.hasClass("right-box")) {
+                        var mouseX     = e.clientX,
+                            rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
+                                    1, $main.width() - $left.width() - 1);
+                        $box.width(rightWidth - 1);
+                        $center.css("margin-right", rightWidth + "px");
+                    }
+                    if ($box.hasClass("bottom-box")) {
+                        var mouseY      = e.clientY,
+                            upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
+                                    0, $center.height() - $box.children(".box-header").height() - 1);
+                        $box.height($center.height() - upperHeight);
+                        $editor.height(upperHeight);
+                        View.console.scollToEnd();
                     }
                 }
-            }, false);
-            View.console.log("Compiler lauched at " + new Date().toTimeString());
-        }
-    }
+            }
+        }, false);
+        $(document).on("contextmenu", function () {
+            return false;
+        });
+        context.init({
+            fadeSpeed: 0,
+            above: "auto",
+            preventDoubleContext: true,
+//            compress: true
+        });
+        context.attach("#file-list", [
+            {
+                text: "Delete"
+            }
+        ]);
+        View.console.log("Compiler lauched at " + new Date().toTimeString());
+    };
 </script>
 </body>
 

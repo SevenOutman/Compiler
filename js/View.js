@@ -4,16 +4,16 @@
 var View = (function() {
     var _editor = {};
     _editor.cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
-        lineNumbers:       true,
-        mode:              "toy",
-        indentUnit:        4,
-        theme:             "monokai-so",
-        autoCloseBrackets: true,
-        matchBrackets:     true,
-        styleActiveLine:   true,
+        lineNumbers:             true,
+        mode:                    "toy",
+        indentUnit:              4,
+        theme:                   "monokai-so",
+        autoCloseBrackets:       true,
+        matchBrackets:           true,
+        styleActiveLine:         true,
         showCursorWhenSelecting: true,
-        scrollbarStyle:    "overlay",
-        selectionPointer: true
+        scrollbarStyle:          "overlay",
+        selectionPointer:        true
     });
     _editor.cm.on("change", function(cm, change) {
         var session = _editor.currentSession();
@@ -304,12 +304,12 @@ var View = (function() {
         }
     };
 
-    _console.popup = function () {
+    _console.popup = function() {
         $(".editor-box").css("height", "70%");
         $(".bottom-box").css("height", "30%");
     };
 
-    _console.fold = function () {
+    _console.fold = function() {
         $(".editor-box").css("height", "calc(100% - 23px)");
         $(".bottom-box").height(23);
     };

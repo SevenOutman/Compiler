@@ -8,7 +8,7 @@ var SymbolTable = {
             } else {
                 updateSymbol(symbol);
             }
-        }
+        };
         addSymbol = function(symbol) {
             table[symbol.lexem] = {
                 'lexem': symbol.lexem,
@@ -16,19 +16,19 @@ var SymbolTable = {
                 'value': Invalid,
                 'positions': [symbol.position]
             };
-        }
+        };
         updateSymbol = function(symbol) {
             table[symbol.lexem].positions.push(symbol.position);
-        }
+        };
         symbolTable.reset = function() {
             table = {};
-        }
+        };
         symbolTable.get = function() {
             return table;
-        }
+        };
         return symbolTable;
     }
-}
+};
 var Lexer = {
     new: function() {
         var rules = [
@@ -65,15 +65,15 @@ var Lexer = {
                 var first_row = 0, first_col = 0, last_row = 0, last_col = 0;
                 pointer.shift = function() {
                     last_col++;
-                }
+                };
                 pointer.newLine = function() {
                     last_col=0;
                     last_row++;
-                }
+                };
                 pointer.reduce = function() {
                     first_col = last_col;
                     first_row = last_row;
-                }
+                };
                 pointer.get = function() {
                     return {
                         'first_row': first_row,
@@ -81,10 +81,10 @@ var Lexer = {
                         'last_row':  last_row,
                         'last_col':  last_col,
                     }
-                }
+                };
                 return pointer;
             }
-        }
+        };
         var pointer = Pointer.new();
         function tryMatch (input) {
             for (var i=0; i<rules.length; i++) {
@@ -105,11 +105,11 @@ var Lexer = {
             while(i<input.length && input[i].match(/\s/)!=null){
                 if (null != input[i].match(/\n/)) {
                     pointer.newLine();
-                };
+                }
                 if (null != input[i].match(/ /)) {
                     pointer.shift();
                     pointer.reduce();
-                };
+                }
                 i++;
             }
             return i;
@@ -120,7 +120,7 @@ var Lexer = {
         var lexer = {};
         lexer.getErrMsg = function() {
             return errorMsg;
-        }
+        };
         lexer.lex = function (input) {
             errorMsg = "";
             symbolTable.reset();
@@ -136,7 +136,7 @@ var Lexer = {
                     if (curLexem=='') {
                         errorMsg = "UNDEFINED SYMBOL '"+next+"' AT ROW "+pointer.get().first_row+", COL "+pointer.get().first_col;
                         return false;
-                    };
+                    }
                     var symbol = tryMatch(curLexem);
                     lexSequence.push(symbol);
                     symbolTable.handle(symbol);
@@ -153,7 +153,7 @@ var Lexer = {
                 var symbol = tryMatch(curLexem);
                 symbolTable.handle(symbol);
                 lexSequence.push(symbol);
-            };
+            }
             pointer.reduce();
             lexSequence.push({
                 "lexem": "$",
@@ -162,30 +162,30 @@ var Lexer = {
                 "position": pointer.get()
             });
             return true;
-        }
+        };
         lexer.getSequence = function () {
             return lexSequence;
-        }
+        };
         lexer.getSymbolTable = function () {
             return symbolTable.get();
-        }
+        };
         lexer.getSequenceByType = function () {
             var str = "", s;
             for (var i = 0; i < lexSequence.length; i++) {
                 str+=lexSequence[i].type+' '
             }
             return str;
-        }
+        };
         lexer.getSequenceByLexem = function () {
             var str = "", s;
             for (var i = 0; i < lexSequence.length; i++) {
                 str+=lexSequence[i].lexem+' '
             }
             return str;
-        }
+        };
         return lexer;
     }
-}
+};
 var Parser = {
     new: function() {
         var rules = [
@@ -225,12 +225,12 @@ var Parser = {
             {'interminal': 'simpleexpr'     ,             'product': ['ID'                                                         ]},  // 33
             {'interminal': 'simpleexpr'     ,             'product': ['NUM'                                                        ]},  // 34
             {'interminal': 'simpleexpr'     ,             'product': ['(', 'arithexpr', ')'                                        ]}   // 35
-        ]
+        ];
         function isTerminal(symbol) {
             for (var i = 0; i < rules.length; i++) {
                 if (rules[i].interminal==symbol) {
                     return false;
-                };
+                }
             }
             return true;
         }
@@ -253,7 +253,7 @@ var Parser = {
             'multexpr'       : {'{':  0, '}':  0, 'if':  0, '(': 29, ')':  0, 'then':  0, 'else':  0, 'while':  0, 'int':  0, 'real':  0, 'ID': 29, 'NUM': 29, ',':  0, ';':  0, '+':  0, '-':  0, '*':  0, '/':  0, '=':  0, '<':  0, '>':  0, '<=':  0, '>=':  0, '==':  0, '$':  0},
             'multexprprime'  : {'{':  0, '}':  0, 'if':  0, '(':  0, ')': 32, 'then':  0, 'else':  0, 'while':  0, 'int':  0, 'real':  0, 'ID':  0, 'NUM':  0, ',':  0, ';': 32, '+': 32, '-': 32, '*': 30, '/': 31, '=':  0, '<': 32, '>': 32, '<=': 32, '>=': 32, '==': 32, '$':  0},
             'simpleexpr'     : {'{':  0, '}':  0, 'if':  0, '(': 35, ')':  0, 'then':  0, 'else':  0, 'while':  0, 'int':  0, 'real':  0, 'ID': 33, 'NUM': 34, ',':  0, ';':  0, '+':  0, '-':  0, '*':  0, '/':  0, '=':  0, '<':  0, '>':  0, '<=':  0, '>=':  0, '==':  0, '$':  0},
-        }
+        };
         var Node = {
             new: function(nodeName) {
                 var node = {};
@@ -267,20 +267,20 @@ var Parser = {
                 }
                 return node;
             }
-        }
+        };
         var parser = {};
         var movements = [];
         var errorMsg;
         var root;
         parser.getRoot = function() {
             return root;
-        }
+        };
         parser.getErrMsg = function() {
             return errorMsg;
-        }
+        };
         parser.getMovements = function() {
             return movements;
-        }
+        };
         function setLength(str, length) {
             while(str.length < length){
                 str+=' '
@@ -309,11 +309,11 @@ var Parser = {
                     str = str.substring(0, 20) + ' ...'
                 }
                 len1 = len1<str.length?str.length:len1;
-                _move.push(str)
+                _move.push(str);
 
                 str = "";
                 if (move[2].interminal!=undefined) {
-                    str += move[2].interminal+' -> '
+                    str += move[2].interminal+' -> ';
                     if (move[2].product.length == 0) {
                         str+='*nothing'
                     } else {
@@ -335,11 +335,11 @@ var Parser = {
                 s += [arr[i][0], arr[i][1], arr[i][2]].join('   | ') + '\n';
             }
             return s;
-        }
+        };
         parser.generateSequentialNodes = function () {
             var countNode = 0;
             return digNode(null, parser.getRoot());
-        }
+        };
         function digNode(fartherID, node) {
             var thisID = countNode++;
             if (typeof(node)==typeof(Node.new())) {
@@ -375,12 +375,12 @@ var Parser = {
             while(top!='$'){
                 if (debug && limit--==0) {
                     return;
-                };
+                }
                 if (debug) {
                     console.log(stack)
                     console.log(top+'  '+next)
                     console.log('')
-                };
+                }
                 movements.push([stack.slice(), input.slice(), {}])
                 if (top==next) {
                     stack.pop();
@@ -398,8 +398,8 @@ var Parser = {
                     for (var i in table[top]) {
                         if (table[top][i]!=0) {
                             expected+='\''+i+'\'/';
-                        };
-                    };
+                        }
+                    }
                     expected = expected.substring(0, expected.length - 1)
                     errorMsg = 'EXPECTING '+expected+' AT ROW '+input[0].position.first_row+', COL '+input[0].position.first_col;
                     return false;
@@ -413,7 +413,7 @@ var Parser = {
                         var newNode = Node.new(rules[rule].product[i]);
                         shifted.pushSubNode(newNode);
                         toBuild.unshift(newNode);
-                    };
+                    }
                     movements[movements.length-1][2] = rules[rule]
                 }
                 top = stack[stack.length-1];
@@ -423,4 +423,4 @@ var Parser = {
         }
         return parser;
     }
-}
+};

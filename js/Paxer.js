@@ -13,6 +13,7 @@ var SymbolTable = {
             table[symbol.lexem] = {
                 'lexem': symbol.lexem,
                 'type': symbol.type,
+                'value': Invalid,
                 'positions': [symbol.position]
             };
         }
@@ -92,6 +93,7 @@ var Lexer = {
                         return {
                             "lexem": input,
                             "type": rules[i].type,
+                            "value": Invalid,
                             "position": pointer.get()
                         }
                     }
@@ -156,6 +158,7 @@ var Lexer = {
             lexSequence.push({
                 "lexem": "$",
                 "type": "$",
+                "value": Invalid,
                 "position": pointer.get()
             });
             return true;
@@ -291,40 +294,45 @@ var Parser = {
             for (var i = 0; i < movements.length; i++) {
                 move = movements[i];
                 _move = [];
-                str = "";
-                for (var j = 0; j < move[0].length; j++) {
-                    str+=move[0][j]+' ';
-                }
+
+                str = move[0].join('  ');
                 len0 = len0<str.length?str.length:len0;
                 _move.push(str);
+
                 str = "";
                 for (var j = 0; j < move[1].length; j++) {
                     str+=move[1][j].lexem+' ';
                 }
+                var tail = str.indexOf(';')>-1?';':'';
+                str = str.split(';')[0] + tail;
+                if (str.length>20) {
+                    str = str.substring(0, 20) + ' ...'
+                }
                 len1 = len1<str.length?str.length:len1;
                 _move.push(str)
+
                 str = "";
                 if (move[2].interminal!=undefined) {
                     str += move[2].interminal+' -> '
                     if (move[2].product.length == 0) {
                         str+='*nothing'
-                    };
-                    for (var j = 0; j < move[2].product.length; j++) {
-                        str += move[2].product[j]+' '
-                    };
+                    } else {
+                        str += move[2].product.join(' ')
+                    }
                     len2 = len2<str.length?str.length:len2;
                 }
                 _move.push(str)
+
                 arr.push(_move)
             }
             for (var i = 0; i < arr.length; i++) {
-                arr[i][0] = setLength(arr[i][0], len0)
-                arr[i][1] = setLength(arr[i][1], len1)
-                arr[i][2] = setLength(arr[i][2], len2)
+                arr[i][0] = setLength(arr[i][0], len0);
+                arr[i][1] = setLength(arr[i][1], len1);
+                arr[i][2] = setLength(arr[i][2], len2);
             }
-            var s='\n'+setLength('STACK', len0)+' | '+setLength('INPUT', len1)+' | '+setLength('ACTION', len2)+'\n';
+            var s='\n'+[setLength('STACK', len0), setLength('INPUT', len1), setLength('ACTION', len2)].join('   | ')+'\n';
             for (var i = 0; i < arr.length; i++) {
-                s=s + arr[i][0] + ' | ' + arr[i][1] + ' | ' + arr[i][2] + '  ' + '\n';
+                s += [arr[i][0], arr[i][1], arr[i][2]].join('   | ') + '\n';
             }
             return s;
         }
@@ -381,7 +389,7 @@ var Parser = {
                     toBuild.shift();
                     next = input[0].type;
                 } else if (isTerminal(top)) {
-                    console.log('CAME UP WITH UNEXPECTED TERMINAL '+input.lexem)
+                    console.log('CAME UP WITH UNEXPECTED TERMINAL '+input[0].lexem)
                     console.log(stack)
                     console.log(input)
                     return false;
@@ -410,6 +418,7 @@ var Parser = {
                 }
                 top = stack[stack.length-1];
             }
+            movements.push([stack.slice(), input.slice(), {}])
             return true;
         }
         return parser;

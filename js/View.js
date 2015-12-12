@@ -256,8 +256,7 @@ var View = (function() {
         theme:          "monokai-so",
         mode:           "console",
         readOnly:       "nocursor",
-        scrollbarStyle: null
-
+        scrollbarStyle: "overlay",
     });
 
     _console.scollToEnd = function() {

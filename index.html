@@ -126,16 +126,19 @@
 <!--<script src="js/jquery-2.1.4.min.js"></script>-->
 <!--<script src="lib/datavjs/deps/jquery-1.7.1.js"></script>-->
 <script src="lib/jquery-2.1.4.min.js"></script>
-
+<script>
+    $.browser = {};
+    $.browser.msie = !$.support.leadingWhitespace;
+</script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
-<!--<script src="lib/bootstrap/js/bootstrap.min.js"></script>-->
+<script src="lib/bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="lib/datavjs/deps/d3.min.js"></script>
-<!--<script type="text/javascript" src="lib/datavjs/deps/d3.csv.js"></script>-->
-<!--<script type="text/javascript" src="lib/datavjs/deps/d3.layout.min.js"></script>-->
-<!--<script type="text/javascript" src="lib/datavjs/deps/raphael.min.js"></script>-->
-<!--<script src="lib/datavjs/deps/eventproxy.js"></script>-->
-<!--<script src="lib/datavjs/datav.js"></script>-->
-<!--<script src="lib/datavjs/libs/tree.js"></script>-->
+<script type="text/javascript" src="lib/datavjs/deps/d3.csv.js"></script>
+<script type="text/javascript" src="lib/datavjs/deps/d3.layout.min.js"></script>
+<script type="text/javascript" src="lib/datavjs/deps/raphael.min.js"></script>
+<script src="lib/datavjs/deps/eventproxy.js"></script>
+<script src="lib/datavjs/datav.js"></script>
+<script src="lib/datavjs/libs/tree.js"></script>
 <script src="js/include.js"></script>
 <script src="js/Symbol.js"></script>
 <script src="js/Lexical.js"></script>
@@ -189,8 +192,8 @@
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
-        var lexer = Lexer.new();
-        var parser = Parser.new();
+//        var lexer = Lexer.new();
+//        var parser = Parser.new();
         document.getElementById("cover-open").addEventListener("click", function() {
             View.editor.newFile();
         }, false);
@@ -290,8 +293,7 @@
         };
 
         document.getElementById("btn-compile").onclick = function() {
-            // var processed = lexical.run(View.editor.getContent());
-            // ll.run(processed);
+
             var session = View.editor.currentSession();
             if (null !== session) {
 
@@ -306,19 +308,20 @@
                 } else {
                     View.console.log("Compile 'untitled'...");
                 }
-
-                if (lexer.lex(View.editor.getContent())) {
-                    if (parser.parse(lexer.getSequence())) {
-                        View.console.log(parser.getMovementsF());
-                        console.log(lexer.getSymbolTable())
-                    } else {
-                        View.console.log(parser.getErrMsg());
-                    }
-                } else {
-                    View.console.log(lexer.getErrMsg());
-                }
+                var processed = (new LexicalAnalyzer).run(View.editor.getContent());
+                (new LLParser).run(processed);
+//                if (lexer.lex(View.editor.getContent())) {
+//                    if (parser.parse(lexer.getSequence())) {
+//                        View.console.log(parser.getMovementsF());
+//                        console.log(lexer.getSymbolTable())
+//                    } else {
+//                        View.console.log(parser.getErrMsg());
+//                    }
+//                } else {
+//                    View.console.log(lexer.getErrMsg());
+//                }
             }
-        }
+        };
 
         $(".tab-new").on("click", function() {
             View.editor.newFile();
@@ -398,12 +401,12 @@
                 }
             }
         }, false);
-        $(document).on("contextmenu", function () {
+        $(document).on("contextmenu", function() {
             return false;
         });
         context.init({
-            fadeSpeed: 0,
-            above: "auto",
+            fadeSpeed:            0,
+            above:                "auto",
             preventDoubleContext: true,
 //            compress: true
         });

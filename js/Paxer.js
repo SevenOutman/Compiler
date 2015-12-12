@@ -86,13 +86,12 @@ var Lexer = {
         }
         var pointer = Pointer.new();
         function tryMatch (input) {
-            var rule;
-            for (rule in rules) {
-                if (rules.hasOwnProperty(rule)) {
-                    if (input.match(rules[rule].regExp)) {
+            for (var i=0; i<rules.length; i++) {
+                if (rules.hasOwnProperty(i)) {
+                    if (input.match(rules[i].regExp)) {
                         return {
                             "lexem": input,
-                            "type": rules[rule].type,
+                            "type": rules[i].type,
                             "position": pointer.get()
                         }
                     }
@@ -169,15 +168,15 @@ var Lexer = {
         }
         lexer.getSequenceByType = function () {
             var str = "", s;
-            for(s in lexSequence) {
-                str+=lexSequence[s].type+' '
+            for (var i = 0; i < lexSequence.length; i++) {
+                str+=lexSequence[i].type+' '
             }
             return str;
         }
         lexer.getSequenceByLexem = function () {
             var str = "", s;
-            for(s in lexSequence) {
-                str+=lexSequence[s].lexem+' '
+            for (var i = 0; i < lexSequence.length; i++) {
+                str+=lexSequence[i].lexem+' '
             }
             return str;
         }
@@ -225,9 +224,8 @@ var Parser = {
             {'interminal': 'simpleexpr'     ,             'product': ['(', 'arithexpr', ')'                                        ]}   // 35
         ]
         function isTerminal(symbol) {
-            var rule;
-            for(rule in rules) {
-                if (rules[rule].interminal==symbol) {
+            for (var i = 0; i < rules.length; i++) {
+                if (rules[i].interminal==symbol) {
                     return false;
                 };
             }
@@ -290,18 +288,18 @@ var Parser = {
             var arr = [];
             var len0 = 0,len1 = 0,len2 = 0;
             var move, _move, str;
-            for(m in movements) {
-                move = movements[m];
+            for (var i = 0; i < movements.length; i++) {
+                move = movements[i];
                 _move = [];
                 str = "";
-                for(s in move[0]) {
-                    str+=move[0][s]+' ';
+                for (var j = 0; j < move[0].length; j++) {
+                    str+=move[0][j]+' ';
                 }
                 len0 = len0<str.length?str.length:len0;
                 _move.push(str);
                 str = "";
-                for(i in move[1]) {
-                    str+=move[1][i].lexem+' ';
+                for (var j = 0; j < move[1].length; j++) {
+                    str+=move[1][j].lexem+' ';
                 }
                 len1 = len1<str.length?str.length:len1;
                 _move.push(str)
@@ -311,22 +309,22 @@ var Parser = {
                     if (move[2].product.length == 0) {
                         str+='*nothing'
                     };
-                    for (var i = 0; i < move[2].product.length; i++) {
-                        str += move[2].product[i]+' '
+                    for (var j = 0; j < move[2].product.length; j++) {
+                        str += move[2].product[j]+' '
                     };
                     len2 = len2<str.length?str.length:len2;
                 }
                 _move.push(str)
                 arr.push(_move)
             }
-            for(i in arr) {
+            for (var i = 0; i < arr.length; i++) {
                 arr[i][0] = setLength(arr[i][0], len0)
                 arr[i][1] = setLength(arr[i][1], len1)
                 arr[i][2] = setLength(arr[i][2], len2)
             }
             var s='\n'+setLength('STACK', len0)+' | '+setLength('INPUT', len1)+' | '+setLength('ACTION', len2)+'\n';
-            for(j in arr) {
-                s=s + arr[j][0] + ' | ' + arr[j][1] + ' | ' + arr[j][2] + '  ' + '\n';
+            for (var i = 0; i < arr.length; i++) {
+                s=s + arr[i][0] + ' | ' + arr[i][1] + ' | ' + arr[i][2] + '  ' + '\n';
             }
             return s;
         }
@@ -340,10 +338,10 @@ var Parser = {
                 var sequentialNodes = [];
                 var cur = [thisID, node.name, 0, fartherID];
                 var subNodes = node.subNodes;
-                for (n in subNodes) {
-                    var subSqu = digNode(thisID, subNodes[n]);
-                    for(i in subSqu) {
-                        sequentialNodes.push(subSqu[i]);
+                for (var i = 0; i < subNodes.length; i++) {
+                    var subSqu = digNode(thisID, subNodes[i]);
+                    for (var j = 0; j < subSqu.length; j++) {
+                        sequentialNodes.push(subSqu[j]);
                     }
                     cur[2]+=subSqu[0][2] + 1;
                 }
@@ -389,7 +387,7 @@ var Parser = {
                     return false;
                 } else if (table[top][next] == 0) {
                     var expected = "";
-                    for(i in table[top]){
+                    for (var i in table[top]) {
                         if (table[top][i]!=0) {
                             expected+='\''+i+'\'/';
                         };

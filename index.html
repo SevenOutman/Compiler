@@ -298,8 +298,8 @@
                 } else {
                     View.console.log("Compile 'untitled'...");
                 }
-                
-                if(lexer.lex(editor.getContent())) {
+
+                if(lexer.lex(View.editor.getContent())) {
                     if(parser.parse(lexer.getSequence())){
                         View.console.log(parser.getMovementsF());
                     } else {

@@ -150,8 +150,7 @@
 <script src="js/Cache.js"></script>
 <script src="js/ToyFile.js"></script>
 <script src="js/View.js"></script>
-<script src="js/parser.js"></script>
-<script src="js/simpleLexer.js"></script>
+<script src="js/Paxer.js"></script>
 <script src="js/script.js"></script>
 <script>
 
@@ -183,6 +182,8 @@
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
+        var lexer = Lexer.new();
+        var parser = Parser.new();
         document.getElementById("cover-open").addEventListener("click", function() {
             View.editor.newFile();
         }, false);
@@ -297,13 +298,16 @@
                 } else {
                     View.console.log("Compile 'untitled'...");
                 }
-                try {
-                    parser._parse(View.editor.getContent());
-                    View.console.log(parser.getProgressF());
-                } catch (err) {
-                    View.console.error(err.toString());
+                
+                if(lexer.lex(editor.getContent())) {
+                    if(parser.parse(lexer.getSequence())){
+                        View.console.log(parser.getMovementsF());
+                    } else {
+                        View.console.log(parser.getErrMsg());
+                    }
+                } else {
+                    View.console.log(lexer.getErrMsg());
                 }
-
             }
         };
 

@@ -303,16 +303,14 @@
                 }
 
                 if (lexer.lex(View.editor.getContent())) {
-
-                    if (lexer.lex(View.editor.getContent())) {
-                        if (parser.parse(lexer.getSequence())) {
-                            View.console.log(parser.getMovementsF());
-                        } else {
-                            View.console.log(parser.getErrMsg());
-                        }
+                    if (parser.parse(lexer.getSequence())) {
+                        View.console.log(parser.getMovementsF());
+                        console.log(lexer.getSymbolTable())
                     } else {
-                        View.console.log(lexer.getErrMsg());
+                        View.console.log(parser.getErrMsg());
                     }
+                } else {
+                    View.console.log(lexer.getErrMsg());
                 }
             }
             ;

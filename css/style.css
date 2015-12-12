@@ -436,7 +436,7 @@ button:focus:active {
 }
 
 .console-container {
-    height: 100%;
+    height: calc(100% - 22px);
     overflow: hidden;
 }
 

@@ -244,6 +244,7 @@ function LLParser() {
 
             }
         }
+        console.log(_treeArr);
 
 
         console.log("Parsing finished", _tree.root, _treeArr);

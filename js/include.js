@@ -1,7 +1,7 @@
 /**
  * Created by Doma on 15/11/27.
  */
-
+const Invalid = undefined;
 
 Array.prototype.has = function(element) {
     for (var i = 0; i < this.length; i++) {

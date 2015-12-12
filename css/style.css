@@ -170,7 +170,7 @@ button:focus:active {
 }
 
 .resizer.horizontal {
-    height: 10px;
+    height: 12px;
     width: 100%;
     /*border-top: 1px solid #000;*/
     /*border-bottom: 1px solid rgba(0, 0, 0, .5);*/
@@ -321,6 +321,8 @@ button:focus:active {
     white-space: nowrap;
     z-index: 195;
     text-shadow: 1px 1px 0 #000;
+    cursor: default;
+    -webkit-user-select: none;
 }
 
 #cover-open {

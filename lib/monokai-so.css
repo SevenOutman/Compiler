@@ -8,7 +8,8 @@
 }
 
 .cm-s-monokai-so div.CodeMirror-selected {
-    background: #49483E;
+    /*background: #49483E;*/
+    background: rgba(33, 66, 131, .8);
 }
 
 .cm-s-monokai-so .CodeMirror-line::selection, .cm-s-monokai-so .CodeMirror-line > span::selection, .cm-s-monokai-so .CodeMirror-line > span > span::selection {
@@ -20,7 +21,6 @@
     /*background: rgba(73, 72, 62, .99);*/
     background: rgb(33, 66, 131);
 }
-
 
 .cm-s-monokai-so .CodeMirror-gutters {
     /*background: #272822;*/

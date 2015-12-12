@@ -10,9 +10,10 @@ var View = (function() {
         theme:             "monokai-so",
         autoCloseBrackets: true,
         matchBrackets:     true,
-        autofocus:         true,
         styleActiveLine:   true,
-        scrollbarStyle:    "overlay"
+        showCursorWhenSelecting: true,
+        scrollbarStyle:    "overlay",
+        selectionPointer: true
     });
     _editor.cm.on("change", function(cm, change) {
         var session = _editor.currentSession();
@@ -114,8 +115,7 @@ var View = (function() {
                 _editor.setContent("");
                 $(".editor-placeholder").show();
                 $("#cursor-position").hide();
-                $(".editor-box").css("height", "calc(100% - 23px)");
-                $(".bottom-box").height(23);
+                _console.fold();
             }
             return _current;
         }
@@ -303,6 +303,16 @@ var View = (function() {
         } else {
             window.console.log(str);
         }
+    };
+
+    _console.popup = function () {
+        $(".editor-box").css("height", "70%");
+        $(".bottom-box").css("height", "30%");
+    };
+
+    _console.fold = function () {
+        $(".editor-box").css("height", "calc(100% - 23px)");
+        $(".bottom-box").height(23);
     };
 
     return {

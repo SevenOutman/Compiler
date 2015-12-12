@@ -1,7 +1,6 @@
 /**
  * Created by Doma on 15/11/27.
  */
-const Invalid = undefined;
 
 const TokenType = {
     Keyword:   1,
@@ -12,6 +11,7 @@ const TokenType = {
     Unknown:   6,
     End:       7
 };
+
 
 function TokenPosition(l, c) {
     this.line = l;

@@ -10,13 +10,13 @@ function ToyFile(name, content, isNew) {
 
 ToyFile.prototype.extension = ".toy";
 
-ToyFile.prototype.fileName = function () {
+ToyFile.prototype.fileName = function() {
     return this.isNewFile ? this.name : this.name + this.extension;
 };
 
-ToyFile.prototype.serialize = function () {
+ToyFile.prototype.serialize = function() {
     return JSON.stringify({
-        name: this.name,
+        name:    this.name,
         content: this.content,
     });
 };

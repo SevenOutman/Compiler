@@ -81,7 +81,7 @@ var Lexer = {
                 pointer.reset = function () {
                     first_row = 1;
                     first_col = 0;
-                    last_row  = 0;
+                    last_row  = 1;
                     last_col  = 0;
                 };
                 pointer.shift = function (step) {
@@ -334,7 +334,7 @@ var Parser = {
                         }
                     }
                     expected = expected.substring(0, expected.length - 1);
-                    errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
+                    errorMsg = 'EXPECTING ' + expected + ' BEFORE ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
                     return false;
                 } else if (table[top][next] > 0) {
                     stack.pop();
@@ -415,7 +415,7 @@ var Parser = {
                 arr[i][1] = padBlank(arr[i][1], len1);
                 arr[i][2] = padBlank(arr[i][2], len2);
             }
-            var s = '\n' + ([padBlank('STACK', len0), padBlank('INPUT', len1), padBlank('ACTION', len2)]).join('     ') + '\n';
+            var s = '\n' + ([padBlank('STACK', len0 - 2), padBlank('INPUT', len1), padBlank('ACTION', len2)]).join('     ') + '\n';
             var i;
             for (i = 0; i < arr.length; i += 1) {
                 s += ([arr[i][0], arr[i][1], arr[i][2]]).join('   | ') + '\n';

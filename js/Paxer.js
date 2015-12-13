@@ -2,8 +2,7 @@ var SymbolTable = {
     new: function () {
         var symbolTable = {};
         var tableD = {};
-        var tableA = [];
-        var indexA = {};
+        var tableA = [], indexA = {};
         var count = 0;
         symbolTable.handle = function (token) {
             if (tableD[token.lexeme] == undefined) {
@@ -32,7 +31,7 @@ var SymbolTable = {
         symbolTable.reset = function () {
             tableD = {};
             tableA = [];
-            count = 0;
+            count  = 0;
         };
         symbolTable.get = function () {
             return tableA;
@@ -42,39 +41,39 @@ var SymbolTable = {
         };
         symbolTable.getLength = function () {
             return count;
-        }
+        };
         return symbolTable;
     }
 };
 var Lexer = {
     new: function () {
         var rules = [
-            {regExp: /^int$/                   , abstract: 'int'   , type: 'keyword'   },
-            {regExp: /^real$/                  , abstract: 'real'  , type: 'keyword'   },
-            {regExp: /^if$/                    , abstract: 'if'    , type: 'keyword'   },
-            {regExp: /^then$/                  , abstract: 'then'  , type: 'keyword'   },
-            {regExp: /^else$/                  , abstract: 'else'  , type: 'keyword'   },
-            {regExp: /^while$/                 , abstract: 'while' , type: 'keyword'   },
-            {regExp: /^\($/                    , abstract: '('     , type: 'delimiter' },
-            {regExp: /^\)$/                    , abstract: ')'     , type: 'delimiter' },
-            {regExp: /^\{$/                    , abstract: '{'     , type: 'delimiter' },
-            {regExp: /^\}$/                    , abstract: '}'     , type: 'delimiter' },
-            {regExp: /^,$/                     , abstract: ','     , type: 'delimiter' },
-            {regExp: /^;$/                     , abstract: ';'     , type: 'delimiter' },
-            {regExp: /^\+$/                    , abstract: '+'     , type: 'delimiter' },
-            {regExp: /^-$/                     , abstract: '-'     , type: 'delimiter' },
-            {regExp: /^\*$/                    , abstract: '*'     , type: 'delimiter' },
-            {regExp: /^\/$/                    , abstract: '/'     , type: 'delimiter' },
-            {regExp: /^[a-zA-Z][a-zA-Z0-9]*$/  , abstract: 'ID'    , type: 'ID'        },
-            {regExp: /^<=$/                    , abstract: '<='    , type: 'operator'  },
-            {regExp: /^<$/                     , abstract: '<'     , type: 'operator'  },
-            {regExp: /^\=\=$/                  , abstract: '=='    , type: 'operator'  },
-            {regExp: /^>=$/                    , abstract: '>='    , type: 'operator'  },
-            {regExp: /^>$/                     , abstract: '>'     , type: 'operator'  },
-            {regExp: /^!=$/                    , abstract: '!='    , type: 'operator'  },
-            {regExp: /^\=$/                    , abstract: '='     , type: 'operator'  },
-            {regExp: /^[0-9]*\.[0-9]+$/        , abstract: 'NUM'   , type: 'NUM'       },
-            {regExp: /^[0-9]+\.?$/             , abstract: 'NUM'   , type: 'NUM'       }
+            {regExp: /^int$/,                   abstract: 'int',    type: 'keyword'     },
+            {regExp: /^real$/,                  abstract: 'real',   type: 'keyword'     },
+            {regExp: /^if$/,                    abstract: 'if',     type: 'keyword'     },
+            {regExp: /^then$/,                  abstract: 'then',   type: 'keyword'     },
+            {regExp: /^else$/,                  abstract: 'else',   type: 'keyword'     },
+            {regExp: /^while$/,                 abstract: 'while',  type: 'keyword'     },
+            {regExp: /^\($/,                    abstract: '(',      type: 'delimiter'   },
+            {regExp: /^\)$/,                    abstract: ')',      type: 'delimiter'   },
+            {regExp: /^\{$/,                    abstract: '{',      type: 'delimiter'   },
+            {regExp: /^\}$/,                    abstract: '}',      type: 'delimiter'   },
+            {regExp: /^,$/,                     abstract: ',',      type: 'delimiter'   },
+            {regExp: /^;$/,                     abstract: ';',      type: 'delimiter'   },
+            {regExp: /^\+$/,                    abstract: '+',      type: 'delimiter'   },
+            {regExp: /^-$/,                     abstract: '-',      type: 'delimiter'   },
+            {regExp: /^\*$/,                    abstract: '*',      type: 'delimiter'   },
+            {regExp: /^\/$/,                    abstract: '/',      type: 'delimiter'   },
+            {regExp: /^[a-zA-Z][a-zA-Z0-9]*$/,  abstract: 'ID',     type: 'ID'          },
+            {regExp: /^<=$/,                    abstract: '<=',     type: 'operator'    },
+            {regExp: /^<$/,                     abstract: '<',      type: 'operator'    },
+            {regExp: /^\=\=$/,                  abstract: '==',     type: 'operator'    },
+            {regExp: /^>=$/,                    abstract: '>=',     type: 'operator'    },
+            {regExp: /^>$/,                     abstract: '>',      type: 'operator'    },
+            {regExp: /^!=$/,                    abstract: '!=',     type: 'operator'    },
+            {regExp: /^\=$/,                    abstract: '=',      type: 'operator'    },
+            {regExp: /^[0-9]*\.[0-9]+$/,        abstract: 'NUM',    type: 'NUM'         },
+            {regExp: /^[0-9]+\.?$/,             abstract: 'NUM',    type: 'NUM'         }
         ];
         var Pointer = {
             new: function () {
@@ -211,7 +210,7 @@ var Lexer = {
         lexer.getSymbolTableLength = function () {
 
             return symbolTable.getLength();
-        }
+        };
         lexer.getSequenceByType = function () {
             var str = "";
             var i;
@@ -235,41 +234,41 @@ var Parser = {
     new: function () {
         var rules = [
             {},
-            {interminal: 'program'        , product: ['compoundstmt'                                            ]}, //  1
-            {interminal: 'stmt'           , product: ['decl'                                                    ]}, //  2
-            {interminal: 'stmt'           , product: ['ifstmt'                                                  ]}, //  3
-            {interminal: 'stmt'           , product: ['whilestmt'                                               ]}, //  4
-            {interminal: 'stmt'           , product: ['assgstmt'                                                ]}, //  5
-            {interminal: 'stmt'           , product: ['compoundstmt'                                            ]}, //  6
-            {interminal: 'compoundstmt'   , product: ['{', 'stmts', '}'                                         ]}, //  7
-            {interminal: 'stmts'          , product: ['stmt', 'stmts'                                           ]}, //  8
-            {interminal: 'stmts'          , product: [                                                          ]}, //  9
-            {interminal: 'ifstmt'         , product: ['if', '(', 'boolexpr', ')', 'then', 'stmt', 'else', 'stmt']}, //  0
-            {interminal: 'whilestmt'      , product: ['while', '(', 'boolexpr', ')', 'stmt'                     ]}, // 11
-            {interminal: 'assgstmt'       , product: ['ID', '=', 'arithexpr', ';'                               ]}, // 12
-            {interminal: 'decl'           , product: ['type', 'list', ';'                                       ]}, // 13
-            {interminal: 'type'           , product: ['int'                                                     ]}, // 14
-            {interminal: 'type'           , product: ['real'                                                    ]}, // 15
-            {interminal: 'list'           , product: ['ID', 'list1'                                             ]}, // 16
-            {interminal: 'list1'          , product: [',', 'list'                                               ]}, // 17
-            {interminal: 'list1'          , product: [                                                          ]}, // 18
-            {interminal: 'boolexpr'       , product: ['arithexpr', 'boolop', 'arithexpr'                        ]}, // 19
-            {interminal: 'boolop'         , product: ['<'                                                       ]}, // 20
-            {interminal: 'boolop'         , product: ['>'                                                       ]}, // 21
-            {interminal: 'boolop'         , product: ['<='                                                      ]}, // 22
-            {interminal: 'boolop'         , product: ['>='                                                      ]}, // 23
-            {interminal: 'boolop'         , product: ['=='                                                      ]}, // 24
-            {interminal: 'arithexpr'      , product: ['multexpr', 'arithexprprime'                              ]}, // 25
-            {interminal: 'arithexprprime' , product: ['+', 'multexpr', 'arithexprprime'                         ]}, // 26
-            {interminal: 'arithexprprime' , product: ['-', 'multexpr', 'arithexprprime'                         ]}, // 27
-            {interminal: 'arithexprprime' , product: [                                                          ]}, // 28
-            {interminal: 'multexpr'       , product: ['simpleexpr', 'multexprprime'                             ]}, // 29
-            {interminal: 'multexprprime'  , product: ['*', 'simpleexpr', 'multexprprime'                        ]}, // 30
-            {interminal: 'multexprprime'  , product: ['/', 'simpleexpr', 'multexprprime'                        ]}, // 31
-            {interminal: 'multexprprime'  , product: [                                                          ]}, // 32
-            {interminal: 'simpleexpr'     , product: ['ID'                                                      ]}, // 33
-            {interminal: 'simpleexpr'     , product: ['NUM'                                                     ]}, // 34
-            {interminal: 'simpleexpr'     , product: ['(', 'arithexpr', ')'                                     ]}  // 35
+            {interminal: 'program',          product: ['compoundstmt'                                            ]}, //  1
+            {interminal: 'stmt',             product: ['decl'                                                    ]}, //  2
+            {interminal: 'stmt',             product: ['ifstmt'                                                  ]}, //  3
+            {interminal: 'stmt',             product: ['whilestmt'                                               ]}, //  4
+            {interminal: 'stmt',             product: ['assgstmt'                                                ]}, //  5
+            {interminal: 'stmt',             product: ['compoundstmt'                                            ]}, //  6
+            {interminal: 'compoundstmt',     product: ['{', 'stmts', '}'                                         ]}, //  7
+            {interminal: 'stmts',            product: ['stmt', 'stmts'                                           ]}, //  8
+            {interminal: 'stmts',            product: [                                                          ]}, //  9
+            {interminal: 'ifstmt',           product: ['if', '(', 'boolexpr', ')', 'then', 'stmt', 'else', 'stmt']}, //  0
+            {interminal: 'whilestmt',        product: ['while', '(', 'boolexpr', ')', 'stmt'                     ]}, // 11
+            {interminal: 'assgstmt',         product: ['ID', '=', 'arithexpr', ';'                               ]}, // 12
+            {interminal: 'decl',             product: ['type', 'list', ';'                                       ]}, // 13
+            {interminal: 'type',             product: ['int'                                                     ]}, // 14
+            {interminal: 'type',             product: ['real'                                                    ]}, // 15
+            {interminal: 'list',             product: ['ID', 'list1'                                             ]}, // 16
+            {interminal: 'list1',            product: [',', 'list'                                               ]}, // 17
+            {interminal: 'list1',            product: [                                                          ]}, // 18
+            {interminal: 'boolexpr',         product: ['arithexpr', 'boolop', 'arithexpr'                        ]}, // 19
+            {interminal: 'boolop',           product: ['<'                                                       ]}, // 20
+            {interminal: 'boolop',           product: ['>'                                                       ]}, // 21
+            {interminal: 'boolop',           product: ['<='                                                      ]}, // 22
+            {interminal: 'boolop',           product: ['>='                                                      ]}, // 23
+            {interminal: 'boolop',           product: ['=='                                                      ]}, // 24
+            {interminal: 'arithexpr',        product: ['multexpr', 'arithexprprime'                              ]}, // 25
+            {interminal: 'arithexprprime',   product: ['+', 'multexpr', 'arithexprprime'                         ]}, // 26
+            {interminal: 'arithexprprime',   product: ['-', 'multexpr', 'arithexprprime'                         ]}, // 27
+            {interminal: 'arithexprprime',   product: [                                                          ]}, // 28
+            {interminal: 'multexpr',         product: ['simpleexpr', 'multexprprime'                             ]}, // 29
+            {interminal: 'multexprprime',    product: ['*', 'simpleexpr', 'multexprprime'                        ]}, // 30
+            {interminal: 'multexprprime',    product: ['/', 'simpleexpr', 'multexprprime'                        ]}, // 31
+            {interminal: 'multexprprime',    product: [                                                          ]}, // 32
+            {interminal: 'simpleexpr',       product: ['ID'                                                      ]}, // 33
+            {interminal: 'simpleexpr',       product: ['NUM'                                                     ]}, // 34
+            {interminal: 'simpleexpr',       product: ['(', 'arithexpr', ')'                                     ]}  // 35
         ];
         function isTerminal(symbol) {
             var i;

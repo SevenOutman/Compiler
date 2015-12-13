@@ -247,7 +247,7 @@ function LLParser() {
 
 
         console.log("Parsing finished", _tree.root, _treeArr);
-        var datavTree = new Tree("tree-mask", {width: $("#tree-mask").width(), height: $("#tree-mask").height(), radius: 10});
+        //var datavTree = new Tree("tree-mask", {width: $("#tree-mask").width(), height: $("#tree-mask").height(), radius: 10});
         //datavTree.setSource(_treeArr);
         //datavTree.render();
     }

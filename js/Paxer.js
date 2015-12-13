@@ -1,34 +1,34 @@
-//var SymbolTable = {
-//    new: function() {
-//        var symbolTable = {};
-//        var table = {};
-//        symbolTable.handle = function(symbol) {
-//            if (table[symbol.lexem]==undefined) {
-//                addSymbol(symbol);
-//            } else {
-//                updateSymbol(symbol);
-//            }
-//        };
-//        addSymbol = function(symbol) {
-//            table[symbol.lexem] = {
-//                'lexem': symbol.lexem,
-//                'type': symbol.type,
-//                'value': Invalid,
-//                'positions': [symbol.position]
-//            };
-//        };
-//        updateSymbol = function(symbol) {
-//            table[symbol.lexem].positions.push(symbol.position);
-//        };
-//        symbolTable.reset = function() {
-//            table = {};
-//        };
-//        symbolTable.get = function() {
-//            return table;
-//        };
-//        return symbolTable;
-//    }
-//};
+var SymbolTable = {
+    new: function() {
+        var symbolTable = {};
+        var table = {};
+        symbolTable.handle = function(symbol) {
+            if (table[symbol.lexem]==undefined) {
+                addSymbol(symbol);
+            } else {
+                updateSymbol(symbol);
+            }
+        };
+        addSymbol = function(symbol) {
+            table[symbol.lexem] = {
+                'lexem': symbol.lexem,
+                'type': symbol.type,
+                'value': Invalid,
+                'positions': [symbol.position]
+            };
+        };
+        updateSymbol = function(symbol) {
+            table[symbol.lexem].positions.push(symbol.position);
+        };
+        symbolTable.reset = function() {
+            table = {};
+        };
+        symbolTable.get = function() {
+            return table;
+        };
+        return symbolTable;
+    }
+};
 var Lexer = {
     new: function() {
         var rules = [

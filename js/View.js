@@ -27,6 +27,7 @@ var View = (function() {
         if (!document.getElementById("btn-save").classList.hasOwnProperty("unsaved")) {
             document.getElementById("btn-save").classList.add("unsaved");
         }
+        Pub("codeinput").on(document);
     });
 
     _editor.cm.on("cursorActivity", function(cm) {
@@ -134,9 +135,8 @@ var View = (function() {
     _editor.closeSession = function(session) {
         _editor.openedSessions.remove(session);
         var id  = "session-" + session.id,
-            $li = $("#" + id),
-            li  = $li[0];
-        li.parentNode.removeChild(li);
+            $li = $("#" + id);
+        $li.remove();
         if (_editor.currentSession() == session) {
             var s = _editor.openedSessions.front();
             if (undefined === s) {
@@ -211,7 +211,7 @@ var View = (function() {
                                 session.saved = false;
                                 _editor.save();
                                 Cache.files.push(file);
-                                Cache.files.pub("change");
+                                Pub("change").on(Cache.files);
                                 close();
                                 var cursor = _editor.cm.doc.getCursor();
                                 _editor.closeSession(session);

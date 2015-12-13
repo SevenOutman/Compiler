@@ -262,13 +262,13 @@ a:focus:active {
     z-index: 300;
 }
 
-#file-list {
+.list {
     list-style: none;
     padding: 0;
     color: rgb(187, 187, 187);
 }
 
-#file-list>li {
+.list>li {
     width: 100%;
     height: 20px;
     font-size: 10px;
@@ -279,10 +279,18 @@ a:focus:active {
     -webkit-user-select: none;
 }
 
-#file-list > li.active {
+.list > li > .extra {
+    margin-left: 5px;
+    color: rgb(128, 128, 128);
+}
+
+.list > li.active {
     background: rgb(13, 41, 62);
 }
 
+.list > li.active > .extra {
+    color: rgb(187, 187, 187);
+}
 .right-box {
     width: 200px;
     height: 100%;
@@ -489,6 +497,7 @@ a:focus:active {
 .dropdown-context {
     background: rgba(60, 63, 65, .99);
     border-radius: 0;
+    padding: 3px 0;
     -webkit-box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
     -moz-box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
     box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
@@ -500,4 +509,9 @@ a:focus:active {
 .dropdown-context>li>a:hover {
     color: rgb(249, 249, 249);
     background: rgb(47, 99, 198);
+}
+
+.dropdown-context > li.divider {
+    margin: 3px 1px;
+    background: rgba(81, 81, 81, .99);
 }

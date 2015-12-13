@@ -41,13 +41,21 @@
         return {
             to: function(type, act) {
                 _subscribe(obj, type, act);
+                return this;
             }
         }
     };
     window.Pub = function(type) {
+        var pubs = [type];
         return {
-            on: function(obj) {
-                _publish(obj, type);
+            and: function(type) {
+                pubs.push(type);
+                return this;
+            },
+            on:  function(obj) {
+                for (var i = 0; i < pubs.length; i++) {
+                    _publish(obj, pubs[i]);
+                }
             }
         }
     };

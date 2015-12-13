@@ -13,10 +13,9 @@ var SymbolTable = {
         };
         function addSymbol(token) {
             var symbol = {
-                lexeme:    token.lexeme,
-                type:      token.type,
-                abstract:  token.abstract,
-                value:     Invalid,
+                name:      token.lexeme,
+                type:      undefined,
+                value:     undefined,
                 positions: [token.position]
             };
             tableD[token.lexeme] = symbol;
@@ -48,32 +47,32 @@ var SymbolTable = {
 var Lexer = {
     new: function () {
         var rules = [
-            {regExp: /^int$/,                   abstract: 'int',    type: 'keyword'     },
-            {regExp: /^real$/,                  abstract: 'real',   type: 'keyword'     },
-            {regExp: /^if$/,                    abstract: 'if',     type: 'keyword'     },
-            {regExp: /^then$/,                  abstract: 'then',   type: 'keyword'     },
-            {regExp: /^else$/,                  abstract: 'else',   type: 'keyword'     },
-            {regExp: /^while$/,                 abstract: 'while',  type: 'keyword'     },
-            {regExp: /^\($/,                    abstract: '(',      type: 'delimiter'   },
-            {regExp: /^\)$/,                    abstract: ')',      type: 'delimiter'   },
-            {regExp: /^\{$/,                    abstract: '{',      type: 'delimiter'   },
-            {regExp: /^\}$/,                    abstract: '}',      type: 'delimiter'   },
-            {regExp: /^,$/,                     abstract: ',',      type: 'delimiter'   },
-            {regExp: /^;$/,                     abstract: ';',      type: 'delimiter'   },
-            {regExp: /^\+$/,                    abstract: '+',      type: 'delimiter'   },
-            {regExp: /^-$/,                     abstract: '-',      type: 'delimiter'   },
-            {regExp: /^\*$/,                    abstract: '*',      type: 'delimiter'   },
-            {regExp: /^\/$/,                    abstract: '/',      type: 'delimiter'   },
-            {regExp: /^[a-zA-Z][a-zA-Z0-9]*$/,  abstract: 'ID',     type: 'ID'          },
-            {regExp: /^<=$/,                    abstract: '<=',     type: 'operator'    },
-            {regExp: /^<$/,                     abstract: '<',      type: 'operator'    },
-            {regExp: /^\=\=$/,                  abstract: '==',     type: 'operator'    },
-            {regExp: /^>=$/,                    abstract: '>=',     type: 'operator'    },
-            {regExp: /^>$/,                     abstract: '>',      type: 'operator'    },
-            {regExp: /^!=$/,                    abstract: '!=',     type: 'operator'    },
-            {regExp: /^\=$/,                    abstract: '=',      type: 'operator'    },
-            {regExp: /^[0-9]*\.[0-9]+$/,        abstract: 'NUM',    type: 'NUM'         },
-            {regExp: /^[0-9]+\.?$/,             abstract: 'NUM',    type: 'NUM'         }
+            {regExp: /^int$/,                   abstract: 'int'     },
+            {regExp: /^real$/,                  abstract: 'real'    },
+            {regExp: /^if$/,                    abstract: 'if'      },
+            {regExp: /^then$/,                  abstract: 'then'    },
+            {regExp: /^else$/,                  abstract: 'else'    },
+            {regExp: /^while$/,                 abstract: 'while'   },
+            {regExp: /^\($/,                    abstract: '('       },
+            {regExp: /^\)$/,                    abstract: ')'       },
+            {regExp: /^\{$/,                    abstract: '{'       },
+            {regExp: /^\}$/,                    abstract: '}'       },
+            {regExp: /^,$/,                     abstract: ','       },
+            {regExp: /^;$/,                     abstract: ';'       },
+            {regExp: /^\+$/,                    abstract: '+'       },
+            {regExp: /^-$/,                     abstract: '-'       },
+            {regExp: /^\*$/,                    abstract: '*'       },
+            {regExp: /^\/$/,                    abstract: '/'       },
+            {regExp: /^[a-zA-Z][a-zA-Z0-9]*$/,  abstract: 'ID'      },
+            {regExp: /^<=$/,                    abstract: '<='      },
+            {regExp: /^<$/,                     abstract: '<'       },
+            {regExp: /^\=\=$/,                  abstract: '=='      },
+            {regExp: /^>=$/,                    abstract: '>='      },
+            {regExp: /^>$/,                     abstract: '>'       },
+            {regExp: /^!=$/,                    abstract: '!='      },
+            {regExp: /^\=$/,                    abstract: '='       },
+            {regExp: /^[0-9]*\.[0-9]+$/,        abstract: 'NUM'     },
+            {regExp: /^[0-9]+\.?$/,             abstract: 'NUM'     }
         ];
         var Pointer = {
             new: function () {
@@ -115,9 +114,7 @@ var Lexer = {
                     if (input.match(rules[i].regExp)) {
                         return {
                             lexeme:   input,
-                            type:     rules[i].type,
                             abstract: rules[i].abstract,
-                            value:    Invalid,
                             position: pointer.get()
                         };
                     }
@@ -150,15 +147,16 @@ var Lexer = {
 
             return errorMsg;
         };
+        lexer.getSymbolTable = function () {
+            return symbolTable.get();
+        };
         lexer.lex = function (input) {
-            errorMsg = "";
             symbolTable.reset();
+            errorMsg = "";
             pointer.reset();
             lexSequence = [];
             var curLexeme = "";
-            var matched;
-            var next;
-            var token;
+            var matched, next, token;
             var i = 0;
             while (i < input.length) {
                 next = input[i];
@@ -169,8 +167,10 @@ var Lexer = {
                         return false;
                     }
                     token = tryMatch(curLexeme);
+                    if (token.abstract == 'ID') {
+                        symbolTable.handle(token);
+                    };
                     lexSequence.push(token);
-                    symbolTable.handle(token);
                     pointer.reduce();
                     curLexeme = "";
                     i = nextNonBlank(input, i);
@@ -182,15 +182,12 @@ var Lexer = {
             }
             if (curLexeme) {
                 token = tryMatch(curLexeme);
-                symbolTable.handle(token);
                 lexSequence.push(token);
             }
             pointer.reduce();
             lexSequence.push({
                 lexeme:    "$",
                 abstract:  "$",
-                type:     "$",
-                value:    Invalid,
                 position: pointer.get()
             });
             return true;
@@ -199,23 +196,11 @@ var Lexer = {
 
             return lexSequence;
         };
-        lexer.getSymbolTable = function () {
-
-            return symbolTable.get();
-        };
-        lexer.getSymbolTableD = function () {
-
-            return symbolTable.getD();
-        };
-        lexer.getSymbolTableLength = function () {
-
-            return symbolTable.getLength();
-        };
-        lexer.getSequenceByType = function () {
+        lexer.getSequenceByAbstract = function () {
             var str = "";
             var i;
             for (i = 0; i < lexSequence.length; i += 1) {
-                str+=lexSequence[i].type + ' ';
+                str+=lexSequence[i].abstract + ' ';
             }
             return str;
         };
@@ -338,14 +323,12 @@ var Parser = {
                     toBuild.shift();
                     next = input[0].abstract;
                 } else if (isTerminal(top)) {
-                    console.log('CAME UP WITH UNEXPECTED TERMINAL ' + input[0].lexeme);
-                    console.log(stack);
-                    console.log(input);
+                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
                     return false;
                 } else if (table[top][next] == 0) {
                     expected = "";
                     var i;
-                    for (i in Object.keys(table[top])) {
+                    for (i in table[top]) {
                         if (table[top][i] != 0) {
                             expected += '\'' + i + '\'/';
                         }
@@ -435,7 +418,7 @@ var Parser = {
             var s = '\n' + ([padBlank('STACK', len0), padBlank('INPUT', len1), padBlank('ACTION', len2)]).join('     ') + '\n';
             var i;
             for (i = 0; i < arr.length; i += 1) {
-                s += ([arr[i][0], arr[i][1], arr[i][2]]).join('     ') + '\n';
+                s += ([arr[i][0], arr[i][1], arr[i][2]]).join('   | ') + '\n';
             }
             return s;
         };

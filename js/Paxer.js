@@ -418,7 +418,7 @@ var Parser = {
             var s = '\n' + ([padBlank('STACK', len0), padBlank('INPUT', len1), padBlank('ACTION', len2)]).join('     ') + '\n';
             var i;
             for (i = 0; i < arr.length; i += 1) {
-                s += ([arr[i][0], arr[i][1], arr[i][2]]).join('     ') + '\n';
+                s += ([arr[i][0], arr[i][1], arr[i][2]]).join('   | ') + '\n';
             }
             return s;
         };

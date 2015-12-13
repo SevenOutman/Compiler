@@ -139,6 +139,7 @@ var Lexer = {
             }
             return i;
         }
+        var symbolTable = SymbolTable.new();
         var lexSequence;
         var errorMsg = "";
         var lexer = {};
@@ -146,14 +147,16 @@ var Lexer = {
 
             return errorMsg;
         };
+        lexer.getSymbolTable = function () {
+            return symbolTable.get();
+        };
         lexer.lex = function (input) {
+            symbolTable.reset();
             errorMsg = "";
             pointer.reset();
             lexSequence = [];
             var curLexeme = "";
-            var matched;
-            var next;
-            var token;
+            var matched, next, token;
             var i = 0;
             while (i < input.length) {
                 next = input[i];
@@ -164,6 +167,9 @@ var Lexer = {
                         return false;
                     }
                     token = tryMatch(curLexeme);
+                    if (token.abstract == 'ID') {
+                        symbolTable.handle(token);
+                    };
                     lexSequence.push(token);
                     pointer.reduce();
                     curLexeme = "";
@@ -292,13 +298,11 @@ var Parser = {
                 return node;
             }
         };
-        var symbolTable = SymbolTable.new();
         var parser = {};
         var movements = [];
         var errorMsg;
         var root;
         parser.parse = function (input) {
-            symbolTable.reset();
             var stack = [];
             var next, top;
             root = Node.new('program');
@@ -313,9 +317,6 @@ var Parser = {
             while(top != '$'){
                 curMovement = [stack.slice(), input.slice(), {}];
                 if (top == next) {
-                    if (top == 'ID') {
-                        symbolTable.handle(input[0]);
-                    };
                     stack.pop();
                     shifted = toBuild[0];
                     shifted.symbol = input.shift();
@@ -356,9 +357,6 @@ var Parser = {
             movements.push([stack.slice(), input.slice(), {}]);
             return true;
         };
-        parser.getSymbolTable = function () {
-            return symbolTable.get();
-        }
         parser.getRoot = function () {
 
             return root;

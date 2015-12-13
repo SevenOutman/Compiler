@@ -200,7 +200,7 @@
 //            console.log(lexer.getSymbolTable());
             Pub("symboltablechange").on(document);
         }).to("symboltablechange", function() {
-            var st  = parser.getSymbolTable(),
+            var st  = lexer.getSymbolTable(),
                 len = 0;
             for (var s in st) {
                 if (st.hasOwnProperty(s)) {
@@ -352,6 +352,7 @@
                 // var processed = (new LexicalAnalyzer).run(View.editor.getContent());
                 // (new LLParser).run(processed);
                 if (lexer.lex(View.editor.getContent())) {
+                    console.log(lexer.getSymbolTable());
                     if (parser.parse(lexer.getSequence())) {
                         View.console.log(parser.getMovementsF());
                     } else {

@@ -49,6 +49,7 @@ var View = (function() {
         this.file = file;
         this.saved = true;
         this.content = file.content;
+        this.history = {done: [], undone: []};
         this.cursorPosition = {line: 0, ch: 0};
     }
 
@@ -100,10 +101,12 @@ var View = (function() {
             if (session && session !== _current) {
                 if (null !== _current) {
                     _current.content = _editor.getContent();
+                    _current.history = _editor.cm.doc.getHistory();
                     _current.cursorPosition = _editor.cm.doc.getCursor();
                 }
                 _current = session;
                 _editor.setContent(_current.content);
+                _editor.cm.doc.setHistory(_current.history);
                 _editor.cm.doc.setCursor(_current.cursorPosition);
                 var id  = "session-" + _current.id,
                     $li = $("#" + id);

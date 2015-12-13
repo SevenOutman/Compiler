@@ -4,7 +4,7 @@
 
 function ToyFile(name, content, isNew) {
     this.isNewFile = undefined !== isNew ? isNew : true;
-    this.name = undefined !== name ? name.replace(/(\.toy)+$/, "") : "untitled";
+    this.name = undefined !== name ? name.replace(/(\.toy)$/, "") : "untitled";
     this.content = content || "";
 }
 
@@ -17,6 +17,6 @@ ToyFile.prototype.fileName = function() {
 ToyFile.prototype.serialize = function() {
     return JSON.stringify({
         name:    this.name,
-        content: this.content,
+        content: this.content
     });
 };

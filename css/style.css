@@ -279,8 +279,14 @@ a:focus:active {
     -webkit-user-select: none;
 }
 
+.list > li > span.glyphicon {
+    vertical-align: top;
+    line-height: 10px;
+    top: 0;
+    font-size: 15px;
+}
 .list > li > .extra {
-    margin-left: 5px;
+    margin-left: 1em;
     color: rgb(128, 128, 128);
 }
 
@@ -483,6 +489,7 @@ a:focus:active {
 .footer-text{
     height: 100%;
     padding: 5px;
+    margin: 0 5px;
     color: rgb(187, 187, 187);
     font-size: 10px;
     line-height: 10px;

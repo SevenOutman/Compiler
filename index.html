@@ -200,35 +200,27 @@
 //            console.log(lexer.getSymbolTable());
             Pub("symboltablechange").on(document);
         }).to("symboltablechange", function() {
-            var st  = lexer.getSymbolTable(),
-                len = 0;
-            for (var s in st) {
-                if (st.hasOwnProperty(s)) {
-                    len++;
-                }
-            }
-            if ($("#symbol-list").length < 1 && len > 0) {
+            var st = lexer.getSymbolTable();
+            if ($("#symbol-list").length < 1 && st.length > 0) {
                 var $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list");
                 $(".right-box .placeholder").remove();
                 $ul.appendTo($(".right-box .box-body"));
             }
             $("#symbol-list").empty();
-            for (var s in st) {
-                if (st.hasOwnProperty(s)) {
-                    var symbol = st[s],
-                        id     = "sym-" + s;
-                    if ($("[data-id='" + id + "']").length < 1) {
-                        var $li    = $("<li></li>").attr("data-id", id).text(s),
-                            $extra = $("<span></span>").addClass("extra").text(symbol.type);
-                        $li.on("click", function() {
-                            var $self = $(this);
-                            if (!$self.hasClass("active")) {
-                                $self.siblings(".active").removeClass("active");
-                                $self.addClass("active");
-                            }
-                        });
-                        $("#symbol-list").append($li.append($extra));
-                    }
+            for (var i = 0; i < st.length; i++) {
+                var symbol = st[i],
+                    id     = "sym-" + symbol.lexeme;
+                if (symbol.type == "ID" && $("[data-id='" + id + "']").length < 1) {
+                    var $li    = $("<li></li>").attr("data-id", id).text(symbol.lexeme),
+                        $extra = $("<span></span>").addClass("extra").text(symbol.type);
+                    $li.on("click", function() {
+                        var $self = $(this);
+                        if (!$self.hasClass("active")) {
+                            $self.siblings(".active").removeClass("active");
+                            $self.addClass("active");
+                        }
+                    });
+                    $("#symbol-list").append($li.append($extra));
                 }
             }
         });
@@ -257,7 +249,8 @@
                 var file = this[i],
                     id   = "toy-" + file.name;
                 if ($("#" + id).length < 1) {
-                    var $li = $("<li></li>").attr("id", id).text(file.fileName());
+                    var $li   = $("<li></li>").attr("id", id).text(file.fileName()),
+                        $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
                     $li.on("click", function() {
                         var $self = $(this);
                         if (!$self.hasClass("active")) {
@@ -271,7 +264,7 @@
                             View.editor.openFile(file);
                         }
                     })(file));
-                    $("#file-list").append($li);
+                    $("#file-list").append($li.prepend($icon));
                 }
             }
         });
@@ -453,8 +446,8 @@
         });
         context.attach("#file-list", [
             {
-                text: "New File...",
-                action: function (e) {
+                text:   "New File...",
+                action: function(e) {
                     View.editor.newFile()
                 }
             },
@@ -471,15 +464,17 @@
                         name     = $li.attr("id").replace(/^toy\-/, ""),
                         fileName = name + ".toy",
                         file     = Cache.files.find(fileName);
-                    if (file) {
-                        Cache.files.remove(file);
+                    if (confirm("Are you sure to delete '" + file.fileName() + "'?")) {
+                        if (file) {
+                            Cache.files.remove(file);
+                        }
+                        $li.remove();
+                        var session = View.editor.openedSessions.findFile(fileName);
+                        if (session) {
+                            View.editor.closeSession(session);
+                        }
+                        Storage.removeItem(fileName);
                     }
-                    $li.remove();
-                    var session = View.editor.openedSessions.findFile(fileName);
-                    if (session) {
-                        View.editor.closeSession(session);
-                    }
-                    Storage.removeItem(fileName);
                 }
             }
         ]);

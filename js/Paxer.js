@@ -1,33 +1,44 @@
 var SymbolTable = {
     new: function () {
         var symbolTable = {};
-        var table = {};
+        var tableD = {};
+        var tableA = [];
+        var indexA = {};
         var count = 0;
-        symbolTable.handle = function (symbol) {
-            if (table[symbol.lexem] == undefined) {
-                addSymbol(symbol);
+        symbolTable.handle = function (token) {
+            if (tableD[token.lexeme] == undefined) {
+                addSymbol(token);
             } else {
-                updateSymbol(symbol);
+                updateSymbol(token);
             }
         };
-        function addSymbol(symbol) {
-            table[symbol.lexem] = {
-                lexem:     symbol.lexem,
-                type:      symbol.type,
+        function addSymbol(token) {
+            var symbol = {
+                lexeme:    token.lexeme,
+                type:      token.type,
+                abstract:  token.abstract,
                 value:     Invalid,
-                positions: [symbol.position]
+                positions: [token.position]
             };
+            tableD[token.lexeme] = symbol;
+            tableA.push(symbol);
+            indexA[token.lexeme] = count;
             count += 1;
         }
-        function updateSymbol(symbol) {
-            table[symbol.lexem].positions.push(symbol.position);
+        function updateSymbol(token) {
+            tableD[token.lexeme].positions.push(token.position);
+            tableA[indexA[token.lexeme]].positions.push(token.position);
         }
         symbolTable.reset = function () {
-            table = {};
+            tableD = {};
+            tableA = [];
             count = 0;
         };
         symbolTable.get = function () {
-            return table;
+            return tableA;
+        };
+        symbolTable.getD = function () {
+            return tableD;
         };
         symbolTable.getLength = function () {
             return count;
@@ -38,32 +49,32 @@ var SymbolTable = {
 var Lexer = {
     new: function () {
         var rules = [
-            {regExp: /^int$/                       , type: 'int'          },
-            {regExp: /^real$/                      , type: 'real'         },
-            {regExp: /^if$/                        , type: 'if'           },
-            {regExp: /^then$/                      , type: 'then'         },
-            {regExp: /^else$/                      , type: 'else'         },
-            {regExp: /^while$/                     , type: 'while'        },
-            {regExp: /^\($/                        , type: '('            },
-            {regExp: /^\)$/                        , type: ')'            },
-            {regExp: /^\{$/                        , type: '{'            },
-            {regExp: /^\}$/                        , type: '}'            },
-            {regExp: /^,$/                         , type: ','            },
-            {regExp: /^;$/                         , type: ';'            },
-            {regExp: /^\+$/                        , type: '+'            },
-            {regExp: /^-$/                         , type: '-'            },
-            {regExp: /^\*$/                        , type: '*'            },
-            {regExp: /^\/$/                        , type: '/'            },
-            {regExp: /^[a-zA-Z][a-zA-Z0-9]*$/      , type: 'ID'           },
-            {regExp: /^<=$/                        , type: '<='           },
-            {regExp: /^<$/                         , type: '<'            },
-            {regExp: /^\=\=$/                      , type: '=='           },
-            {regExp: /^>=$/                        , type: '>='           },
-            {regExp: /^>$/                         , type: '>'            },
-            {regExp: /^!=$/                        , type: '!='           },
-            {regExp: /^\=$/                        , type: '='            },
-            {regExp: /^[0-9]*\.[0-9]+$/            , type: 'NUM'          },
-            {regExp: /^[0-9]+\.?$/                 , type: 'NUM'          }
+            {regExp: /^int$/                   , abstract: 'int'   , type: 'keyword'   },
+            {regExp: /^real$/                  , abstract: 'real'  , type: 'keyword'   },
+            {regExp: /^if$/                    , abstract: 'if'    , type: 'keyword'   },
+            {regExp: /^then$/                  , abstract: 'then'  , type: 'keyword'   },
+            {regExp: /^else$/                  , abstract: 'else'  , type: 'keyword'   },
+            {regExp: /^while$/                 , abstract: 'while' , type: 'keyword'   },
+            {regExp: /^\($/                    , abstract: '('     , type: 'delimiter' },
+            {regExp: /^\)$/                    , abstract: ')'     , type: 'delimiter' },
+            {regExp: /^\{$/                    , abstract: '{'     , type: 'delimiter' },
+            {regExp: /^\}$/                    , abstract: '}'     , type: 'delimiter' },
+            {regExp: /^,$/                     , abstract: ','     , type: 'delimiter' },
+            {regExp: /^;$/                     , abstract: ';'     , type: 'delimiter' },
+            {regExp: /^\+$/                    , abstract: '+'     , type: 'delimiter' },
+            {regExp: /^-$/                     , abstract: '-'     , type: 'delimiter' },
+            {regExp: /^\*$/                    , abstract: '*'     , type: 'delimiter' },
+            {regExp: /^\/$/                    , abstract: '/'     , type: 'delimiter' },
+            {regExp: /^[a-zA-Z][a-zA-Z0-9]*$/  , abstract: 'ID'    , type: 'ID'        },
+            {regExp: /^<=$/                    , abstract: '<='    , type: 'operator'  },
+            {regExp: /^<$/                     , abstract: '<'     , type: 'operator'  },
+            {regExp: /^\=\=$/                  , abstract: '=='    , type: 'operator'  },
+            {regExp: /^>=$/                    , abstract: '>='    , type: 'operator'  },
+            {regExp: /^>$/                     , abstract: '>'     , type: 'operator'  },
+            {regExp: /^!=$/                    , abstract: '!='    , type: 'operator'  },
+            {regExp: /^\=$/                    , abstract: '='     , type: 'operator'  },
+            {regExp: /^[0-9]*\.[0-9]+$/        , abstract: 'NUM'   , type: 'NUM'       },
+            {regExp: /^[0-9]+\.?$/             , abstract: 'NUM'   , type: 'NUM'       }
         ];
         var Pointer = {
             new: function () {
@@ -104,8 +115,9 @@ var Lexer = {
                 if (rules.hasOwnProperty(i)) {
                     if (input.match(rules[i].regExp)) {
                         return {
-                            lexem:    input,
+                            lexeme:   input,
                             type:     rules[i].type,
+                            abstract: rules[i].abstract,
                             value:    Invalid,
                             position: pointer.get()
                         };
@@ -144,39 +156,40 @@ var Lexer = {
             symbolTable.reset();
             pointer.reset();
             lexSequence = [];
-            var curLexem = "";
+            var curLexeme = "";
             var matched;
             var next;
-            var symbol;
+            var token;
             var i = 0;
             while (i < input.length) {
                 next = input[i];
-                matched = tryMatch(curLexem + next);
+                matched = tryMatch(curLexeme + next);
                 if (!matched) {
-                    if (curLexem=='') {
+                    if (curLexeme=='') {
                         errorMsg = "UNDEFINED SYMBOL '"+next+"' AT ROW "+pointer.get().first_row+", COL "+pointer.get().first_col;
                         return false;
                     }
-                    symbol = tryMatch(curLexem);
-                    lexSequence.push(symbol);
-                    symbolTable.handle(symbol);
+                    token = tryMatch(curLexeme);
+                    lexSequence.push(token);
+                    symbolTable.handle(token);
                     pointer.reduce();
-                    curLexem = "";
+                    curLexeme = "";
                     i = nextNonBlank(input, i);
                 } else {
                     i += 1;
-                    curLexem+=next;
+                    curLexeme+=next;
                     pointer.shift(1);
                 }
             }
-            if (curLexem) {
-                symbol = tryMatch(curLexem);
-                symbolTable.handle(symbol);
-                lexSequence.push(symbol);
+            if (curLexeme) {
+                token = tryMatch(curLexeme);
+                symbolTable.handle(token);
+                lexSequence.push(token);
             }
             pointer.reduce();
             lexSequence.push({
-                lexem:    "$",
+                lexeme:    "$",
+                abstract:  "$",
                 type:     "$",
                 value:    Invalid,
                 position: pointer.get()
@@ -191,6 +204,10 @@ var Lexer = {
 
             return symbolTable.get();
         };
+        lexer.getSymbolTableD = function () {
+
+            return symbolTable.getD();
+        };
         lexer.getSymbolTableLength = function () {
 
             return symbolTable.getLength();
@@ -203,11 +220,11 @@ var Lexer = {
             }
             return str;
         };
-        lexer.getSequenceByLexem = function () {
+        lexer.getSequenceByLexeme = function () {
             var str = "";
             var i;
             for (i = 0; i < lexSequence.length; i += 1) {
-                str += lexSequence[i].lexem + ' ';
+                str += lexSequence[i].lexeme + ' ';
             }
             return str;
         };
@@ -309,7 +326,7 @@ var Parser = {
             movements = [];
             stack = ['$', 'program'];
             top = stack[stack.length-1];
-            next = input[0].type;
+            next = input[0].abstract;
             var shifted;
             var expected;
             var curMovement;
@@ -320,9 +337,9 @@ var Parser = {
                     shifted = toBuild[0];
                     shifted.symbol = input.shift();
                     toBuild.shift();
-                    next = input[0].type;
+                    next = input[0].abstract;
                 } else if (isTerminal(top)) {
-                    console.log('CAME UP WITH UNEXPECTED TERMINAL ' + input[0].lexem);
+                    console.log('CAME UP WITH UNEXPECTED TERMINAL ' + input[0].lexeme);
                     console.log(stack);
                     console.log(input);
                     return false;
@@ -390,7 +407,7 @@ var Parser = {
                 str = "";
                 var j;
                 for (j = 0; j < move[1].length; j += 1) {
-                    str += move[1][j].lexem + ' ';
+                    str += move[1][j].lexeme + ' ';
                 }
                 var tail = str.indexOf(';') > -1 ? ';' : '';
                 str = str.split(';')[0] + tail;

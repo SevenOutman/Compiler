@@ -453,13 +453,16 @@
         });
         context.attach("#file-list", [
             {
-                text: "New File..."
-            },
-            {
-                text: "Rename"
+                text: "New File...",
+                action: function (e) {
+                    View.editor.newFile()
+                }
             },
             {
                 divider: true
+            },
+            {
+                text: "Rename"
             },
             {
                 text:   "Delete",

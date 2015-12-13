@@ -192,8 +192,8 @@
     window.onload = function() {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
-//        var lexer = Lexer.new();
-//        var parser = Parser.new();
+        var lexer = Lexer.new();
+        var parser = Parser.new();
         document.getElementById("cover-open").addEventListener("click", function() {
             View.editor.newFile();
         }, false);
@@ -308,18 +308,17 @@
                 } else {
                     View.console.log("Compile 'untitled'...");
                 }
-                var processed = (new LexicalAnalyzer).run(View.editor.getContent());
-                (new LLParser).run(processed);
-//                if (lexer.lex(View.editor.getContent())) {
-//                    if (parser.parse(lexer.getSequence())) {
-//                        View.console.log(parser.getMovementsF());
-//                        console.log(lexer.getSymbolTable())
-//                    } else {
-//                        View.console.log(parser.getErrMsg());
-//                    }
-//                } else {
-//                    View.console.log(lexer.getErrMsg());
-//                }
+                // var processed = (new LexicalAnalyzer).run(View.editor.getContent());
+                // (new LLParser).run(processed);
+               if (lexer.lex(View.editor.getContent())) {
+                   if (parser.parse(lexer.getSequence())) {
+                       View.console.log(parser.getMovementsF());
+                   } else {
+                       View.console.log(parser.getErrMsg());
+                   }
+               } else {
+                   View.console.log(lexer.getErrMsg());
+               }
             }
         };
 

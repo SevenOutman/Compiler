@@ -352,15 +352,13 @@
                 // var processed = (new LexicalAnalyzer).run(View.editor.getContent());
                 // (new LLParser).run(processed);
                 if (lexer.lex(View.editor.getContent())) {
-                    console.log(lexer.getSymbolTable());
                     if (parser.parse(lexer.getSequence())) {
-                        View.console.log(parser.getMovementsF());
+                        View.console.success(parser.getMovementsF());
                     } else {
-                        View.console.log(parser.getErrMsg());
+                        View.console.error(parser.getErrMsg());
                     }
                 } else {
-                    View.console.log(lexer.getErrMsg());
-                    console.log(2)
+                    View.console.error(lexer.getErrMsg());
                 }
             }
         };

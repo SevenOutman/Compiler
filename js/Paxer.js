@@ -323,14 +323,12 @@ var Parser = {
                     toBuild.shift();
                     next = input[0].abstract;
                 } else if (isTerminal(top)) {
-                    console.log('CAME UP WITH UNEXPECTED TERMINAL ' + input[0].lexeme);
-                    console.log(stack);
-                    console.log(input);
+                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
                     return false;
                 } else if (table[top][next] == 0) {
                     expected = "";
                     var i;
-                    for (i in Object.keys(table[top])) {
+                    for (i in table[top]) {
                         if (table[top][i] != 0) {
                             expected += '\'' + i + '\'/';
                         }

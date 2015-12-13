@@ -191,6 +191,10 @@ var Lexer = {
 
             return symbolTable.get();
         };
+        lexer.getSymbolTableLength = function () {
+
+            return symbolTable.getLength();
+        }
         lexer.getSequenceByType = function () {
             var str = "";
             var i;

@@ -81,7 +81,7 @@ var Lexer = {
                 pointer.reset = function () {
                     first_row = 1;
                     first_col = 0;
-                    last_row  = 0;
+                    last_row  = 1;
                     last_col  = 0;
                 };
                 pointer.shift = function (step) {
@@ -334,7 +334,7 @@ var Parser = {
                         }
                     }
                     expected = expected.substring(0, expected.length - 1);
-                    errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
+                    errorMsg = 'EXPECTING ' + expected + ' BEFORE ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
                     return false;
                 } else if (table[top][next] > 0) {
                     stack.pop();

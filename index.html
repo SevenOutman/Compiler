@@ -349,17 +349,18 @@
                 } else {
                     View.console.log("Compile 'untitled'...");
                 }
-//                var processed = (new LexicalAnalyzer).run(View.editor.getContent());
-//                (new LLParser).run(processed);
+                // var processed = (new LexicalAnalyzer).run(View.editor.getContent());
+                // (new LLParser).run(processed);
                 if (lexer.lex(View.editor.getContent())) {
+                    console.log(lexer.getSymbolTable());
                     if (parser.parse(lexer.getSequence())) {
                         View.console.log(parser.getMovementsF());
-                        console.log(lexer.getSymbolTable())
                     } else {
                         View.console.log(parser.getErrMsg());
                     }
                 } else {
                     View.console.log(lexer.getErrMsg());
+                    console.log(2)
                 }
             }
         };

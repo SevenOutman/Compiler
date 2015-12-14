@@ -314,10 +314,12 @@ var Parser = {
             var shifted;
             var expected;
             var curMovement;
+            var lastPos;
             while(top != '$'){
                 curMovement = [stack.slice(), input.slice(), {}];
                 if (top == next) {
                     stack.pop();
+                    lastPos = input[0].position;
                     shifted = toBuild[0];
                     shifted.symbol = input.shift();
                     toBuild.shift();
@@ -330,11 +332,11 @@ var Parser = {
                     var i;
                     for (i in table[top]) {
                         if (table[top][i] != 0) {
-                            expected += '\'' + i + '\'/';
+                            expected += '\'' + i + '\'|';
                         }
                     }
                     expected = expected.substring(0, expected.length - 1);
-                    errorMsg = 'EXPECTING ' + expected + ' BEFORE ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
+                    errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
                     return false;
                 } else if (table[top][next] > 0) {
                     stack.pop();

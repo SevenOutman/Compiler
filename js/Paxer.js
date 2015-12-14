@@ -84,15 +84,15 @@ var Lexer = {
                 pointer.reset = function () {
                     first_row = 1;
                     last_row  = 1;
-                    first_col = 0;
-                    last_col  = 0;
+                    first_col = 1;
+                    last_col  = 1;
                 };
                 pointer.shift = function (step) {
 
                     last_col += step;
                 };
                 pointer.newLine = function () {
-                    last_col = 0;
+                    last_col = 1;
                     last_row++;
                 };
                 pointer.reduce = function () {
@@ -161,12 +161,11 @@ var Lexer = {
                             return false;
                         }
                     } else {
-                        token = tryMatch(curLexeme);
-                        if (token.abstract == 'ID') {
-                            symbolTable.handle(token);
-                        };
-                        lexSequence.push(token);
                         i -= 1;
+                        token = tryMatch(curLexeme);
+                        lexSequence.push(token);
+                        if (token.abstract == 'ID')
+                            symbolTable.handle(token);
                     }
                     pointer.reduce();
                     curLexeme = "";

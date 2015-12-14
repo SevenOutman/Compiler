@@ -574,7 +574,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 $(".box-open-menu").hide();
-                var id = $(el).attr("id");
+                var id = $(this).attr("id");
                 if (id == "box-opener-console") {
                     var $box = $(".bottom-box");
                     if ($box.hasClass("hidden")) {
@@ -602,7 +602,7 @@
             $(el).on("click", function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                var $box = $(el).parents(".resizable");
+                var $box = $(this).parents(".resizable");
                 if ($box.hasClass("bottom-box")) {
                     if (!$box.hasClass("hidden")) {
                         $box.addClass("hidden");

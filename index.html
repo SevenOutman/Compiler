@@ -361,7 +361,7 @@
                         function scanTree(node, parentMark) {
                             var indent = "",
                                 n      = 1;
-                            while ($("[data-id='structure-" + node.name + "-" + n + "'").length > 0) {
+                            while ($("[data-id='structure-" + node.name + "-" + n + "']").length > 0) {
                                 n++;
                             }
                             for (var i = 0; i < level; i++) {

@@ -10,11 +10,9 @@
     <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="lib/codemirror/lib/codemirror.css">
     <link rel="stylesheet" href="lib/monokai-so.css">
-    <link rel="stylesheet" href="lib/codemirror/theme/base16-dark.css">
-    <link rel="stylesheet" href="lib/codemirror/theme/dracula.css">
     <link rel="stylesheet" href="lib/codemirror/addon/dialog/dialog.css">
     <link rel="stylesheet" href="lib/codemirror/addon/scroll/simplescrollbars.css">
-    <link rel="stylesheet" href="lib/contextjs/context.bootstrap.css">
+    <link rel="stylesheet" href="lib/contextjs/context.standalone.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -70,16 +68,18 @@
             <div class="resizer vertical"></div>
             <div class="box-header">
                 <div class="box-title">Workspace</div>
+                <span class="box-caret glyphicon glyphicon-menu-left"></span>
             </div>
             <div class="box-body">
                 <div class="placeholder">Nothing to show</div>
             </div>
         </div>
 
-        <div class="right-box resizable">
+        <div class="right-box resizable hidden">
             <div class="resizer vertical"></div>
             <div class="box-header">
                 <div class="box-title">Structure</div>
+                <span class="box-caret glyphicon glyphicon-menu-right"></span>
             </div>
             <div class="box-body">
                 <div class="placeholder">Nothing to show</div>
@@ -101,10 +101,11 @@
                     <textarea id="editor"></textarea>
                 </div>
             </div>
-            <div class="bottom-box resizable">
+            <div class="bottom-box resizable hidden">
                 <div class="resizer horizontal"></div>
                 <div class="box-header">
                     <div class="box-title">Console</div>
+                    <span class="box-caret glyphicon glyphicon-menu-down"></span>
                 </div>
                 <div class="console-container">
                     <textarea id="console"></textarea>
@@ -113,6 +114,20 @@
         </div>
     </div>
     <div id="footer">
+        <div class="footer-text">
+            <span class="glyphicon glyphicon-collapse-up" id="box-opener"></span>
+            <ul class="dropdown-menu box-open-menu">
+                <li>
+                    <a id="box-opener-workspace">Workspace</a>
+                </li>
+                <li>
+                    <a id="box-opener-structure">Structure</a>
+                </li>
+                <li>
+                    <a id="box-opener-console">Console</a>
+                </li>
+            </ul>
+        </div>
         <div class="footer-text" id="cursor-position" style="display: none">
             <span id="current-line">1</span>:<span id="current-ch">1</span>
         </div>
@@ -123,26 +138,24 @@
     </div>
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<!--<script src="js/jquery-2.1.4.min.js"></script>-->
-<!--<script src="lib/datavjs/deps/jquery-1.7.1.js"></script>-->
 <script src="lib/jquery-2.1.4.min.js"></script>
 <script>
     $.browser = {};
     $.browser.msie = !$.support.leadingWhitespace;
 </script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="lib/bootstrap/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="lib/datavjs/deps/d3.min.js"></script>
-<script type="text/javascript" src="lib/datavjs/deps/d3.csv.js"></script>
-<script type="text/javascript" src="lib/datavjs/deps/d3.layout.min.js"></script>
-<script type="text/javascript" src="lib/datavjs/deps/raphael.min.js"></script>
+<!--<script src="lib/bootstrap/js/bootstrap.min.js"></script>-->
+<script src="lib/contextjs/context.js"></script>
+<script src="lib/datavjs/deps/d3.min.js"></script>
+<script src="lib/datavjs/deps/d3.csv.js"></script>
+<script src="lib/datavjs/deps/d3.layout.min.js"></script>
+<script src="lib/datavjs/deps/raphael.min.js"></script>
 <script src="lib/datavjs/deps/eventproxy.js"></script>
 <script src="lib/datavjs/datav.js"></script>
 <script src="lib/datavjs/libs/tree.js"></script>
-<script src="js/include.js"></script>
-<script src="js/Symbol.js"></script>
-<script src="js/Lexical.js"></script>
-<script src="js/LL.js"></script>
+<!--<script src="js/Symbol.js"></script>-->
+<!--<script src="js/Lexical.js"></script>-->
+<!--<script src="js/LL.js"></script>-->
 <script src="lib/codemirror/lib/codemirror.js"></script>
 <script src="lib/codemirror/addon/dialog/dialog.js"></script>
 <script src="lib/codemirror/addon/edit/matchbrackets.js"></script>
@@ -150,8 +163,8 @@
 <script src="lib/codemirror/addon/selection/active-line.js"></script>
 <script src="lib/codemirror/addon/scroll/simplescrollbars.js"></script>
 <script src="lib/codemirror/addon/selection/selection-pointer.js"></script>
-<script src="lib/codemirror/mode/diff/diff.js"></script>
-<script src="lib/codemirror/mode/javascript/javascript.js"></script>
+
+<script src="js/include.js"></script>
 <script src="lib/toy.js"></script>
 <script src="lib/console.js"></script>
 <script src="js/PubSub.js"></script>
@@ -160,7 +173,6 @@
 <script src="js/ToyFile.js"></script>
 <script src="js/View.js"></script>
 <script src="js/Paxer.js"></script>
-<script src="lib/contextjs/context.js"></script>
 <script src="js/script.js"></script>
 <script>
 
@@ -361,17 +373,17 @@
                         function scanTree(node, parentMark) {
                             var indent = "",
                                 n      = 1;
-                            while ($("[data-id='structure-" + node.name + "-" + n + "']").length > 0) {
+                            while ($("[data-id='structure-" + node.abstract + "-" + n + "']").length > 0) {
                                 n++;
                             }
                             for (var i = 0; i < level; i++) {
                                 output += "  ";
                                 indent += "&nbsp;&nbsp;";
                             }
-                            output += node.name + "\n";
+                            output += node.abstract + "\n";
 
-                            var id     = "structure-" + node.name + "-" + n,
-                                $li    = $("<li></li>").attr("data-id", id).attr("data-parent", parentMark).html(node.name),
+                            var id     = "structure-" + node.abstract + "-" + n,
+                                $li    = $("<li></li>").attr("data-id", id).attr("data-parent", parentMark).html(node.abstract),
                                 $caret = $("<span></span>").addClass("glyphicon glyphicon-triangle-bottom li-caret")
                                         .css("margin-left", (level * 15 - 15) + "px")
                                         .on("click", function(e) {
@@ -405,7 +417,9 @@
                             if (includeSelf) {
                                 if (fold) {
                                     $li.hide();
-                                } else $li.show();
+                                } else {
+                                    $li.show();
+                                }
                             }
                             if (fold) {
                                 $li.find(".li-caret").removeClass("glyphicon-triangle-bottom")
@@ -545,6 +559,70 @@
                 }
             }
         ]);
+        $(document).on("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(".box-open-menu").hide();
+        });
+        $("#box-opener").on("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(".box-open-menu").show();
+        });
+        $.each($(".box-open-menu").find("a"), function(index, el) {
+            $(el).on("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(".box-open-menu").hide();
+                var id = $(el).attr("id");
+                if (id == "box-opener-console") {
+                    var $box = $(".bottom-box");
+                    if ($box.hasClass("hidden")) {
+                        $box.removeClass("hidden").css("height", "30%");
+                        $(".editor-box").css("height", "70%");
+                    }
+                }
+                if (id == "box-opener-workspace") {
+                    var $box = $(".left-box");
+                    if ($box.hasClass("hidden")) {
+                        $box.removeClass("hidden").css("width", "200px");
+                        $(".center-box").css("margin-left", "200px");
+                    }
+                }
+                if (id == "box-opener-structure") {
+                    var $box = $(".right-box");
+                    if ($box.hasClass("hidden")) {
+                        $box.removeClass("hidden").css("width", "200px");
+                        $(".center-box").css("margin-right", "200px");
+                    }
+                }
+            });
+        });
+        $.each($(".box-caret"), function(index, el) {
+            $(el).on("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var $box = $(el).parents(".resizable");
+                if ($box.hasClass("bottom-box")) {
+                    if (!$box.hasClass("hidden")) {
+                        $box.addClass("hidden");
+                        $(".editor-box").css("height", "100%");
+                    }
+                }
+                if ($box.hasClass("left-box")) {
+                    if (!$box.hasClass("hidden")) {
+                        $box.addClass("hidden");
+                        $(".center-box").css("margin-left", "0");
+                    }
+                }
+                if ($box.hasClass("right-box")) {
+                    if (!$box.hasClass("hidden")) {
+                        $box.addClass("hidden");
+                        $(".center-box").css("margin-right", "0");
+                    }
+                }
+            });
+        });
         View.console.log("Compiler lauched at " + new Date().toTimeString());
     };
 </script>

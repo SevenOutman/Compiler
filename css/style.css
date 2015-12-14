@@ -236,6 +236,15 @@ a:focus:active {
     white-space: nowrap;
 }
 
+.box-caret {
+    float: right;
+    margin-right: 5px;
+    top: 0;
+    line-height: 20px;
+    color: rgb(128, 128, 128);
+    cursor: pointer;
+}
+
 .box-body {
     position: relative;
     height: calc(100% - 22px);
@@ -312,7 +321,8 @@ a:focus:active {
     color: rgb(187, 187, 187);
 }
 .right-box {
-    width: 200px;
+    /*width: 200px;*/
+    width: 0;
     height: 100%;
     float: right;
     background: rgb(60, 63, 65);
@@ -324,12 +334,12 @@ a:focus:active {
 .center-box {
     width: auto;
     height: 100%;
-    margin: 0 200px;
+    margin: 0 0 0 200px;
 }
 
 .bottom-box {
-    /*height: 30%;*/
-    height: 23px;
+    height: 30%;
+    /*height: 23px;*/
     border-top: 1px solid rgb(38, 40, 41);
     z-index: 200;
 }
@@ -351,8 +361,8 @@ a:focus:active {
 
 .editor-box {
     position: relative;
-    /*height: 70%;*/
-    height: calc(100% - 23px);
+    height: 100%;
+    /*height: calc(100% - 23px);*/
 }
 
 .editor-placeholder {
@@ -500,7 +510,9 @@ a:focus:active {
     z-index: 1000;
 }
 
-.footer-text{
+.footer-text {
+    float: left;
+
     height: 100%;
     padding: 5px;
     margin: 0 5px;
@@ -510,29 +522,51 @@ a:focus:active {
     cursor: default;
 }
 
-/*------ context.css -------*/
-.dropdown-context::after, .dropdown-context::before {
+#box-opener {
+    line-height: 16px;
+    top: -3px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.box-open-menu {
+    bottom: 100%;
+    top: auto;
     display: none;
 }
 
-.dropdown-context {
+.box-open-menu > li {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+/*------ context.css -------*/
+.dropdown-menu::after, .dropdown-context::before {
+    display: none;
+}
+
+.dropdown-menu {
     background: rgba(60, 63, 65, .99);
     border-radius: 0;
     padding: 3px 0;
-    -webkit-box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
-    -moz-box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
-    box-shadow: 0 2px 3px 1px rgba(0, 0, 0, 0.5);
+    font-family: "Lucida Grande", 'Lato', 'Open Sans', Helvetica, Arial, sans-serif;
+    -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
 }
 
-.dropdown-context > li > a {
+.dropdown-menu > li > a {
     color: rgb(183, 183, 183);
 }
-.dropdown-context>li>a:hover {
+.dropdown-menu>li>a:hover {
     color: rgb(249, 249, 249);
     background: rgb(47, 99, 198);
 }
 
-.dropdown-context > li.divider {
+.dropdown-menu > li.divider {
     margin: 3px 1px;
-    background: rgba(81, 81, 81, .99);
+    border-bottom-color: rgba(81, 81, 81, .99);
 }

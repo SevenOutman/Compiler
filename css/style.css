@@ -38,7 +38,7 @@ a:focus:active {
 }
 
 .console-container .CodeMirror {
-    font-size: 10px;
+    /*font-size: 10px;*/
 }
 
 .wrapper {

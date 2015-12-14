@@ -314,13 +314,10 @@ var View = (function() {
     };
 
     _console.popup = function() {
-        $(".editor-box").css("height", "70%");
-        $(".bottom-box").css("height", "30%");
+        $("#box-opener-console").trigger("click");
     };
 
     _console.fold = function() {
-        $(".editor-box").css("height", "calc(100% - 23px)");
-        $(".bottom-box").height(23);
     };
 
     return {

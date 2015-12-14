@@ -5,7 +5,7 @@ var SymbolTable = {
         var tableA = [], indexA = {};
         var count = 0;
         symbolTable.handle = function (token) {
-            if (tableD[token.lexeme] == undefined) {
+            if (!tableD.hasOwnProperty(token.lexeme) && !tableA.hasOwnProperty(indexA[token.lexeme])) {
                 addSymbol(token);
             } else {
                 updateSymbol(token);
@@ -18,9 +18,9 @@ var SymbolTable = {
                 value:     undefined,
                 positions: [token.position]
             };
-            tableD[token.lexeme] = symbol;
             tableA.push(symbol);
             indexA[token.lexeme] = count;
+            tableD[token.lexeme] = symbol;
             count += 1;
         }
         function updateSymbol(token) {
@@ -33,12 +33,15 @@ var SymbolTable = {
             count  = 0;
         };
         symbolTable.get = function () {
+
             return tableA;
         };
         symbolTable.getD = function () {
+
             return tableD;
         };
         symbolTable.getLength = function () {
+
             return count;
         };
         return symbolTable;
@@ -80,11 +83,12 @@ var Lexer = {
                 var first_row, first_col, last_row, last_col;
                 pointer.reset = function () {
                     first_row = 1;
-                    first_col = 0;
                     last_row  = 1;
+                    first_col = 0;
                     last_col  = 0;
                 };
                 pointer.shift = function (step) {
+
                     last_col += step;
                 };
                 pointer.newLine = function () {
@@ -92,14 +96,14 @@ var Lexer = {
                     last_row++;
                 };
                 pointer.reduce = function () {
-                    first_col = last_col;
                     first_row = last_row;
+                    first_col = last_col;
                 };
                 pointer.get = function () {
                     return {
                         first_row: first_row,
-                        first_col: first_col,
                         last_row:  last_row,
+                        first_col: first_col,
                         last_col:  last_col
                     };
                 };
@@ -121,23 +125,6 @@ var Lexer = {
                 }
             }
             return false;
-        }
-        function nextNonBlank (input, i) {
-            while(i < input.length && input[i].match(/\s/) != null){
-                if (null != input[i].match(/\n/)) {
-                    pointer.newLine();
-                }
-                if (null != input[i].match(/\ /)) {
-                    pointer.shift(1);
-                    pointer.reduce();
-                }
-                if (null != input[i].match(/\t/)) {
-                    pointer.shift(4);
-                    pointer.reduce();
-                }
-                i += 1;
-            }
-            return i;
         }
         var symbolTable = SymbolTable.new();
         var lexSequence;
@@ -163,25 +150,34 @@ var Lexer = {
                 matched = tryMatch(curLexeme + next);
                 if (!matched) {
                     if (curLexeme=='') {
-                        errorMsg = "UNDEFINED SYMBOL '"+next+"' AT ROW "+pointer.get().first_row+", COL "+pointer.get().first_col;
-                        return false;
+                        if (next.match(/\ /) != null)
+                            pointer.shift(1);
+                        else if (next.match(/\t/) != null)
+                            pointer.shift(4);
+                        else if (next.match(/\n/) != null)
+                            pointer.newLine();
+                        else {
+                            errorMsg = "UNDEFINED SYMBOL '"+next+"' AT ROW "+pointer.get().first_row+", COL "+pointer.get().first_col;
+                            return false;
+                        }
+                    } else {
+                        token = tryMatch(curLexeme);
+                        if (token.abstract == 'ID') {
+                            symbolTable.handle(token);
+                        };
+                        lexSequence.push(token);
+                        i -= 1;
                     }
-                    token = tryMatch(curLexeme);
-                    if (token.abstract == 'ID') {
-                        symbolTable.handle(token);
-                    };
-                    lexSequence.push(token);
                     pointer.reduce();
                     curLexeme = "";
-                    i = nextNonBlank(input, i);
                 } else {
-                    i += 1;
-                    curLexeme+=next;
+                    curLexeme += next;
                     pointer.shift(1);
                 }
+                i += 1;
             }
-            if (curLexeme) {
-                token = tryMatch(curLexeme);
+            token = tryMatch(curLexeme);
+            if (token) {
                 lexSequence.push(token);
             }
             pointer.reduce();
@@ -314,10 +310,12 @@ var Parser = {
             var shifted;
             var expected;
             var curMovement;
+            var lastPos;
             while(top != '$'){
                 curMovement = [stack.slice(), input.slice(), {}];
                 if (top == next) {
                     stack.pop();
+                    lastPos = input[0].position;
                     shifted = toBuild[0];
                     shifted.symbol = input.shift();
                     toBuild.shift();
@@ -330,11 +328,11 @@ var Parser = {
                     var i;
                     for (i in table[top]) {
                         if (table[top][i] != 0) {
-                            expected += '\'' + i + '\'/';
+                            expected += '\'' + i + '\'|';
                         }
                     }
                     expected = expected.substring(0, expected.length - 1);
-                    errorMsg = 'EXPECTING ' + expected + ' BEFORE ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
+                    errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
                     return false;
                 } else if (table[top][next] > 0) {
                     stack.pop();

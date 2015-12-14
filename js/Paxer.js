@@ -281,16 +281,30 @@ var Parser = {
             simpleexpr     : {'{':  0, '}':  0, 'if':  0, '(': 35, ')':  0, 'then':  0, 'else':  0, 'while':  0, 'int':  0, 'real':  0, 'ID': 33, 'NUM': 34, ',':  0, ';':  0, '+':  0, '-':  0, '*':  0, '/':  0, '=':  0, '<':  0, '>':  0, '<=':  0, '>=':  0, '==':  0, '$':  0}
         };
         var Node = {
-            new: function (nodeName) {
+            new: function (abstract) {
                 var node = {};
                 var subNodes = [];
-                node.name = nodeName;
+                node.abstract = abstract;
+                node.name = 'Invalid';
+                node.value = 'Invalid';
+                node.type = 'Invalid';
                 node.pushSubNode = function (sNode) {
                     subNodes.unshift(sNode);
                 };
                 node.getSubNodes = function () {
                     return subNodes;
                 };
+                node.assign = function (token) {
+                    if (token.abstract == 'ID') {
+                        node.name = token.lexeme;
+                        node.type = undefined;
+                        node.value = undefined;
+                    }
+                    if (token.abstract == 'NUM') {
+                        node.type = undefined;//TODO
+                        node.value = undefined;
+                    }
+                }
                 return node;
             }
         };
@@ -307,18 +321,20 @@ var Parser = {
             stack = ['$', 'program'];
             top = stack[stack.length-1];
             next = input[0].abstract;
-            var shifted;
+            var building;
             var expected;
             var curMovement;
             var lastPos;
             while(top != '$'){
                 curMovement = [stack.slice(), input.slice(), {}];
                 if (top == next) {
-                    stack.pop();
                     lastPos = input[0].position;
-                    shifted = toBuild[0];
-                    shifted.symbol = input.shift();
+                    building = toBuild[0];
+                    building.symbol = input[0];
+                    building.assign(input[0]);
                     toBuild.shift();
+                    input.shift();
+                    stack.pop();
                     next = input[0].abstract;
                 } else if (isTerminal(top)) {
                     errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
@@ -337,7 +353,7 @@ var Parser = {
                 } else if (table[top][next] > 0) {
                     stack.pop();
                     rule = table[top][next];
-                    shifted = toBuild.shift();
+                    building = toBuild.shift();
                     var i;
                     var product = rules[rule].product.slice();
                     var item;
@@ -346,7 +362,7 @@ var Parser = {
                         item = product.pop();
                         stack.push(item);
                         newNode = Node.new(item);
-                        shifted.pushSubNode(newNode);
+                        building.pushSubNode(newNode);
                         toBuild.unshift(newNode);
                     }
                     curMovement[2] = rules[rule];

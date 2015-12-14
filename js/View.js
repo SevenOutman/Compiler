@@ -260,6 +260,7 @@ var View = (function() {
         mode:           "console",
         readOnly:       "nocursor",
         scrollbarStyle: "overlay",
+        viewportMargin: Infinity
     });
 
     _console.scollToEnd = function() {
@@ -280,9 +281,14 @@ var View = (function() {
         return result;
     }
 
+    function _lastNLines(str, n) {
+        var lines = str.split("\n");
+        return lines.slice(-n).join("\n");
+    }
+
     _console.log = function(str) {
         if (_console.cm) {
-            _console.cm.setValue(_console.cm.getValue() + _preoutput(": ", str));
+            _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput(": ", str), 1000));
         } else {
             window.console.log(str);
         }
@@ -293,7 +299,7 @@ var View = (function() {
             if (str instanceof Object) {
                 str = str.toString();
             }
-            _console.cm.setValue(_console.cm.getValue() + _preoutput("- ", str));
+            _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("- ", str), 1000));
         } else {
             window.console.log(str);
         }
@@ -301,7 +307,7 @@ var View = (function() {
 
     _console.success = function(str) {
         if (_console.cm) {
-            _console.cm.setValue(_console.cm.getValue() + _preoutput("+ ", str));
+            _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("+ ", str), 1000));
         } else {
             window.console.log(str);
         }

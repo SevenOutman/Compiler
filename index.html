@@ -79,7 +79,7 @@
         <div class="right-box resizable">
             <div class="resizer vertical"></div>
             <div class="box-header">
-                <div class="box-title">Symbol Table</div>
+                <div class="box-title">Structure</div>
             </div>
             <div class="box-body">
                 <div class="placeholder">Nothing to show</div>
@@ -88,7 +88,7 @@
         <div class="center-box">
             <div class="editor-box">
                 <div class="editor-placeholder">
-                    Choose a file from workspace or <a id="cover-open">open a new file</a>
+                    Choose a file from workspace or <a id="cover-open">create a new file</a>
                 </div>
                 <div class="tab-bar">
                     <button class="tab-new">&plus;</button>
@@ -164,7 +164,7 @@
 <script src="js/script.js"></script>
 <script>
 
-    CodeMirror.commands.save = function(cm) {
+    CodeMirror.commands.save = function() {
         View.editor.save();
     };
 
@@ -197,9 +197,9 @@
 
         Sub(document).to("codeinput", function() {
             lexer.lex(View.editor.getContent());
-//            console.log(lexer.getSymbolTable());
             Pub("symboltablechange").on(document);
         }).to("symboltablechange", function() {
+            return;
             var st = lexer.getSymbolTable();
             if ($("#symbol-list").length < 1 && st.length > 0) {
                 var $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list");
@@ -209,9 +209,9 @@
             $("#symbol-list").empty();
             for (var i = 0; i < st.length; i++) {
                 var symbol = st[i],
-                    id     = "sym-" + symbol.lexeme;
-                if (symbol.type == "ID" && $("[data-id='" + id + "']").length < 1) {
-                    var $li    = $("<li></li>").attr("data-id", id).text(symbol.lexeme),
+                    id     = "sym-" + symbol.name;
+                if ($("[data-id='" + id + "']").length < 1) {
+                    var $li    = $("<li></li>").attr("data-id", id).text(symbol.name),
                         $extra = $("<span></span>").addClass("extra").text(symbol.type);
                     $li.on("click", function() {
                         var $self = $(this);
@@ -240,9 +240,8 @@
 
         Sub(Cache.files).to("change", function() {
             if ($("#file-list").length < 1 && this.length > 0) {
-                var $ul         = $("<ul></ul>").attr("id", "file-list").addClass("list"),
-                    placeholder = $(".left-box .placeholder")[0];
-                placeholder.parentNode.removeChild(placeholder);
+                var $ul = $("<ul></ul>").attr("id", "file-list").addClass("list");
+                $(".left-box .placeholder").remove();
                 $ul.appendTo($(".left-box .box-body"));
             }
             for (var i = 0; i < this.length; i++) {
@@ -347,6 +346,76 @@
                 if (lexer.lex(View.editor.getContent())) {
                     if (parser.parse(lexer.getSequence())) {
                         View.console.success(parser.getMovementsF());
+                        var output = "",
+                            level  = 0,
+                            root   = parser.getRoot();
+                        if ($("#symbol-list").length < 1 && root) {
+                            var $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list");
+                            $(".right-box .placeholder").remove();
+                            $ul.appendTo($(".right-box .box-body"));
+                        }
+                        $("#symbol-list").empty();
+                        scanTree(root, "none");
+
+                        View.console.log(output);
+                        function scanTree(node, parentMark) {
+                            var indent = "",
+                                n      = 1;
+                            while ($("[data-id='structure-" + node.name + "-" + n + "'").length > 0) {
+                                n++;
+                            }
+                            for (var i = 0; i < level; i++) {
+                                output += "  ";
+                                indent += "&nbsp;&nbsp;";
+                            }
+                            output += node.name + "\n";
+
+                            var id     = "structure-" + node.name + "-" + n,
+                                $li    = $("<li></li>").attr("data-id", id).attr("data-parent", parentMark).html(node.name),
+                                $caret = $("<span></span>").addClass("glyphicon glyphicon-triangle-bottom li-caret")
+                                        .css("margin-left", (level * 15 - 15) + "px")
+                                        .on("click", function(e) {
+                                            toggleFode($li, $caret.hasClass("glyphicon-triangle-bottom"));
+                                        });
+                            if (node.getSubNodes().length < 1) {
+                                $caret.addClass("no-child");
+                            }
+                            $li.on("click", function() {
+                                var $self = $(this);
+                                if (!$self.hasClass("active")) {
+                                    $self.siblings(".active").removeClass("active");
+                                    $self.addClass("active");
+                                }
+                            });
+                            $("#symbol-list").append($li.prepend($caret));
+                            for (var i = 0, subs = node.getSubNodes(); i < subs.length; i++) {
+                                level++;
+                                scanTree(subs[i], id);
+                            }
+                            level--;
+                        }
+
+                        function toggleFode($li, fold, includeSelf) {
+                            var id = $li.attr("data-id");
+
+                            $.each($("[data-parent='" + id + "']"), function(index, el) {
+//                                    $(el).toggle();
+                                toggleFode($(el), fold, true);
+                            });
+                            if (includeSelf) {
+                                if (fold) {
+                                    $li.hide();
+                                } else $li.show();
+                            }
+                            if (fold) {
+                                $li.find(".li-caret").removeClass("glyphicon-triangle-bottom")
+                                        .addClass("glyphicon-triangle-right");
+                            } else {
+                                $li.find(".li-caret").addClass("glyphicon-triangle-bottom")
+                                        .removeClass("glyphicon-triangle-right");
+                            }
+
+                        }
                     } else {
                         View.console.error(parser.getErrMsg());
                     }

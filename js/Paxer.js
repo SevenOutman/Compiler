@@ -135,6 +135,7 @@ var Lexer = {
             return errorMsg;
         };
         lexer.getSymbolTable = function () {
+
             return symbolTable.get();
         };
         lexer.lex = function (input) {
@@ -195,7 +196,7 @@ var Lexer = {
             var str = "";
             var i;
             for (i = 0; i < lexSequence.length; i += 1) {
-                str+=lexSequence[i].abstract + ' ';
+                str += lexSequence[i].abstract + ' ';
             }
             return str;
         };
@@ -338,9 +339,13 @@ var Parser = {
                     rule = table[top][next];
                     shifted = toBuild.shift();
                     var i;
-                    for (i = rules[rule].product.length - 1; i >= 0; i -= 1) {
-                        stack.push(rules[rule].product[i]);
-                        var newNode = Node.new(rules[rule].product[i]);
+                    var product = rules[rule].product.slice();
+                    var item;
+                    var newNode;
+                    while(product.length > 0) {
+                        item = product.pop();
+                        stack.push(item);
+                        newNode = Node.new(item);
                         shifted.pushSubNode(newNode);
                         toBuild.unshift(newNode);
                     }
@@ -371,53 +376,59 @@ var Parser = {
             return str;
         }
         parser.getMovementsF = function () {
-            var arr = [];
-            var len0 = 0, len1 = 0, len2 = 0;
-            var move, _move, str;
-            var i;
+            var aMovements = [];
+            var length0 = 0, length1 = 0, length2 = 0;
+            var move, thisMove;
+            var sSTACK, sINPUT, sACTION;
+            var i, j;
+            var inputLimit = 22;
             for (i = 0; i < movements.length; i += 1) {
                 move = movements[i];
-                _move = [];
+                thisMove = [];
 
-                str = move[0].join(' ');
-                len0 = len0 < str.length ? str.length : len0;
-                _move.push(str);
+                sSTACK = move[0].join(' ');
+                length0 = Math.max(length0, sSTACK.length);
+                thisMove.push(sSTACK);
 
-                str = "";
-                var j;
+                sINPUT = "| ";
                 for (j = 0; j < move[1].length; j += 1) {
-                    str += move[1][j].lexeme + ' ';
+                    sINPUT += move[1][j].lexeme + ' ';
                 }
-                var tail = str.indexOf(';') > -1 ? ';' : '';
-                str = str.split(';')[0] + tail;
-                if (str.length > 20) {
-                    str = str.substring(0, 20) + ' ...';
+                if (sINPUT.indexOf(';') > -1)
+                    sINPUT = sINPUT.split(';')[0] + ';';
+                else
+                    sINPUT = sINPUT.split(';')[0];
+                if (sINPUT.length > inputLimit) {
+                    sINPUT = sINPUT.substring(0, inputLimit) + ' ...';
                 }
-                len1 = len1 < str.length ? str.length : len1;
-                _move.push(str);
+                length1 = Math.max(length1, sINPUT.length);
+                thisMove.push(sINPUT);
 
-                str = "";
+                sACTION = "| ";
                 if (move[2].hasOwnProperty('interminal')) {
-                    str += move[2].interminal + ' -> ';
-                    str += move[2].product.join(' ');
-                    len2 = len2 < str.length ? str.length : len2;
+                    sACTION += move[2].interminal + ' -> ';
+                    if (move[2].product.length > 0)
+                        sACTION += move[2].product.join(' ');
+                    else
+                        sACTION += 'ε';
+                    length2 = Math.max(length2, sACTION.length);
                 }
-                _move.push(str);
+                thisMove.push(sACTION);
 
-                arr.push(_move);
+                aMovements.push(thisMove);
             }
             var i;
-            for (i = 0; i < arr.length; i += 1) {
-                arr[i][0] = padBlank(arr[i][0], len0);
-                arr[i][1] = padBlank(arr[i][1], len1);
-                arr[i][2] = padBlank(arr[i][2], len2);
+            for (i = 0; i < aMovements.length; i += 1) {
+                aMovements[i][0] = padBlank(aMovements[i][0], length0);
+                aMovements[i][1] = padBlank(aMovements[i][1], length1);
+                aMovements[i][2] = padBlank(aMovements[i][2], length2);
             }
-            var s = '\n' + ([padBlank('STACK', len0 - 2), padBlank('INPUT', len1), padBlank('ACTION', len2)]).join('     ') + '\n';
+            var sMovements = '\n' + ([padBlank('STACK', length0), padBlank('INPUT', length1), padBlank('ACTION', length2)]).join('    ') + '\n';
             var i;
-            for (i = 0; i < arr.length; i += 1) {
-                s += ([arr[i][0], arr[i][1], arr[i][2]]).join('   | ') + '\n';
+            for (i = 0; i < aMovements.length; i += 1) {
+                sMovements += ([aMovements[i][0], aMovements[i][1], aMovements[i][2]]).join('    ') + '\n';
             }
-            return s;
+            return sMovements;
         };
         parser.generateSequentialNodes = function () {
             var countNode = 0;

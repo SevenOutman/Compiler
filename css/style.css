@@ -248,8 +248,7 @@ a:focus:active {
 .box-body {
     position: relative;
     height: calc(100% - 22px);
-    overflow: hidden;
-    overflow-y: auto;
+    overflow: auto;
 }
 
 .box-body .placeholder {
@@ -508,11 +507,11 @@ a:focus:active {
     background: rgb(60, 63, 65);
     border-top: 1px solid rgb(70, 70, 70);
     z-index: 1000;
+
 }
 
 .footer-text {
     float: left;
-
     height: 100%;
     padding: 5px;
     margin: 0 5px;
@@ -553,14 +552,15 @@ a:focus:active {
     border-radius: 0;
     padding: 3px 0;
     font-family: "Lucida Grande", 'Lato', 'Open Sans', Helvetica, Arial, sans-serif;
-    -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
-    -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+    -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
 }
 
 .dropdown-menu > li > a {
     color: rgb(183, 183, 183);
 }
+
 .dropdown-menu>li>a:hover {
     color: rgb(249, 249, 249);
     background: rgb(47, 99, 198);

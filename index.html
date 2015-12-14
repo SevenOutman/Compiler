@@ -342,9 +342,7 @@
             var session = View.editor.currentSession();
             if (null !== session) {
 
-                if ($(".bottom-box").height() <= 30) {
-                    View.console.popup();
-                }
+                View.console.popup();
                 if (!session.file.isNewFile) {
 
                     View.editor.save();

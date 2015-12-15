@@ -277,7 +277,7 @@
                 buffer    = "";
             var findOperatorReg  = /(\+|\-|\*|\/|!=|>=?|<=?|==?)/g,
                 findDelimiterReg = /(\(|\)|\{|}|;|\$)/g;
-            code = code.replace(findOperatorReg, " $1 ")
+            code =                   code.replace(findOperatorReg, " $1 ")
                            .replace(findDelimiterReg, " $1 ")
                            .replace(/[ ]+/g, " ")
                            .replace(/(else|then)\s+\{/g, "$1{")
@@ -332,13 +332,6 @@
                 if (lexer.lex(code)) {
                     if (parser.parse(lexer.getSequence())) {
                         View.console.success(parser.getMovementsF() + "Parse finished.");
-
-                        if ($("#symbol-list").length < 1 && parser.getRoot()) {
-                            var $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list");
-                            $(".right-box .placeholder").remove();
-                            $ul.appendTo($(".right-box .box-body"));
-                        }
-                        $("#symbol-list").empty();
 //                        return;
                         Pub("parsedone").on(document);
 //                        console.log(parser.generateSequentialNodes());
@@ -351,11 +344,22 @@
                 }
             }
         };
-        Sub(document).to("parsedone", function () {
+        Sub(document).to("parsedone", function() {
+            $(".right-box .placeholder").text("Loading...");
             var output = "",
                 level  = 0,
-                root   = parser.getRoot();
+                root   = parser.getRoot(),
+                $ul;
+
+            if ($("#symbol-list").length < 1 && root) {
+                $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list");
+            } else {
+                $ul = $("#symbol-list").empty();
+            }
+
             scanTree(root, "none");
+            $(".right-box .placeholder").remove();
+            $ul.appendTo($(".right-box .box-body"));
 //                        View.console.log(output);
             function scanTree(node, parentMark) {
                 var indent = "",
@@ -390,7 +394,7 @@
                 }).on("dblclick", function() {
                     $caret.trigger("click");
                 });
-                $("#symbol-list").append($li.prepend($caret));
+                $ul.append($li.prepend($caret));
                 for (var i = 0, subs = node.getSubNodes(); i < subs.length; i++) {
                     level++;
                     scanTree(subs[i], id);

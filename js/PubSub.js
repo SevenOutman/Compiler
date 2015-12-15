@@ -53,9 +53,11 @@
                 return this;
             },
             on:  function(obj) {
-                for (var i = 0; i < pubs.length; i++) {
-                    _publish(obj, pubs[i]);
-                }
+                setTimeout(function() {
+                    for (var i = 0; i < pubs.length; i++) {
+                        _publish(obj, pubs[i]);
+                    }
+                }, 0);
             }
         }
     };

@@ -333,84 +333,16 @@
                     if (parser.parse(lexer.getSequence())) {
                         View.console.success(parser.getMovementsF() + "Parse finished.");
 
-                        var output = "",
-                            level  = 0,
-                            root   = parser.getRoot();
-                        if ($("#symbol-list").length < 1 && root) {
+                        if ($("#symbol-list").length < 1 && parser.getRoot()) {
                             var $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list");
                             $(".right-box .placeholder").remove();
                             $ul.appendTo($(".right-box .box-body"));
                         }
                         $("#symbol-list").empty();
 //                        return;
-                        scanTree(root, "none");
-                        console.log(parser.generateSequentialNodes());
+                        Pub("parsedone").on(document);
+//                        console.log(parser.generateSequentialNodes());
 
-//                        View.console.log(output);
-                        function scanTree(node, parentMark) {
-                            var indent = "",
-                                n      = 1;
-                            while ($("[data-id='structure-" + node.abstract + "-" + n + "']").length > 0) {
-                                n++;
-                            }
-                            for (var i = 0; i < level; i++) {
-                                output += "  ";
-                                indent += "&nbsp;&nbsp;";
-                            }
-                            output += node.abstract + "\n";
-
-                            var id     = "structure-" + node.abstract + "-" + n,
-                                $li    = $("<li></li>").attr("data-id", id).attr("data-parent", parentMark).html(node.abstract),
-                                $caret = $("<span></span>").addClass("glyphicon glyphicon-triangle-bottom li-caret")
-                                        .css("margin-left", (level * 15 - 15) + "px"),
-                                $extra = $("<span></span>").addClass("extra").text(node.value);
-                            if (node.getSubNodes().length < 1) {
-                                $caret.addClass("no-child");
-                            } else {
-                                $caret.on("click", function(e) {
-                                    toggleFode($li, $caret.hasClass("glyphicon-triangle-bottom"));
-                                });
-                            }
-                            $li.on("click", function() {
-                                var $self = $(this);
-                                if (!$self.hasClass("active")) {
-                                    $self.siblings(".active").removeClass("active");
-                                    $self.addClass("active");
-                                }
-                            }).on("dblclick", function() {
-                                $caret.trigger("click");
-                            });
-                            $("#symbol-list").append($li.prepend($caret));
-                            for (var i = 0, subs = node.getSubNodes(); i < subs.length; i++) {
-                                level++;
-                                scanTree(subs[i], id);
-                            }
-                            level--;
-                        }
-
-                        function toggleFode($li, fold, includeSelf) {
-                            var id = $li.attr("data-id");
-
-                            $.each($("[data-parent='" + id + "']"), function(index, el) {
-//                                    $(el).toggle();
-                                toggleFode($(el), fold, true);
-                            });
-                            if (includeSelf) {
-                                if (fold) {
-                                    $li.hide();
-                                } else {
-                                    $li.show();
-                                }
-                            }
-                            if (fold) {
-                                $li.find(".li-caret").removeClass("glyphicon-triangle-bottom")
-                                        .addClass("glyphicon-triangle-right");
-                            } else {
-                                $li.find(".li-caret").addClass("glyphicon-triangle-bottom")
-                                        .removeClass("glyphicon-triangle-right");
-                            }
-
-                        }
                     } else {
                         View.console.error(parser.getErrMsg());
                     }
@@ -419,6 +351,77 @@
                 }
             }
         };
+        Sub(document).to("parsedone", function () {
+            var output = "",
+                level  = 0,
+                root   = parser.getRoot();
+            scanTree(root, "none");
+//                        View.console.log(output);
+            function scanTree(node, parentMark) {
+                var indent = "",
+                    n      = 1;
+                while ($("[data-id='structure-" + node.abstract + "-" + n + "']").length > 0) {
+                    n++;
+                }
+                for (var i = 0; i < level; i++) {
+                    output += "  ";
+                    indent += "&nbsp;&nbsp;";
+                }
+                output += node.abstract + "\n";
+
+                var id     = "structure-" + node.abstract + "-" + n,
+                    $li    = $("<li></li>").attr("data-id", id).attr("data-parent", parentMark).html(node.abstract),
+                    $caret = $("<span></span>").addClass("glyphicon glyphicon-triangle-bottom li-caret")
+                            .css("margin-left", (level * 15 - 15) + "px"),
+                    $extra = $("<span></span>").addClass("extra").text(node.value);
+                if (node.getSubNodes().length < 1) {
+                    $caret.addClass("no-child");
+                } else {
+                    $caret.on("click", function(e) {
+                        toggleFode($li, $caret.hasClass("glyphicon-triangle-bottom"));
+                    });
+                }
+                $li.on("click", function() {
+                    var $self = $(this);
+                    if (!$self.hasClass("active")) {
+                        $self.siblings(".active").removeClass("active");
+                        $self.addClass("active");
+                    }
+                }).on("dblclick", function() {
+                    $caret.trigger("click");
+                });
+                $("#symbol-list").append($li.prepend($caret));
+                for (var i = 0, subs = node.getSubNodes(); i < subs.length; i++) {
+                    level++;
+                    scanTree(subs[i], id);
+                }
+                level--;
+            }
+
+            function toggleFode($li, fold, includeSelf) {
+                var id = $li.attr("data-id");
+
+                $.each($("[data-parent='" + id + "']"), function(index, el) {
+//                                    $(el).toggle();
+                    toggleFode($(el), fold, true);
+                });
+                if (includeSelf) {
+                    if (fold) {
+                        $li.hide();
+                    } else {
+                        $li.show();
+                    }
+                }
+                if (fold) {
+                    $li.find(".li-caret").removeClass("glyphicon-triangle-bottom")
+                            .addClass("glyphicon-triangle-right");
+                } else {
+                    $li.find(".li-caret").addClass("glyphicon-triangle-bottom")
+                            .removeClass("glyphicon-triangle-right");
+                }
+
+            }
+        });
 
         $(".tab-new").on("click", function() {
             View.editor.newFile();

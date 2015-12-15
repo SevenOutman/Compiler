@@ -30,7 +30,7 @@
                 if (mem.target === obj) {
                     if (mem.subs[type] && mem.subs[type] instanceof Array) {
                         for (var j = 0; j < mem.subs[type].length; j++) {
-                            mem.subs[type][j]();
+                            setTimeout(mem.subs[type][j], 0);
                         }
                     }
                 }

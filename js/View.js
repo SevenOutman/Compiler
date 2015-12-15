@@ -72,29 +72,6 @@ var View = (function() {
         return null;
     }.bind(_editor.openedSessions);
 
-    Sub(_editor.openedSessions).to("change", function() {
-        for (var i = 0; i < this.length; i++) {
-            var session = this[i],
-                id      = "session-" + session.id;
-            if ($("#" + id).length < 1) {
-                var $a    = $("<a></a>").text(session.file.fileName()),
-                    $span = $("<span></span>").addClass("tab-dismiss").html("&times;"),
-                    $li   = $("<div></div>").attr("id", id).addClass("tab-cell");
-                $span.on("click", (function(session) {
-                    return function() {
-                        View.editor.closeSession(session);
-                        return false;
-                    }
-                })(session));
-                $li.on("click", (function(session) {
-                    return function() {
-                        View.editor.bringSessionToFront(session);
-                    }
-                })(session));
-                $(".tab-group").append($li.append($a.append($span)));
-            }
-        }
-    });
     _editor.currentSession = (function() {
         var _current = null;
         return function(session) {
@@ -108,8 +85,28 @@ var View = (function() {
                 _editor.setContent(_current.content);
                 _editor.cm.doc.setHistory(_current.history);
                 _editor.cm.doc.setCursor(_current.cursorPosition);
-                var id  = "session-" + _current.id,
-                    $li = $("#" + id);
+                var id = "session-" + _current.id,
+                    $li;
+
+                if ($("#" + id).length < 1) {
+                    var $a    = $("<a></a>").text(session.file.fileName()),
+                        $span = $("<span></span>").addClass("tab-dismiss").html("&times;");
+                    $li = $("<div></div>").attr("id", id).addClass("tab-cell");
+                    $span.on("click", (function(session) {
+                        return function() {
+                            View.editor.closeSession(session);
+                            return false;
+                        }
+                    })(session));
+                    $li.on("click", (function(session) {
+                        return function() {
+                            _editor.bringSessionToFront(session);
+                        }
+                    })(session));
+                    $(".tab-group").append($li.append($a.append($span)));
+                }
+
+                $li = $("#" + id);
                 if (!$li.hasClass("active")) {
                     $li.siblings(".active").removeClass("active");
                     $li.addClass("active");
@@ -158,7 +155,6 @@ var View = (function() {
         if (null === session) {
             session = new FileSession(file);
             _editor.openedSessions.push(session);
-            Pub("change").on(_editor.openedSessions);
         }
 
         var id  = "toy-" + file.name,

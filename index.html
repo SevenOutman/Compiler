@@ -383,7 +383,7 @@
                     $caret.addClass("no-child");
                 } else {
                     $caret.on("click", function(e) {
-                        toggleFode($li, $caret.hasClass("glyphicon-triangle-bottom"));
+                        toggleFold($li, $caret.hasClass("glyphicon-triangle-bottom"), false);
                     });
                 }
                 $li.on("click", function() {
@@ -403,12 +403,12 @@
                 level--;
             }
 
-            function toggleFode($li, fold, includeSelf) {
+            function toggleFold($li, fold, includeSelf) {
                 var id = $li.attr("data-id");
 
                 $.each($("[data-parent='" + id + "']"), function(index, el) {
 //                                    $(el).toggle();
-                    toggleFode($(el), fold, true);
+                    toggleFold($(el), fold, true);
                 });
                 if (includeSelf) {
                     if (fold) {

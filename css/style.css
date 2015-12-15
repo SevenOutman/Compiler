@@ -538,10 +538,6 @@ a:focus:active {
     cursor: pointer;
 }
 
-.hidden {
-    display: none;
-}
-
 /*------ context.css -------*/
 .dropdown-menu::after, .dropdown-context::before {
     display: none;
@@ -568,5 +564,5 @@ a:focus:active {
 
 .dropdown-menu > li.divider {
     margin: 3px 1px;
-    border-bottom-color: rgba(81, 81, 81, .99);
+    background-color: rgba(81, 81, 81, .99);
 }

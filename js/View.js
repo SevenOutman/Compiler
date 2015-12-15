@@ -273,12 +273,7 @@ var View = (function() {
 
 
     function _preoutput(addon, para) {
-        var lines  = (para + "").split("\n"),
-            result = "";
-        for (var i = 0; i < lines.length; i++) {
-            result += (i == 0 ? addon : "  ") + lines[i].replace(/\s+$/, "") + "\n";
-        }
-        return result;
+        return addon + para.replace(/\s*\n/g, "\n  ") + "\n";
     }
 
     function _lastNLines(str, n) {

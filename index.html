@@ -316,20 +316,23 @@
 
                 View.console.popup();
                 $("#box-opener-structure").trigger("click");
+//                $(".left-box .box-caret").trigger("click");
 
+                var code;
                 if (!session.file.isNewFile) {
-
                     View.editor.save();
                     View.console.log("Compile '" + session.file.fileName() + "'...");
-
+                    code = View.editor.currentSession().content;
                 } else {
                     View.console.log("Compile 'untitled'...");
+                    code = View.editor.getContent();
                 }
                 // var processed = (new LexicalAnalyzer).run(View.editor.getContent());
                 // (new LLParser).run(processed);
-                if (lexer.lex(View.editor.getContent())) {
+                if (lexer.lex(code)) {
                     if (parser.parse(lexer.getSequence())) {
-                        View.console.success(parser.getMovementsF());
+                        View.console.success(parser.getMovementsF() + "Parse finished.");
+
                         var output = "",
                             level  = 0,
                             root   = parser.getRoot();
@@ -341,6 +344,7 @@
                         $("#symbol-list").empty();
 //                        return;
                         scanTree(root, "none");
+                        console.log(parser.generateSequentialNodes());
 
 //                        View.console.log(output);
                         function scanTree(node, parentMark) {
@@ -569,8 +573,8 @@
                 if (id == "box-opener-structure") {
                     var $box = $(".right-box");
                     if ($box.hasClass("hidden")) {
-                        $box.removeClass("hidden").css("width", "200px");
-                        $(".center-box").css("margin-right", "200px");
+                        $box.removeClass("hidden").css("width", "350px");
+                        $(".center-box").css("margin-right", "350px");
                     }
                 }
             });

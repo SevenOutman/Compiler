@@ -30,6 +30,7 @@ var SymbolTable = {
         symbolTable.reset = function () {
             tableD = {};
             tableA = [];
+            indexA = {};
             count  = 0;
         };
         symbolTable.get = function () {
@@ -457,7 +458,7 @@ var Parser = {
             if (typeof(node) === typeof(Node.new())) {
                 var sequentialNodes = [];
                 var cur = [thisID, node.name, 0, fartherID];
-                var subNodes = node.subNodes;
+                var subNodes = node.getSubNodes();
                 var i;
                 for (i = 0; i < subNodes.length; i += 1) {
                     var subSqu = digNode(thisID, subNodes[i]);

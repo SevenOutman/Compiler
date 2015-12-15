@@ -301,13 +301,14 @@ var Parser = {
                         node.value = undefined;
                     }
                     if (token.abstract == 'NUM') {
-                        node.type = undefined;//TODO
+                        node.type = undefined;
                         node.value = undefined;
                     }
                 }
                 return node;
             }
         };
+        var countNode;
         var parser = {};
         var movements = [];
         var errorMsg;
@@ -447,7 +448,7 @@ var Parser = {
             return sMovements;
         };
         parser.generateSequentialNodes = function () {
-            var countNode = 0;
+            countNode = 0;
             return digNode(null, parser.getRoot());
         };
         function digNode(fartherID, node) {

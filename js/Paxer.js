@@ -305,6 +305,9 @@ var Parser = {
                         node.type = undefined;
                         node.value = Number(token.lexeme);
                     }
+                    if (token.abstract == 'type') {
+                        node.value = (token.lexeme)
+                    };
                 }
                 return node;
             }
@@ -345,12 +348,12 @@ var Parser = {
         parser.parse = function (input) {
             var stack = [];
             var next, top;
-            root = Node.new('program');
-            var toBuild = [root];
             movements = [];
             stack = ['$', 'program'];
             top = stack[stack.length-1];
             next = input[0].abstract;
+            root = Node.new('program');
+            var toBuild = [root];
             var building;
             var expected;
             var curMovement;
@@ -370,6 +373,19 @@ var Parser = {
                     errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
                     return false;
                 } else if (table[top][next] == 0) {
+                    //RECOVERY START
+                    //TRY ADDING EVERY EXPECTED
+                    var possibleItem;
+                    for (i in table[top]) {
+                        if (table[top][i] != 0) {
+                            if(recoveryParse(stack.slice().unshift(table[top][i]), input.slice())){
+                                possibleItem = i;
+                                break;
+                            }
+                        }
+                    }
+                    //RECOVERY END
+                    //IF RECOVERY FAIL
                     expected = "";
                     var i;
                     for (i in table[top]) {
@@ -380,6 +396,87 @@ var Parser = {
                     expected = expected.substring(0, expected.length - 1);
                     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
                     return false;
+                    //ELSE (RECOVERY NOT FAIL)
+
+                } else if (table[top][next] > 0) {
+                    stack.pop();
+                    rule = table[top][next];
+                    building = toBuild.shift();
+                    var i;
+                    var product = rules[rule].product.slice();
+                    var item;
+                    var newNode;
+                    if (product.length==0) {
+                        building.pushSubNode(epsilonNode.new());
+                    }
+                    while(product.length > 0) {
+                        item = product.pop();
+                        stack.push(item);
+                        newNode = Node.new(item);
+                        building.pushSubNode(newNode);
+                        toBuild.unshift(newNode);
+                    }
+                    curMovement[2] = rules[rule];
+                }
+                movements.push(curMovement);
+                top = stack[stack.length-1];
+            }
+            if (input.length == 1) {
+                movements.push([stack.slice(), input.slice(), {}]);
+                return true;
+            } else {
+                errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
+                return false;
+            }
+        };
+        parser.recoveryParse = function (stack, input) {
+            return false;
+            var stack = [];
+            var next, top;
+            top = stack[stack.length-1];
+            next = input[0].abstract;
+            var expected;
+            var lastPos;
+            while(top != '$'){
+                curMovement = [stack.slice(), input.slice(), {}];
+                if (top == next) {
+                    lastPos = input[0].position;
+                    building = toBuild[0];
+                    building.symbol = input[0];
+                    building.assign(input[0]);
+                    toBuild.shift();
+                    input.shift();
+                    stack.pop();
+                    next = input[0].abstract;
+                } else if (isTerminal(top)) {
+                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
+                    return false;
+                } else if (table[top][next] == 0) {
+                    //RECOVERY START
+                    //TRY ADDING EVERY EXPECTED
+                    var possibleItem;
+                    for (i in table[top]) {
+                        if (table[top][i] != 0) {
+                            if(recoveryParse(table[top][i], stack.slice(), input.slice())){
+                                possibleItem = i;
+                                break;
+                            }
+                        }
+                    }
+                    //RECOVERY END
+                    //IF RECOVERY FAIL
+                    expected = "";
+                    var i;
+                    for (i in table[top]) {
+                        if (table[top][i] != 0) {
+                            expected += '\'' + i + '\'|';
+                        }
+                    }
+                    expected = expected.substring(0, expected.length - 1);
+                    errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                    return false;
+                    //ELSE (RECOVERY NOT FAIL)
+
                 } else if (table[top][next] > 0) {
                     stack.pop();
                     rule = table[top][next];

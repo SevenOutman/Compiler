@@ -15,7 +15,7 @@ button:visited,
 button:focus,
 button:focus:active,
 input,
-input:focus  {
+input:focus {
     -webkit-appearance: none;
     outline: none;
 }
@@ -102,6 +102,7 @@ a:focus:active {
     display: none;
     z-index: 10001;
 }
+
 #rename-dialog {
     width: 300px;
     height: auto;
@@ -111,7 +112,7 @@ a:focus:active {
     background: rgb(60, 63, 65);
     color: rgb(187, 187, 187);
     border-radius: 3px;
-    font-size: 10px;
+    font-size: 13px;
     -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
     -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
@@ -177,7 +178,10 @@ a:focus:active {
     background: #4d4d50;
     color: #ffffff;
     outline: none;
+}
 
+.navbar-btn:disabled:hover {
+    background: #343436;
 }
 
 .navbar-btn:active,
@@ -325,7 +329,7 @@ a:focus:active {
     color: rgb(187, 187, 187);
 }
 
-.list>li {
+.list > li {
     width: 100%;
     height: 20px;
     font-size: 10px;
@@ -367,6 +371,7 @@ a:focus:active {
 .list > li.active > .extra {
     color: rgb(187, 187, 187);
 }
+
 .right-box {
     /*width: 200px;*/
     width: 0;
@@ -449,6 +454,24 @@ a:focus:active {
     border-bottom: 1px solid rgb(40, 40, 40);
 }
 
+.tab-bar-cover {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    padding: 6px 0 5px 0;
+    background: rgb(60, 63, 65);
+    color: rgb(201, 201, 201);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .5);
+    text-align: center;
+    font-size: 10px;
+    line-height: 10px;
+    white-space: nowrap;
+    display: none;
+    z-index: 200;
+}
+
 .tab-new {
     -webkit-appearance: none;
     float: right;
@@ -506,10 +529,9 @@ a:focus:active {
 .tab-cell.active {
     background: rgb(81, 86, 88);
     border-bottom: 1px solid rgb(81, 86, 88);
-
 }
 
-.tab-cell>a {
+.tab-cell > a {
     width: 100%;
     height: 21px;
     background: transparent;
@@ -531,8 +553,9 @@ a:focus:active {
     font-weight: bolder;
     color: rgb(121, 121, 121);
 }
+
 .tab-dismiss:hover {
-    color: rgb(135,135,135);
+    color: rgb(135, 135, 135);
 }
 
 .editor-container {
@@ -605,7 +628,7 @@ a:focus:active {
     color: rgb(183, 183, 183);
 }
 
-.dropdown-menu>li>a:hover {
+.dropdown-menu > li > a:hover {
     color: rgb(249, 249, 249);
     background: rgb(47, 99, 198);
 }

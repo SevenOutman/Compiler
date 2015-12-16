@@ -377,8 +377,26 @@ var View = (function() {
     _console.fold = function() {
     };
 
+    var _control = {};
+    _control.compiling = null;
+    _control.compilie = function (file) {
+        return;
+        _control.compiling = file;
+        _control.enterCompileMode();
+    };
+    _control.enterCompileMode = function () {
+        if (_control.compiling !== null) {
+            $("#compiling-filename").text(_control.compiling.fileName());
+            $(".tab-bar-cover").show();
+            $("#btn-compile").prop("disabled", true);
+            $(".left-box .box-caret").trigger("click");
+            _editor.cm.setOption("readOnly", true);
+        }
+    };
+
     return {
         editor:  _editor,
-        console: _console
+        console: _console,
+        control: _control
     };
 })();

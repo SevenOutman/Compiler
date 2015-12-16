@@ -66,6 +66,10 @@
     content: "\e259";
 }
 
+.glyphicon-share-alt:before {
+    content: "\e095";
+}
+
 .glyphicon-triangle-right:before {
     content: "\e250";
 }

@@ -28,6 +28,7 @@ Array.prototype.remove = function (elem) {
     }
 };
 
+
 Math.mid = function(x, y, z) {
     if (arguments.length != 3) {
         throw new Error("Math.mid requires exactly 3 arguments.");

@@ -68,6 +68,11 @@
                             class="glyphicon glyphicon-import"></span> Import</label>
                 </li>
                 <li>
+                    <button class="btn navbar-btn" id="btn-next"><span
+                            class="glyphicon glyphicon-share-alt"></span> Compile Next
+                    </button>
+                </li>
+                <li>
                     <button class="btn navbar-btn" id="btn-compile"><span
                             class="glyphicon glyphicon-download-alt"></span> Compile
                     </button>
@@ -104,6 +109,7 @@
                     Choose a file from workspace or <a id="cover-open">create a new file</a>
                 </div>
                 <div class="tab-bar">
+                    <div class="tab-bar-cover">Compiling '<span id="compiling-filename"></span>'...</div>
                     <button class="tab-new">&plus;</button>
                     <div class="tab-row">
                         <div class="tab-group">
@@ -187,20 +193,21 @@
 <script src="js/ToyFile.js"></script>
 <script src="js/View.js"></script>
 <script src="js/Paxer.js"></script>
+<script src="js/Semantic.js"></script>
 <script src="js/script.js"></script>
 <script>
 
-    CodeMirror.commands.save = function() {
+    CodeMirror.commands.save = function () {
         View.editor.save();
     };
 
-    window.onbeforeunload = function() {
+    window.onbeforeunload = function () {
         if (View.editor.needSave()) {
             return "未保存的修改将丢失";
         }
     };
 
-    window.onunload = function() {
+    window.onunload = function () {
         var session = View.editor.currentSession();
         if (session && session.file) {
 
@@ -215,17 +222,17 @@
         Storage.setItem("stored-files", JSON.stringify(storedFiles));
     };
 
-    window.onload = function() {
+    window.onload = function () {
         // var lexical = new LexicalAnalyzer;
         // var ll = new LLParser();
         var lexer = Lexer.new();
         var parser = Parser.new();
 
-        document.getElementById("cover-open").addEventListener("click", function() {
+        document.getElementById("cover-open").addEventListener("click", function () {
             View.editor.newFile();
         }, false);
         Cache.files = [];
-        Cache.files.find = function(fileName) {
+        Cache.files.find = function (fileName) {
             for (var i = 0; i < this.length; i++) {
                 if (this[i].fileName() === fileName) {
                     return this[i];
@@ -245,22 +252,22 @@
             var item = Storage.getItem(Cache.storedFileNames[i]);
             if (item) {
                 var fileInfo = JSON.parse(item),
-                    file     = new ToyFile(fileInfo.name, fileInfo.content, false),
-                    id       = "toy-" + file.name;
+                        file = new ToyFile(fileInfo.name, fileInfo.content, false),
+                        id = "toy-" + file.name;
                 Cache.files.push(file);
                 if ($("#" + id).length < 1) {
-                    var $li   = $("<li></li>").attr("id", id).text(file.fileName()),
-                        $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
-                    $li.on("click", function() {
+                    var $li = $("<li></li>").attr("id", id).text(file.fileName()),
+                            $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
+                    $li.on("click", function () {
                         var $self = $(this);
                         if (!$self.hasClass("active")) {
                             $self.siblings(".active").removeClass("active");
                             $self.addClass("active");
                         }
-                    }).on("contextmenu", function() {
+                    }).on("contextmenu", function () {
                         $(this).trigger("click");
-                    }).on("dblclick", (function(file) {
-                        return function() {
+                    }).on("dblclick", (function (file) {
+                        return function () {
                             View.editor.openFile(file);
                         }
                     })(file));
@@ -279,18 +286,18 @@
             }
         }
 
-        document.getElementById("btn-tidy").onclick = function() {
-            var code      = View.editor.getContent().replace(/\n/g, " "),
-                processed = "",
-                buffer    = "";
-            var findOperatorReg  = /(\+|\-|\*|\/|!=|>=?|<=?|==?)/g,
-                findDelimiterReg = /(\(|\)|\{|}|;|\$)/g;
-            code =                   code.replace(findOperatorReg, " $1 ")
-                           .replace(findDelimiterReg, " $1 ")
-                           .replace(/[ ]+/g, " ")
-                           .replace(/(else|then)\s+\{/g, "$1{")
-                           .replace(/}\s+(else)/, "}$1")
-                           .trim() + " ";
+        document.getElementById("btn-tidy").onclick = function () {
+            var code = View.editor.getContent().replace(/\n/g, " "),
+                    processed = "",
+                    buffer = "";
+            var findOperatorReg = /(\+|\-|\*|\/|!=|>=?|<=?|==?)/g,
+                    findDelimiterReg = /(\(|\)|\{|}|;|\$)/g;
+            code = code.replace(findOperatorReg, " $1 ")
+                            .replace(findDelimiterReg, " $1 ")
+                            .replace(/[ ]+/g, " ")
+                            .replace(/(else|then)\s+\{/g, "$1{")
+                            .replace(/}\s+(else)/, "}$1")
+                            .trim() + " ";
             for (var i = 0; i < code.length; i++) {
                 if (code[i] == " ") {
                     processed += buffer;
@@ -317,7 +324,7 @@
             View.editor.cm.focus();
         };
 
-        document.getElementById("btn-compile").onclick = function() {
+        document.getElementById("btn-compile").onclick = function () {
 
             var session = View.editor.currentSession();
             if (null !== session) {
@@ -335,15 +342,23 @@
                     View.console.log("Compile 'untitled'...");
                     code = View.editor.getContent();
                 }
+                View.control.compilie(session.file);
                 // var processed = (new LexicalAnalyzer).run(View.editor.getContent());
                 // (new LLParser).run(processed);
+                var start = window.performance ? window.performance.now() : (new Date).now();
                 if (lexer.lex(code)) {
+                    console.log(lexer.getSymbolTable());
+                    var lexend = window.performance ? window.performance.now() : (new Date).now();
                     if (parser.parse(lexer.getSequence())) {
-                        View.console.success(parser.getMovementsF() + "Parse finished.");
-                        if (parser.getWarningMsg().length > 0) {
-                            View.console.error(parser.getWarningMsg());
-                        }
+                        console.log(parser.getRootS());
+                        var end = window.performance ? window.performance.now() : (new Date).now();
+                        View.console.success(parser.getMovementsF()
+                                + "Compile finished in " + (end - start).toFixed(4) + " millisecs. "
+                                + "Lexer: " + (lexend - start).toFixed(4) + "ms. "
+                                + "Parser: " + (end - lexend).toFixed(4) + "ms."
+                                +"\nCan we do it faster?");
 //                        return;
+
                         Pub("parsedone").on(document);
 
                         session.file.tree = new TreeFile(session.file, parser.generateSequentialNodes());
@@ -355,12 +370,12 @@
                 }
             }
         };
-        Sub(document).to("parsedone", function() {
+        Sub(document).to("parsedone", function () {
             $(".right-box .placeholder").text("Loading...");
             var output = "",
-                level  = 0,
-                root   = parser.getRoot(),
-                $ul;
+                    level = 0,
+                    root = parser.getRootS(),
+                    $ul;
 
             if ($("#symbol-list").length < 1 && root) {
                 $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list");
@@ -371,10 +386,11 @@
             scanTree(root, "none");
             $(".right-box .placeholder").remove();
             $ul.appendTo($(".right-box .box-body"));
+
 //                        View.console.log(output);
             function scanTree(node, parentMark) {
                 var indent = "",
-                    n      = 1;
+                        n = 1;
                 while ($("[data-id='structure-" + node.abstract + "-" + n + "']").length > 0) {
                     n++;
                 }
@@ -384,29 +400,34 @@
                 }
                 output += node.abstract + "\n";
 
-                var id     = "structure-" + node.abstract + "-" + n,
-                    $li    = $("<li></li>").attr("data-id", id).attr("data-parent", parentMark).html(node.abstract),
-                    $caret = $("<span></span>").addClass("glyphicon glyphicon-triangle-bottom li-caret")
-                            .css("margin-left", (level * 15 - 15) + "px"),
-                    $extra = $("<span></span>").addClass("extra").text(node.value);
-                if (node.getSubNodes().length < 1) {
+                var id = "structure-" + node.abstract + "-" + n,
+                        $li = $("<li></li>").attr("data-id", id).attr("data-parent", parentMark).html(node.abstract),
+                        $caret = $("<span></span>").addClass("glyphicon glyphicon-triangle-bottom li-caret")
+                                .css("margin-left", (level * 15 - 15) + "px"),
+                        $extra = $("<span></span>").addClass("extra");
+                if (node.abstract == "ID") {
+                    $extra.text(node.name);
+                } else if (node.abstract == "NUM") {
+                    $extra.text(node.value);
+                }
+                if (node.subNodes.length < 1) {
                     $caret.addClass("no-child");
                 } else {
-                    $caret.on("click", function(e) {
+                    $caret.on("click", function (e) {
                         toggleFold($li, $caret.hasClass("glyphicon-triangle-bottom"), false);
                     });
                 }
-                $li.on("click", function() {
+                $li.on("click", function () {
                     var $self = $(this);
                     if (!$self.hasClass("active")) {
                         $self.siblings(".active").removeClass("active");
                         $self.addClass("active");
                     }
-                }).on("dblclick", function() {
+                }).on("dblclick", function () {
                     $caret.trigger("click");
                 });
-                $ul.append($li.prepend($caret));
-                for (var i = 0, subs = node.getSubNodes(); i < subs.length; i++) {
+                $ul.append($li.prepend($caret).append($extra));
+                for (var i = 0, subs = node.subNodes; i < subs.length; i++) {
                     level++;
                     scanTree(subs[i], id);
                 }
@@ -416,8 +437,7 @@
             function toggleFold($li, fold, includeSelf) {
                 var id = $li.attr("data-id");
 
-                $.each($("[data-parent='" + id + "']"), function(index, el) {
-//                                    $(el).toggle();
+                $.each($("[data-parent='" + id + "']"), function (index, el) {
                     toggleFold($(el), fold, true);
                 });
                 if (includeSelf) {
@@ -438,36 +458,53 @@
             }
         });
 
-        $(".tab-new").on("click", function() {
+        $(".tab-new").on("click", function () {
             View.editor.newFile();
         });
 
-        var fr      = new FileReader,
-            tmpFile = null;
-        fr.onload = function() {
+        var fr = new FileReader,
+                tmpFile = null;
+        fr.onload = function () {
             if (null !== tmpFile) {
                 tmpFile.content = this.result;
                 Cache.files.push(tmpFile);
-                Pub("change").on(Cache.files);
+                var id = "toy-" + tmpFile.name;
+                if ($("#" + id).length < 1) {
+                    var $li = $("<li></li>").attr("id", id).text(tmpFile.fileName()),
+                            $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
+                    $li.on("click", function () {
+                        var $self = $(this);
+                        if (!$self.hasClass("active")) {
+                            $self.siblings(".active").removeClass("active");
+                            $self.addClass("active");
+                        }
+                    }).on("contextmenu", function () {
+                        $(this).trigger("click");
+                    }).on("dblclick", (function (file) {
+                        return function () {
+                            View.editor.openFile(file);
+                        }
+                    })(tmpFile));
+                    $("#file-list").append($li.prepend($icon));
+                }
                 View.editor.openFile(tmpFile);
-                $("#toy-" + tmpFile.id).trigger("click");
                 tmpFile = null;
             }
         };
-        document.getElementById("source_file").onchange = function() {
+        document.getElementById("source_file").onchange = function () {
             var file = this.files[0];
             tmpFile = new ToyFile(file.name.replace(/(\.\w+)?$/, ".toy"));
             tmpFile.isNewFile = false;
             fr.readAsText(file);
         };
-        document.getElementById("btn-save").onclick = function() {
+        document.getElementById("btn-save").onclick = function () {
             View.editor.save();
         };
         var moving_resizer = null,
-            mouseOffsetY   = 0,
-            mouseOffsetX   = 0;
-        [].forEach.call($(".resizer"), function(el) {
-            el.addEventListener("mousedown", function(e) {
+                mouseOffsetY = 0,
+                mouseOffsetX = 0;
+        [].forEach.call($(".resizer"), function (el) {
+            el.addEventListener("mousedown", function (e) {
                 moving_resizer = el;
                 mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
                 mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
@@ -475,40 +512,40 @@
 
             }, false);
         });
-        document.addEventListener("mouseup", function() {
+        document.addEventListener("mouseup", function () {
             moving_resizer = null;
             $("#resizing-mask").hide();
         }, false);
-        document.getElementById("resizing-mask").addEventListener("mousemove", function(e) {
+        document.getElementById("resizing-mask").addEventListener("mousemove", function (e) {
             if (moving_resizer instanceof HTMLElement) {
                 var $box = $(moving_resizer).parent(".resizable");
                 if ($box[0] instanceof HTMLElement) {
-                    var $main   = $("#main"),
-                        $left   = $(".left-box"),
-                        $right  = $(".right-box"),
-                        $center = $(".center-box"),
-                        $bottom = $(".bottom-box"),
-                        $editor = $(".editor-box");
+                    var $main = $("#main"),
+                            $left = $(".left-box"),
+                            $right = $(".right-box"),
+                            $center = $(".center-box"),
+                            $bottom = $(".bottom-box"),
+                            $editor = $(".editor-box");
                     if ($box.hasClass("left-box")) {
-                        var mouseX    = e.clientX,
-                            leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
-                                    1, $main.width() - $right.width() - 1);
+                        var mouseX = e.clientX,
+                                leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
+                                        1, $main.width() - $right.width() - 1);
 
                         $box.width(leftWidth - 1);
                         $center.css("margin-left", leftWidth + "px");
 
                     }
                     if ($box.hasClass("right-box")) {
-                        var mouseX     = e.clientX,
-                            rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
-                                    1, $main.width() - $left.width() - 1);
+                        var mouseX = e.clientX,
+                                rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
+                                        1, $main.width() - $left.width() - 1);
                         $box.width(rightWidth - 1);
                         $center.css("margin-right", rightWidth + "px");
                     }
                     if ($box.hasClass("bottom-box")) {
-                        var mouseY      = e.clientY,
-                            upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
-                                    0, $center.height() - $box.children(".box-header").height() - 1);
+                        var mouseY = e.clientY,
+                                upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
+                                        0, $center.height() - $box.children(".box-header").height() - 1);
                         $box.height($center.height() - upperHeight);
                         $editor.height(upperHeight);
                         View.console.scollToEnd();
@@ -516,18 +553,18 @@
                 }
             }
         }, false);
-        $(document).on("contextmenu", function() {
+        $(document).on("contextmenu", function () {
             return false;
         });
         context.init({
-            fadeSpeed:            0,
-            above:                "auto",
+            fadeSpeed: 0,
+            above: "auto",
             preventDoubleContext: true
         });
         context.attach("#file-list", [
             {
-                text:   "New File...",
-                action: function(e) {
+                text: "New File...",
+                action: function (e) {
                     View.editor.newFile()
                 }
             },
@@ -535,21 +572,21 @@
                 divider: true
             },
             {
-                text:   "Rename",
-                action: function(e) {
-                    var $li      = $("#file-list").children("li.active"),
-                        name     = $li.attr("id"),
-                        fileName = name.replace(/^toy\-/, "") + ".toy";
+                text: "Rename",
+                action: function (e) {
+                    var $li = $("#file-list").children("li.active"),
+                            name = $li.attr("id"),
+                            fileName = name.replace(/^toy\-/, "") + ".toy";
                     View.editor.dialogRenameFile(Cache.files.find(fileName));
                 }
             },
             {
-                text:   "Delete",
-                action: function(e) {
-                    var $li      = $("#file-list li.active"),
-                        name     = $li.attr("id").replace(/^toy\-/, ""),
-                        fileName = name + ".toy",
-                        file     = Cache.files.find(fileName);
+                text: "Delete",
+                action: function (e) {
+                    var $li = $("#file-list li.active"),
+                            name = $li.attr("id").replace(/^toy\-/, ""),
+                            fileName = name + ".toy",
+                            file = Cache.files.find(fileName);
                     if (confirm("Are you sure to delete '" + file.fileName() + "'?")) {
                         if (file) {
                             Cache.files.remove(file);
@@ -564,25 +601,25 @@
                 }
             }
         ]);
-        $(document).on("click", function(e) {
+        $(document).on("click", function (e) {
 //            e.preventDefault();
 //            e.stopPropagation();
             $(".box-open-menu").hide();
         });
-        $("#box-opener").on("click", function(e) {
+        $("#box-opener").on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
             $(".box-open-menu").show();
         });
-        $("#rename-cancel").on("click", function(e) {
+        $("#rename-cancel").on("click", function (e) {
             $("#dialog-mask").hide();
             $("#filename").val("");
         });
-        $("#rename-confirm").on("click", function(e) {
+        $("#rename-confirm").on("click", function (e) {
             View.editor.confirmRename();
         });
-        $.each($(".box-open-menu").find("a"), function(index, el) {
-            $(el).on("click", function(e) {
+        $.each($(".box-open-menu").find("a"), function (index, el) {
+            $(el).on("click", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 $(".box-open-menu").hide();
@@ -610,8 +647,8 @@
                 }
             });
         });
-        $.each($(".box-caret"), function(index, el) {
-            $(el).on("click", function(e) {
+        $.each($(".box-caret"), function (index, el) {
+            $(el).on("click", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 var $box = $(this).parents(".resizable");
@@ -634,6 +671,9 @@
                     }
                 }
             });
+        });
+        $("#btn-next").on("click", function () {
+
         });
         View.console.log("Compiler lauched at " + new Date().toTimeString());
     };

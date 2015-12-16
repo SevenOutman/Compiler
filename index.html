@@ -27,6 +27,17 @@
 <div class="wrapper">
     <div id="tree-mask"></div>
     <div id="resizing-mask"></div>
+    <div id="dialog-mask">
+        <div class="dialog" id="rename-dialog">
+            <p>New name:</p>
+            <input type="text" id="filename">
+            <p>File type: .toy</p>
+            <div class="dialog-btn-group">
+                <button class="dialog-btn" id="rename-cancel">Cancel</button>
+                <button class="dialog-btn" id="rename-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
     <nav class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
         <div class="container-fluid" style="padding-right: 15px">
             <div class="navbar-header">
@@ -223,15 +234,20 @@
             return null;
         }.bind(Cache.files);
 
-        Sub(Cache.files).to("change", function() {
-            if ($("#file-list").length < 1 && this.length > 0) {
+        Cache.storedFileNames = JSON.parse(Storage.getItem("stored-files") || "[]");
+
+        for (var i = 0; i < Cache.storedFileNames.length; i++) {
+            if ($("#file-list").length < 1 && Cache.files.length > 0) {
                 var $ul = $("<ul></ul>").attr("id", "file-list").addClass("list");
                 $(".left-box .placeholder").remove();
                 $ul.appendTo($(".left-box .box-body"));
             }
-            for (var i = 0; i < this.length; i++) {
-                var file = this[i],
-                    id   = "toy-" + file.name;
+            var item = Storage.getItem(Cache.storedFileNames[i]);
+            if (item) {
+                var fileInfo = JSON.parse(item),
+                    file     = new ToyFile(fileInfo.name, fileInfo.content, false),
+                    id       = "toy-" + file.name;
+                Cache.files.push(file);
                 if ($("#" + id).length < 1) {
                     var $li   = $("<li></li>").attr("id", id).text(file.fileName()),
                         $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
@@ -251,16 +267,7 @@
                     $("#file-list").append($li.prepend($icon));
                 }
             }
-        });
-        Cache.storedFileNames = JSON.parse(Storage.getItem("stored-files") || "[]");
-        for (var i = 0; i < Cache.storedFileNames.length; i++) {
-            var item = Storage.getItem(Cache.storedFileNames[i]);
-            if (item) {
-                var file = JSON.parse(item);
-                Cache.files.push(new ToyFile(Cache.storedFileNames[i], file.content, false));
-            }
         }
-        Pub("change").on(Cache.files);
 
 
         var last = Storage.getItem("last-editing");
@@ -335,8 +342,8 @@
                         View.console.success(parser.getMovementsF() + "Parse finished.");
 //                        return;
                         Pub("parsedone").on(document);
-//                        console.log(parser.generateSequentialNodes());
 
+                        session.file.tree = new TreeFile(session.file, parser.generateSequentialNodes());
                     } else {
                         View.console.error(parser.getErrMsg());
                     }
@@ -525,7 +532,13 @@
                 divider: true
             },
             {
-                text: "Rename"
+                text:   "Rename",
+                action: function(e) {
+                    var $li      = $("#file-list").children("li.active"),
+                        name     = $li.attr("id"),
+                        fileName = name.replace(/^toy\-/, "") + ".toy";
+                    View.editor.dialogRenameFile(Cache.files.find(fileName));
+                }
             },
             {
                 text:   "Delete",
@@ -557,6 +570,13 @@
             e.preventDefault();
             e.stopPropagation();
             $(".box-open-menu").show();
+        });
+        $("#rename-cancel").on("click", function(e) {
+            $("#dialog-mask").hide();
+            $("#filename").val("");
+        });
+        $("#rename-confirm").on("click", function(e) {
+            View.editor.confirmRename();
         });
         $.each($(".box-open-menu").find("a"), function(index, el) {
             $(el).on("click", function(e) {

@@ -27,7 +27,6 @@ var View = (function() {
         if (!document.getElementById("btn-save").classList.hasOwnProperty("unsaved")) {
             document.getElementById("btn-save").classList.add("unsaved");
         }
-        Pub("codeinput").on(document);
     });
 
     _editor.cm.on("cursorActivity", function(cm) {
@@ -85,10 +84,11 @@ var View = (function() {
                 _editor.setContent(_current.content);
                 _editor.cm.doc.setHistory(_current.history);
                 _editor.cm.doc.setCursor(_current.cursorPosition);
-                var id = "session-" + _current.id,
-                    $li;
+                var id  = "session-" + _current.id,
+                    $li = $("#" + id);
 
-                if ($("#" + id).length < 1) {
+
+                if ($li.length < 1) {
                     var $a    = $("<a></a>").text(session.file.fileName()),
                         $span = $("<span></span>").addClass("tab-dismiss").html("&times;");
                     $li = $("<div></div>").attr("id", id).addClass("tab-cell");
@@ -106,7 +106,6 @@ var View = (function() {
                     $(".tab-group").append($li.append($a.append($span)));
                 }
 
-                $li = $("#" + id);
                 if (!$li.hasClass("active")) {
                     $li.siblings(".active").removeClass("active");
                     $li.addClass("active");
@@ -116,7 +115,6 @@ var View = (function() {
                 _editor.setContent("");
                 $(".editor-placeholder").show();
                 $("#cursor-position").hide();
-                _console.fold();
             }
             return _current;
         }
@@ -157,6 +155,7 @@ var View = (function() {
             _editor.openedSessions.push(session);
         }
 
+
         var id  = "toy-" + file.name,
             $li = $("#" + id);
         $li.trigger("click");
@@ -186,44 +185,46 @@ var View = (function() {
         if (session) {
             if (!force) {
                 if (session.file.isNewFile) {
-                    _editor.cm.openDialog(dialog, function() {
-
-                    }, {
-                        closeOnEnter: false,
-                        onKeyDown:    function(event, value, close) {
-                            if (event.which == 13) {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                if (value.length < 1) {
-                                    return false;
-                                }
-                                if (null !== Cache.files.find(value + ".toy")) {
-                                    if (!confirm("File '" + value + ".toy' already exists. Want to overwrite?")) {
-                                        input.select();
-                                        return false;
-                                    }
-                                }
-                                var file = session.file;
-                                file.name = value;
-                                //file.content = _editor.getContent();
-                                file.isNewFile = false;
-                                session.saved = false;
-                                _editor.save();
-                                Cache.files.push(file);
-                                Pub("change").on(Cache.files);
-                                close();
-                                var cursor = _editor.cm.doc.getCursor();
-                                _editor.closeSession(session);
-                                _editor.openFile(file);
-                                _editor.cm.doc.setCursor(cursor);
-                            }
-                        },
-                        onClose:      function() {
-                            input.size = "untitled".length;
-                            input.value = "untitled";
-                        }
-                    });
-                    input.select();
+                    _editor.dialogRenameFile(session.file);
+                    //_editor.cm.openDialog(dialog, function() {
+                    //
+                    //}, {
+                    //    closeOnEnter: false,
+                    //    onKeyDown:    function(event, value, close) {
+                    //        if (event.which == 13) {
+                    //            event.preventDefault();
+                    //            event.stopPropagation();
+                    //            console.log(event);
+                    //
+                    //            if (value.length < 1) {
+                    //                return false;
+                    //            }
+                    //            if (null !== Cache.files.find(value + ".toy")) {
+                    //                if (!confirm("File '" + value + ".toy' already exists. Want to overwrite?")) {
+                    //                    input.select();
+                    //                    return false;
+                    //                }
+                    //            }
+                    //            var file = session.file;
+                    //            file.name = value;
+                    //            //file.content = _editor.getContent();
+                    //            file.isNewFile = false;
+                    //            session.saved = false;
+                    //            _editor.save();
+                    //            Cache.files.push(file);
+                    //            close();
+                    //            var cursor = _editor.cm.doc.getCursor();
+                    //            _editor.closeSession(session);
+                    //            _editor.openFile(file);
+                    //            _editor.cm.doc.setCursor(cursor);
+                    //        }
+                    //    },
+                    //    onClose:      function() {
+                    //        input.size = "untitled".length;
+                    //        input.value = "untitled";
+                    //    }
+                    //});
+                    //input.select();
                     return;
                 }
             }
@@ -248,6 +249,55 @@ var View = (function() {
         return !_editor.currentSession().saved;
     };
 
+    var renaming = null;
+    _editor.dialogRenameFile = function(file) {
+        renaming = file;
+        console.log(file);
+        if (renaming !== null) {
+
+            $("#filename").val(file.name);
+            $("#dialog-mask").show();
+            $("#filename").select();
+
+        }
+    };
+
+    _editor.confirmRename = function() {
+        if (renaming !== null) {
+            var newName = $("#filename").val();
+            if (null !== Cache.files.find(newName + ".toy")) {
+                if (!confirm("File '" + newName + ".toy' already exists. Want to overwrite?")) {
+                    $("#filename").select();
+                    return false;
+                }
+            }
+            $("#dialog-mask").hide();
+            $("#filename").val("");
+            var id = "toy-" + renaming.name;
+
+            renaming.name = newName;
+            //file.content = _editor.getContent();
+            if (renaming.isNewFile) {
+                renaming.isNewFile = false;
+                //session.saved = false;
+                _editor.save();
+                Cache.files.push(renaming);
+            } else {
+                var $li = $("#" + id),
+                    $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
+                $li.attr("id", "toy-" + newName).text(renaming.fileName()).prepend($icon);
+            }
+            var session = _editor.openedSessions.findFile(renaming.fileName());
+            if (session) {
+                var cursor = _editor.cm.doc.getCursor();
+                _editor.closeSession(session);
+                _editor.openFile(renaming);
+                _editor.cm.doc.setCursor(cursor);
+            }
+            renaming = null;
+        }
+    };
+
 
     var _console = {};
 
@@ -267,14 +317,12 @@ var View = (function() {
         cm.scrollIntoView(cm.doc.lastLine(), 1);
     });
 
-
     function _preoutput(addon, para) {
         return addon + para.replace(/\s*\n/g, "\n  ") + "\n";
     }
 
     function _lastNLines(str, n) {
-        var lines = str.split("\n");
-        return lines.slice(-n).join("\n");
+        return lines = str.split("\n").slice(-n).join("\n");
     }
 
     _console.log = function(str) {

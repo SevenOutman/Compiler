@@ -338,7 +338,7 @@ var Parser = {
         var countNode;
         var errorMsg;
         var warningMsg;
-        var stack, input;
+        var stack = [], input = [];
         var toBuild;
         var building;
         var expected;
@@ -453,10 +453,10 @@ var Parser = {
                     input.shift();
                     stack.pop();
                     next = input[0].abstract;
-                    return true;
+                    stepPass = true;
                 } else if (isTerminal(top)) {
                     errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
-                    return false;
+                    stepPass = false;
                 } else if (table[top][next] == 0) {
                     //RECOVERY START
                     //TRY ADDING EVERY EXPECTED
@@ -512,19 +512,25 @@ var Parser = {
                         toBuild.unshift(newNode);
                     }
                     curMovement[2] = rules[rule];
-                    return true;
+                    stepPass = true;
                 }
                 movements.push(curMovement);
                 top = stack[stack.length-1];
-            } else {
-                if (input.length == 1) {
-                    movements.push([stack.slice(), input.slice(), {}]);
-                    return true;
-                } else {
-                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
-                    return false;
-                }
+                return stepPass;
             }
+            if (input.length == 1) {
+                curMovement = [stack.slice(), input.slice(), {}];
+                movements.push(curMovement);
+                input.shift();
+                stack.pop();
+                return true;
+            } else {
+                errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
+                return false;
+            }
+        }
+        parser.parseDone = function () {
+            return input.length == 0;
         }
         function recoveryParse (stack, input) {
             var top, next;
@@ -642,6 +648,26 @@ var Parser = {
             }
             return sMovements;
         };
+        parser.getCurMovementF = function () {
+            var sSTACK = curMovement[0].join(' ');
+            var sINPUT = '';
+            var i;
+            for (i = 0; i < curMovement[1].length; i++) {
+                sINPUT += curMovement[1][i].abstract + ' ';
+            }
+            var sACTION = '';
+            if (curMovement[2].hasOwnProperty('interminal')) {
+                sACTION = curMovement[2].interminal + ' -> ';
+                if (curMovement[2].hasOwnProperty('product')) {
+                    for (var i = 0; i < curMovement[2].product.length; i++) {
+                        sACTION += curMovement[2].product[i];
+                    }
+                } else {
+                    sACTION += 'ε';
+                }
+            }
+            return [sSTACK, sINPUT, sACTION].join('  |  ');
+        }
         parser.generateSequentialNodes = function () {
             countNode = 0;
             return digNode(null, parser.getRoot());

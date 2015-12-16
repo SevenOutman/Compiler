@@ -677,7 +677,20 @@
             });
         });
         $("#btn-next").on("click", function () {
-
+            if (parser.parseDone()) {
+                var code = View.editor.currentSession().content;
+                if (lexer.lex(code)) {
+                    parser.setInput(lexer.getSequence());
+                    View.console.log('code successfully lexed')
+                }
+            } else {
+                if (parser.parseByStep()) {
+                    View.console.log(parser.getCurMovementF());
+                } else {
+                    View.console.log(parser.getErrMsg());
+                }
+            }
+            
         });
         View.console.log("Compiler lauched at " + new Date().toTimeString());
     };

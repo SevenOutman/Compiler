@@ -303,12 +303,28 @@ var Parser = {
                     }
                     if (token.abstract == 'NUM') {
                         node.type = undefined;
-                        node.value = undefined;
+                        node.value = Number(token.lexeme);
                     }
                 }
                 return node;
             }
         };
+        function filterNode (node) {
+            var nodeS = {};
+            var subNodesS = [];
+            var subNodes = node.getSubNodes();
+            var i;
+            for (i = 0; i < subNodes.length; i++) {
+                subNodesS.push(filterNode(subNodes[i]));
+            }
+            nodeS.abstract = node.abstract;
+            nodeS.name = node.name;
+            nodeS.value = node.value;
+            nodeS.type = node.type;
+            nodeS.subNodes = subNodesS;
+            return nodeS;
+        }
+
         var countNode;
         var parser = {};
         var movements = [];
@@ -379,6 +395,10 @@ var Parser = {
 
             return root;
         };
+        parser.getRootS = function () {
+
+            return filterNode(root);
+        }
         parser.getErrMsg = function () {
 
             return errorMsg;

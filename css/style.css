@@ -389,11 +389,16 @@ a:focus:active {
     margin: 0 0 0 200px;
 }
 
+.upper-box {
+    position: relative;
+    height: 100%;
+}
+
 .bottom-box {
     height: 30%;
     /*height: 23px;*/
     border-top: 1px solid rgb(38, 40, 41);
-    z-index: 200;
+    z-index: 300;
 }
 
 .left-box.resizable .resizer {
@@ -565,8 +570,19 @@ a:focus:active {
 }
 
 .console-container {
+    position: relative;
     height: calc(100% - 22px);
     overflow: hidden;
+}
+
+.console-seal {
+    position: absolute;
+    width: 18px;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgb(60, 63, 65);
+    z-index: 195;
 }
 
 #footer {

@@ -309,6 +309,19 @@ var Parser = {
                 return node;
             }
         };
+        var epsilonNode = {
+            new: function () {
+                var node = {};
+                node.abstract = 'epsilon';
+                node.name = Invalid;
+                node.value = Invalid;
+                node.type = Invalid;
+                node.getSubNodes = function () {
+                    return [];
+                }
+                return node;
+            }
+        };
         function filterNode (node) {
             var nodeS = {};
             var subNodesS = [];
@@ -375,6 +388,9 @@ var Parser = {
                     var product = rules[rule].product.slice();
                     var item;
                     var newNode;
+                    if (product.length==0) {
+                        building.pushSubNode(epsilonNode.new());
+                    }
                     while(product.length > 0) {
                         item = product.pop();
                         stack.push(item);
@@ -387,8 +403,13 @@ var Parser = {
                 movements.push(curMovement);
                 top = stack[stack.length-1];
             }
-            movements.push([stack.slice(), input.slice(), {}]);
-            return true;
+            if (input.length == 1) {
+                movements.push([stack.slice(), input.slice(), {}]);
+                return true;
+            } else {
+                errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\'';
+                return false;
+            }
         };
         parser.getRoot = function () {
 

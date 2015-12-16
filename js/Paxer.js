@@ -112,22 +112,6 @@ var Lexer = {
             }
         };
         var pointer = Pointer.new();
-        function tryMatch (input) {
-            var i;
-            for (i = 0; i < rules.length; i += 1) {
-                if (rules.hasOwnProperty(i)) {
-                    if (input.match(rules[i].regExp)) {
-                        return {
-                            lexeme:   input,
-                            abstract: rules[i].abstract,
-                            position: pointer.get(),
-                            containValue: rules[i].containValue
-                        };
-                    }
-                }
-            }
-            return false;
-        }
         var symbolTable = SymbolTable.new();
         var lexSequence;
         var errorMsg = "";
@@ -141,6 +125,22 @@ var Lexer = {
             return symbolTable.get();
         };
         lexer.lex = function (input) {
+            function tryMatch (input) {
+                var i;
+                for (i = 0; i < rules.length; i += 1) {
+                    if (rules.hasOwnProperty(i)) {
+                        if (input.match(rules[i].regExp)) {
+                            return {
+                                lexeme:   input,
+                                abstract: rules[i].abstract,
+                                position: pointer.get(),
+                                containValue: rules[i].containValue
+                            };
+                        }
+                    }
+                }
+                return false;
+            }
             symbolTable.reset();
             errorMsg = "";
             pointer.reset();
@@ -332,41 +332,34 @@ var Parser = {
                 return node;
             }
         };
-        function filterNode (node) {
-            var nodeS = {};
-            var subNodesS = [];
-            var subNodes = node.getSubNodes();
-            var i;
-            for (i = 0; i < subNodes.length; i++) {
-                subNodesS.push(filterNode(subNodes[i]));
-            }
-            nodeS.abstract = node.abstract;
-            nodeS.name = node.name;
-            nodeS.value = node.value;
-            nodeS.type = node.type;
-            nodeS.subNodes = subNodesS;
-            return nodeS;
-        }
         var parser = {};
         var movements = [];
+        var root;
         var countNode;
         var errorMsg;
         var warningMsg;
-        var root;
-        parser.parse = function (input) {
-            var stack = [];
-            var next, top;
-            movements = [];
-            stack = ['$', 'program'];
-            top = stack[stack.length-1];
-            next = input[0].abstract;
-            root = Node.new('program');
-            var toBuild = [root];
-            var building;
-            var expected;
-            var curMovement;
-            var lastPos;
-            var curFormula;
+        var stack, input;
+        var toBuild;
+        var building;
+        var expected;
+        var curMovement;
+        var lastPos;
+        var curFormula;
+        parser.reset = function () {
+            stack      = ['$', 'program'];
+            input      = [];
+            movements  = [];
+            errorMsg   = "";
+            warningMsg = "";
+            root       = Node.new('program');
+            toBuild    = [root];
+        }
+        parser.setInput = function (_input) {
+            parser.reset();
+            input = _input;
+        }
+        parser.parse = function () {
+            var top = stack[stack.length-1], next = input[0].abstract;
             while (top != '$') {
                 curMovement = [stack.slice(), input.slice(), {}];
                 if (top == next) {
@@ -396,12 +389,13 @@ var Parser = {
                             }
                         }
                     }
+                    //TRY POPING UNTIL MATCH
+                    //...
                     //RECOVERY END
-                    //IF RECOVERY FAIL
                     if (recoveried) {
                         input.unshift(possibleItem);
                         next = input[0].abstract;
-                        warningMsg = 'EXPECTING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        warningMsg = 'MISSING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
                     } else {
                         expected = "";
                         var i;
@@ -414,8 +408,6 @@ var Parser = {
                         errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
                         return false;
                     }
-                    //ELSE (RECOVERY NOT FAIL)
-
                 } else if (table[top][next] > 0) {
                     curFormula = table[top][next];
                     stack.pop();
@@ -448,48 +440,133 @@ var Parser = {
                 return false;
             }
         };
-        recoveryParse = function (_stack, _input) {
-            var next, top;
-            var expected;
-            var lastPos;
-            top = _stack[_stack.length-1];
-            next = _input[0].abstract;
-            while(top != '$'){
+        parser.parseByStep = function () {
+            var top = stack[stack.length-1], next = input[0].abstract;
+            if (top != '$') {
+                curMovement = [stack.slice(), input.slice(), {}];
                 if (top == next) {
-                    lastPos = _input[0].position;
-                    _input.shift();
-                    _stack.pop();
-                    next = _input[0].abstract;
+                    lastPos = input[0].position;
+                    building = toBuild[0];
+                    building.symbol = input[0];
+                    building.assign(input[0], curFormula);
+                    toBuild.shift();
+                    input.shift();
+                    stack.pop();
+                    next = input[0].abstract;
+                    return true;
                 } else if (isTerminal(top)) {
-                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + _input[0].lexeme + '\', EXPECTING ' + top;
+                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
+                    return false;
+                } else if (table[top][next] == 0) {
+                    //RECOVERY START
+                    //TRY ADDING EVERY EXPECTED
+                    var possibleItem, recoveried = false;
+                    for (i in table[top]) {
+                        if (table[top][i] != 0) {
+                            possibleItem = {'abstract': i, 'lexeme': '*'+i, 'position': {}};
+                            var _input = input.slice();
+                            _input.unshift(possibleItem);
+                            if(recoveryParse(stack.slice(), _input)){
+                                recoveried = true;
+                                break;
+                            }
+                        }
+                    }
+                    //TRY POPING UNTIL MATCH
+                    //...
+                    //RECOVERY END
+                    if (recoveried) {
+                        input.unshift(possibleItem);
+                        next = input[0].abstract;
+                        warningMsg = 'MISSING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        return true;
+                    } else {
+                        expected = "";
+                        var i;
+                        for (i in table[top]) {
+                            if (table[top][i] != 0) {
+                                expected += '\'' + i + '\'|';
+                            }
+                        }
+                        expected = expected.substring(0, expected.length - 1);
+                        errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        return false;
+                    }
+                } else if (table[top][next] > 0) {
+                    curFormula = table[top][next];
+                    stack.pop();
+                    rule = table[top][next];
+                    building = toBuild.shift();
+                    var i;
+                    var product = rules[rule].product.slice();
+                    var item;
+                    var newNode;
+                    if (product.length==0) {
+                        building.pushSubNode(epsilonNode.new());
+                    }
+                    while(product.length > 0) {
+                        item = product.pop();
+                        stack.push(item);
+                        newNode = Node.new(item);
+                        building.pushSubNode(newNode);
+                        toBuild.unshift(newNode);
+                    }
+                    curMovement[2] = rules[rule];
+                    return true;
+                }
+                movements.push(curMovement);
+                top = stack[stack.length-1];
+            } else {
+                if (input.length == 1) {
+                    movements.push([stack.slice(), input.slice(), {}]);
+                    return true;
+                } else {
+                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
+                    return false;
+                }
+            }
+        }
+        function recoveryParse (stack, input) {
+            var top, next;
+            while(top != '$'){
+                next = input[0].abstract;
+                top = stack.pop();
+                if (top == next) {
+                    input.shift();
+                } else if (isTerminal(top)) {
                     return false;
                 } else if (table[top][next] == 0) {
                     return false;
                 } else if (table[top][next] > 0) {
-                    _stack.pop();
                     rule = table[top][next];
-                    var i;
                     var product = rules[rule].product.slice();
-                    var item;
                     while(product.length > 0) {
-                        item = product.pop();
-                        _stack.push(item);
+                        stack.push(product.pop());
                     }
                 }
-                top = _stack[_stack.length-1];
             }
-            if (_input.length == 1) {
-                return true;
-            } else {
-                return false;
-            }
-        };
+            return input.length == 0;
+        }
         parser.getRoot = function () {
 
             return root;
         };
         parser.getRootS = function () {
-
+            function filterNode (node) {
+                var nodeS = {};
+                var subNodesS = [];
+                var subNodes = node.getSubNodes();
+                var i;
+                for (i = 0; i < subNodes.length; i++) {
+                    subNodesS.push(filterNode(subNodes[i]));
+                }
+                nodeS.abstract = node.abstract;
+                nodeS.name = node.name;
+                nodeS.value = node.value;
+                nodeS.type = node.type;
+                nodeS.subNodes = subNodesS;
+                return nodeS;
+            }
             return filterNode(root);
         }
         parser.getErrMsg = function () {
@@ -504,13 +581,13 @@ var Parser = {
 
             return movements;
         };
-        function padBlank(str, length) {
-            while(str.length < length){
-                str += ' ';
-            }
-            return str;
-        }
         parser.getMovementsF = function () {
+            function padBlank(str, length) {
+                while(str.length < length){
+                    str += ' ';
+                }
+                return str;
+            }
             var aMovements = [];
             var length0 = 0, length1 = 0, length2 = 0;
             var move, thisMove;

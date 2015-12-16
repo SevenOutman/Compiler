@@ -51,32 +51,32 @@ var SymbolTable = {
 var Lexer = {
     new: function () {
         var rules = [
-            {regExp: /^int$/,                   abstract: 'int'     },
-            {regExp: /^real$/,                  abstract: 'real'    },
-            {regExp: /^if$/,                    abstract: 'if'      },
-            {regExp: /^then$/,                  abstract: 'then'    },
-            {regExp: /^else$/,                  abstract: 'else'    },
-            {regExp: /^while$/,                 abstract: 'while'   },
-            {regExp: /^\($/,                    abstract: '('       },
-            {regExp: /^\)$/,                    abstract: ')'       },
-            {regExp: /^\{$/,                    abstract: '{'       },
-            {regExp: /^\}$/,                    abstract: '}'       },
-            {regExp: /^,$/,                     abstract: ','       },
-            {regExp: /^;$/,                     abstract: ';'       },
-            {regExp: /^\+$/,                    abstract: '+'       },
-            {regExp: /^-$/,                     abstract: '-'       },
-            {regExp: /^\*$/,                    abstract: '*'       },
-            {regExp: /^\/$/,                    abstract: '/'       },
-            {regExp: /^[a-zA-Z][a-zA-Z0-9]*$/,  abstract: 'ID'      },
-            {regExp: /^<=$/,                    abstract: '<='      },
-            {regExp: /^<$/,                     abstract: '<'       },
-            {regExp: /^\=\=$/,                  abstract: '=='      },
-            {regExp: /^>=$/,                    abstract: '>='      },
-            {regExp: /^>$/,                     abstract: '>'       },
-            {regExp: /^!=$/,                    abstract: '!='      },
-            {regExp: /^\=$/,                    abstract: '='       },
-            {regExp: /^[0-9]*\.[0-9]+$/,        abstract: 'NUM'     },
-            {regExp: /^[0-9]+\.?$/,             abstract: 'NUM'     }
+            {regExp: /^int$/,                   abstract: 'int',    containValue: 'false'},
+            {regExp: /^real$/,                  abstract: 'real',   containValue: 'false'},
+            {regExp: /^if$/,                    abstract: 'if',     containValue: 'false'},
+            {regExp: /^then$/,                  abstract: 'then',   containValue: 'false'},
+            {regExp: /^else$/,                  abstract: 'else',   containValue: 'false'},
+            {regExp: /^while$/,                 abstract: 'while',  containValue: 'false'},
+            {regExp: /^\($/,                    abstract: '(',      containValue: 'true'},
+            {regExp: /^\)$/,                    abstract: ')',      containValue: 'true'},
+            {regExp: /^\{$/,                    abstract: '{',      containValue: 'true'},
+            {regExp: /^\}$/,                    abstract: '}',      containValue: 'true'},
+            {regExp: /^,$/,                     abstract: ',',      containValue: 'true'},
+            {regExp: /^;$/,                     abstract: ';',      containValue: 'true'},
+            {regExp: /^\+$/,                    abstract: '+',      containValue: 'true'},
+            {regExp: /^-$/,                     abstract: '-',      containValue: 'true'},
+            {regExp: /^\*$/,                    abstract: '*',      containValue: 'true'},
+            {regExp: /^\/$/,                    abstract: '/',      containValue: 'true'},
+            {regExp: /^[a-zA-Z][a-zA-Z0-9]*$/,  abstract: 'ID',     containValue: 'true'},
+            {regExp: /^<=$/,                    abstract: '<=',     containValue: 'true'},
+            {regExp: /^<$/,                     abstract: '<',      containValue: 'true'},
+            {regExp: /^\=\=$/,                  abstract: '==',     containValue: 'true'},
+            {regExp: /^>=$/,                    abstract: '>=',     containValue: 'true'},
+            {regExp: /^>$/,                     abstract: '>',      containValue: 'true'},
+            {regExp: /^!=$/,                    abstract: '!=',     containValue: 'true'},
+            {regExp: /^\=$/,                    abstract: '=',      containValue: 'true'},
+            {regExp: /^[0-9]*\.[0-9]+$/,        abstract: 'NUM',    containValue: 'true'},
+            {regExp: /^[0-9]+\.?$/,             abstract: 'NUM',    containValue: 'true'}
         ];
         var Pointer = {
             new: function () {
@@ -120,7 +120,8 @@ var Lexer = {
                         return {
                             lexeme:   input,
                             abstract: rules[i].abstract,
-                            position: pointer.get()
+                            position: pointer.get(),
+                            containValue: rules[i].containValue
                         };
                     }
                 }
@@ -296,18 +297,22 @@ var Parser = {
                     return subNodes;
                 };
                 node.assign = function (token) {
-                    if (token.abstract == 'ID') {
-                        node.name = token.lexeme;
-                        node.type = undefined;
-                        node.value = undefined;
+                    if (token.containValue) {
+                        switch(token.abstract){
+                            case 'ID':
+                                node.name = token.lexeme;
+                                node.type = undefined;
+                                node.value = undefined;
+                                break;
+                            case 'NUM':
+                                node.type = undefined;
+                                node.value = Number(token.lexeme);
+                            case 'type':
+                                node.value = token.lexeme.toLowerCase();
+                            default:
+                                break;
+                        }
                     }
-                    if (token.abstract == 'NUM') {
-                        node.type = undefined;
-                        node.value = Number(token.lexeme);
-                    }
-                    if (token.abstract == 'type') {
-                        node.value = (token.lexeme)
-                    };
                 }
                 return node;
             }
@@ -429,16 +434,15 @@ var Parser = {
                 return false;
             }
         };
-        parser.recoveryParse = function (stack, input) {
+        recoveryParse = function (stack, input) {
             return false;
-            var stack = [];
             var next, top;
             top = stack[stack.length-1];
             next = input[0].abstract;
             var expected;
             var lastPos;
             while(top != '$'){
-                curMovement = [stack.slice(), input.slice(), {}];
+                curMovement = [_stack.slice(), input.slice(), {}];
                 if (top == next) {
                     lastPos = input[0].position;
                     building = toBuild[0];
@@ -446,7 +450,7 @@ var Parser = {
                     building.assign(input[0]);
                     toBuild.shift();
                     input.shift();
-                    stack.pop();
+                    _stack.pop();
                     next = input[0].abstract;
                 } else if (isTerminal(top)) {
                     errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
@@ -457,7 +461,7 @@ var Parser = {
                     var possibleItem;
                     for (i in table[top]) {
                         if (table[top][i] != 0) {
-                            if(recoveryParse(table[top][i], stack.slice(), input.slice())){
+                            if(recoveryParse(table[top][i], _stack.slice(), input.slice())){
                                 possibleItem = i;
                                 break;
                             }
@@ -478,7 +482,7 @@ var Parser = {
                     //ELSE (RECOVERY NOT FAIL)
 
                 } else if (table[top][next] > 0) {
-                    stack.pop();
+                    _stack.pop();
                     rule = table[top][next];
                     building = toBuild.shift();
                     var i;
@@ -490,7 +494,7 @@ var Parser = {
                     }
                     while(product.length > 0) {
                         item = product.pop();
-                        stack.push(item);
+                        _stack.push(item);
                         newNode = Node.new(item);
                         building.pushSubNode(newNode);
                         toBuild.unshift(newNode);
@@ -498,10 +502,10 @@ var Parser = {
                     curMovement[2] = rules[rule];
                 }
                 movements.push(curMovement);
-                top = stack[stack.length-1];
+                top = _stack[_stack.length-1];
             }
             if (input.length == 1) {
-                movements.push([stack.slice(), input.slice(), {}]);
+                movements.push([_stack.slice(), input.slice(), {}]);
                 return true;
             } else {
                 errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;

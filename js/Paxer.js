@@ -312,7 +312,7 @@ var Parser = {
         var epsilonNode = {
             new: function () {
                 var node = {};
-                node.abstract = 'epsilon';
+                node.abstract = 'ε';
                 node.name = Invalid;
                 node.value = Invalid;
                 node.type = Invalid;
@@ -407,7 +407,7 @@ var Parser = {
                 movements.push([stack.slice(), input.slice(), {}]);
                 return true;
             } else {
-                errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\'';
+                errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
                 return false;
             }
         };

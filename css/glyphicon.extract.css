@@ -38,6 +38,10 @@
     content: "\e025";
 }
 
+.glyphicon-fast-forward:before {
+    content: "\e076";
+}
+
 .glyphicon-file:before {
     content: "\e022";
 }

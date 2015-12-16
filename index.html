@@ -52,7 +52,7 @@
                     </button>
                 </li>
             </ul>
-            <ul class="nav navbar-nav navbar-right">
+            <ul class="nav navbar-nav navbar-right" id="editing-btn-group">
                 <li>
                     <button class="btn navbar-btn-o" id="btn-save"><span
                             class="glyphicon glyphicon-floppy-disk"></span> Save
@@ -67,14 +67,26 @@
                     <label class="btn navbar-btn" id="btn-import" for="source_file"><span
                             class="glyphicon glyphicon-import"></span> Import</label>
                 </li>
-                <li>
-                    <button class="btn navbar-btn" id="btn-next"><span
-                            class="glyphicon glyphicon-share-alt"></span> Compile Next
-                    </button>
-                </li>
+                <!--<li>-->
+                    <!--<button class="btn navbar-btn" id="btn-next"><span-->
+                            <!--class="glyphicon glyphicon-share-alt"></span> Compile Next-->
+                    <!--</button>-->
+                <!--</li>-->
                 <li>
                     <button class="btn navbar-btn" id="btn-compile"><span
                             class="glyphicon glyphicon-download-alt"></span> Compile
+                    </button>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right" id="compiling-btn-group" style="display: none;margin-right: -15px">
+                <li>
+                    <button class="btn navbar-btn" id="btn-next"><span
+                            class="glyphicon glyphicon-share-alt"></span> Next
+                    </button>
+                </li>
+                <li>
+                    <button class="btn navbar-btn" id="btn-ff"><span
+                            class="glyphicon glyphicon-fast-forward"></span> Fast Forward
                     </button>
                 </li>
             </ul>
@@ -110,7 +122,7 @@
                         Choose a file from workspace or <a id="cover-open">create a new file</a>
                     </div>
                     <div class="tab-bar">
-                        <div class="tab-bar-cover">Compiling '<span id="compiling-filename"></span>'...</div>
+                        <div class="tab-bar-cover"><span id="compiling-filename"></span></div>
                         <button class="tab-new">&plus;</button>
                         <div class="tab-row">
                             <div class="tab-group">
@@ -611,6 +623,7 @@
             $(".box-open-menu").hide();
         });
         $("#box-opener").on("click", function (e) {
+            return false;
             e.preventDefault();
             e.stopPropagation();
             $(".box-open-menu").show();
@@ -675,6 +688,9 @@
                     }
                 }
             });
+        });
+        $("#btn-ff").on("click", function() {
+            View.control.exitCompileMode();
         });
         $("#btn-next").on("click", function () {
             if (parser.parseDone()) {

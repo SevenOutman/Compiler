@@ -380,18 +380,32 @@ var View = (function() {
     var _control = {};
     _control.compiling = null;
     _control.compilie = function (file) {
-        return;
+        //return;
         _control.compiling = file;
         _control.enterCompileMode();
     };
     _control.enterCompileMode = function () {
         if (_control.compiling !== null) {
             $("#compiling-filename").text(_control.compiling.fileName());
+            $("#editing-btn-group").hide();
+            $("#compiling-btn-group").show();
             $(".tab-bar-cover").show();
-            $("#btn-compile").prop("disabled", true);
+            //$("#btn-compile").prop("disabled", true);
             $(".left-box .box-caret").trigger("click");
             _editor.cm.setOption("readOnly", true);
         }
+    };
+    _control.exitCompileMode = function () {
+        $("#compiling-btn-group").hide();
+        $("#editing-btn-group").show();
+        $(".tab-bar-cover").hide();
+        //$("#btn-compile").prop("disabled", false);
+        $("#box-opener-workspace").trigger("click");
+        $(".right-box .box-caret").trigger("click");
+        $(".bottom-box .box-caret").trigger("click");
+        _editor.cm.setOption("readOnly", false);
+        _control.compiling = null;
+        $("#compiling-filename").text("");
     };
 
     return {

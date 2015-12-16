@@ -286,9 +286,9 @@ var Parser = {
                 var node = {};
                 var subNodes = [];
                 node.abstract = abstract;
-                node.name = 'Invalid';
-                node.value = 'Invalid';
-                node.type = 'Invalid';
+                node.name = Invalid;
+                node.value = Invalid;
+                node.type = Invalid;
                 node.pushSubNode = function (sNode) {
                     subNodes.unshift(sNode);
                 };
@@ -324,10 +324,9 @@ var Parser = {
             nodeS.subNodes = subNodesS;
             return nodeS;
         }
-
-        var countNode;
         var parser = {};
         var movements = [];
+        var countNode;
         var errorMsg;
         var root;
         parser.parse = function (input) {

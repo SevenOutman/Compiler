@@ -252,7 +252,6 @@ var View = (function() {
     var renaming = null;
     _editor.dialogRenameFile = function(file) {
         renaming = file;
-        console.log(file);
         if (renaming !== null) {
 
             $("#filename").val(file.name);
@@ -282,6 +281,25 @@ var View = (function() {
                 //session.saved = false;
                 _editor.save();
                 Cache.files.push(renaming);
+                id = "toy-" + newName;
+                if ($("#" + id).length < 1) {
+                    var $li   = $("<li></li>").attr("id", id).text(renaming.fileName()),
+                        $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
+                    $li.on("click", function() {
+                        var $self = $(this);
+                        if (!$self.hasClass("active")) {
+                            $self.siblings(".active").removeClass("active");
+                            $self.addClass("active");
+                        }
+                    }).on("contextmenu", function() {
+                        $(this).trigger("click");
+                    }).on("dblclick", (function(file) {
+                        return function() {
+                            View.editor.openFile(file);
+                        }
+                    })(renaming));
+                    $("#file-list").append($li.prepend($icon));
+                }
             } else {
                 var $li = $("#" + id),
                     $icon = $("<span></span>").addClass("glyphicon glyphicon-file");

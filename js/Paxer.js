@@ -351,6 +351,7 @@ var Parser = {
         var movements = [];
         var countNode;
         var errorMsg;
+        var warningMsg;
         var root;
         parser.parse = function (input) {
             var stack = [];
@@ -386,10 +387,10 @@ var Parser = {
                     var possibleItem, recoveried = false;
                     for (i in table[top]) {
                         if (table[top][i] != 0) {
-                            possibleItem = i;
-                            var _stack = stack.slice();
-                            _stack.unshift(i);
-                            if(recoveryParse(_stack, input.slice())){
+                            possibleItem = {'abstract': i, 'lexeme': '*'+i, 'position': {}};
+                            var _input = input.slice();
+                            _input.unshift(possibleItem);
+                            if(recoveryParse(stack.slice(), _input)){
                                 recoveried = true;
                                 break;
                             }
@@ -398,7 +399,9 @@ var Parser = {
                     //RECOVERY END
                     //IF RECOVERY FAIL
                     if (recoveried) {
-                        stack.unshift(possibleItem);
+                        input.unshift(possibleItem);
+                        next = input[0].abstract;
+                        warningMsg = 'EXPECTING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
                     } else {
                         expected = "";
                         var i;
@@ -445,37 +448,37 @@ var Parser = {
                 return false;
             }
         };
-        recoveryParse = function (stack, input) {
+        recoveryParse = function (_stack, _input) {
             var next, top;
             var expected;
             var lastPos;
-            top = stack[stack.length-1];
-            next = input[0].abstract;
+            top = _stack[_stack.length-1];
+            next = _input[0].abstract;
             while(top != '$'){
                 if (top == next) {
-                    lastPos = input[0].position;
-                    input.shift();
-                    stack.pop();
-                    next = input[0].abstract;
+                    lastPos = _input[0].position;
+                    _input.shift();
+                    _stack.pop();
+                    next = _input[0].abstract;
                 } else if (isTerminal(top)) {
-                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
+                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + _input[0].lexeme + '\', EXPECTING ' + top;
                     return false;
                 } else if (table[top][next] == 0) {
                     return false;
                 } else if (table[top][next] > 0) {
-                    stack.pop();
+                    _stack.pop();
                     rule = table[top][next];
                     var i;
                     var product = rules[rule].product.slice();
                     var item;
                     while(product.length > 0) {
                         item = product.pop();
-                        stack.push(item);
+                        _stack.push(item);
                     }
                 }
-                top = stack[stack.length-1];
+                top = _stack[_stack.length-1];
             }
-            if (input.length == 1) {
+            if (_input.length == 1) {
                 return true;
             } else {
                 return false;
@@ -492,6 +495,10 @@ var Parser = {
         parser.getErrMsg = function () {
 
             return errorMsg;
+        };
+        parser.getWarningMsg = function () {
+
+            return warningMsg;
         };
         parser.getMovements = function () {
 

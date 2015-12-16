@@ -340,6 +340,9 @@
                 if (lexer.lex(code)) {
                     if (parser.parse(lexer.getSequence())) {
                         View.console.success(parser.getMovementsF() + "Parse finished.");
+                        if (parser.getWarningMsg().length > 0) {
+                            View.console.error(parser.getWarningMsg());
+                        }
 //                        return;
                         Pub("parsedone").on(document);
 

@@ -67,11 +67,6 @@
                     <label class="btn navbar-btn" id="btn-import" for="source_file"><span
                             class="glyphicon glyphicon-import"></span> Import</label>
                 </li>
-                <!--<li>-->
-                    <!--<button class="btn navbar-btn" id="btn-next"><span-->
-                            <!--class="glyphicon glyphicon-share-alt"></span> Compile Next-->
-                    <!--</button>-->
-                <!--</li>-->
                 <li>
                     <button class="btn navbar-btn" id="btn-compile"><span
                             class="glyphicon glyphicon-download-alt"></span> Compile
@@ -117,6 +112,15 @@
                 </div>
             </div>
             <div class="center-box">
+                <div class="tree-box resizable hidden">
+                    <div class="box-header">
+                        <div class="box-title">Parser Tree</div>
+                        <span class="box-caret glyphicon glyphicon-menu-right"></span>
+                    </div>
+                    <div class="box-body" id="tree-pane">
+                        <div class="placeholder">Nothing to show</div>
+                    </div>
+                </div>
                 <div class="editor-box">
                     <div class="editor-placeholder">
                         Choose a file from workspace or <a id="cover-open">create a new file</a>
@@ -153,6 +157,9 @@
             <ul class="dropdown-menu box-open-menu">
                 <li>
                     <a id="box-opener-workspace">Workspace</a>
+                </li>
+                <li>
+                    <a id="box-opener-tree">Parser Tree</a>
                 </li>
                 <li>
                     <a id="box-opener-structure">Structure</a>
@@ -662,6 +669,13 @@
                         $(".center-box").css("margin-right", "350px");
                     }
                 }
+                if (id == "box-opener-tree") {
+                    var $box = $(".tree-box");
+                    if ($box.hasClass("hidden")) {
+                        $box.removeClass("hidden").css("width", "550px");
+                        $(".editor-box").css("margin-right", "550px");
+                    }
+                }
             });
         });
         $.each($(".box-caret"), function (index, el) {
@@ -687,9 +701,15 @@
                         $(".center-box").css("margin-right", "0");
                     }
                 }
+                if ($box.hasClass("tree-box")) {
+                    if (!$box.hasClass("hidden")) {
+                        $box.addClass("hidden");
+                        $(".editor-box").css("margin-right", "0");
+                    }
+                }
             });
         });
-        $("#btn-ff").on("click", function() {
+        $("#btn-ff").on("click", function () {
             View.control.exitCompileMode();
         });
         $("#btn-next").on("click", function () {
@@ -706,7 +726,7 @@
                     View.console.log(parser.getErrMsg());
                 }
             }
-            
+
         });
         View.console.log("Compiler lauched at " + new Date().toTimeString());
     };

@@ -441,6 +441,24 @@ a:focus:active {
     -webkit-user-select: none;
 }
 
+.tree-box {
+    width: 0;
+    height: 100%;
+    float: right;
+    background: rgb(60, 63, 65);
+    border-top: 1px solid rgb(38, 40, 41);
+    border-left: 1px solid rgb(40, 40, 40);
+    z-index: 300;
+}
+
+.tree-box .box-body {
+    background: #ffffff;
+}
+
+.tree-box .placeholder {
+    background: rgb(60, 63, 65);
+}
+
 #cover-open {
     cursor: pointer;
 }

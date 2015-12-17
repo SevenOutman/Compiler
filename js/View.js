@@ -384,12 +384,24 @@ var View = (function() {
         _control.compiling = file;
         _control.enterCompileMode();
     };
+    var datavTree = null,
+        _treeArr = [
+            [1, "root", 3, ""],
+            [2, "{", 0, "1"],
+            [3, "stmt", 0, "1"],
+            [4, "}", 0, "1"]
+        ];
     _control.enterCompileMode = function () {
         if (_control.compiling !== null) {
             $("#compiling-filename").text(_control.compiling.fileName());
             $("#editing-btn-group").hide();
             $("#compiling-btn-group").show();
             $(".tab-bar-cover").show();
+            $("#box-opener-tree").trigger("click");
+            $(".tree-box .placeholder").hide();
+            datavTree = datavTree || new Tree("tree-pane", {width: $(".tree-box .box-body").width(), height: $(".tree-box .box-body").height(), radius: 10});
+            datavTree.setSource(_treeArr);
+            datavTree.render();
             //$("#btn-compile").prop("disabled", true);
             $(".left-box .box-caret").trigger("click");
             _editor.cm.setOption("readOnly", true);
@@ -402,6 +414,7 @@ var View = (function() {
         //$("#btn-compile").prop("disabled", false);
         $("#box-opener-workspace").trigger("click");
         $(".right-box .box-caret").trigger("click");
+        $(".tree-box .box-caret").trigger("click");
         $(".bottom-box .box-caret").trigger("click");
         _editor.cm.setOption("readOnly", false);
         _control.compiling = null;

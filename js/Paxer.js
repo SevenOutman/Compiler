@@ -380,7 +380,7 @@ var Parser = {
             }
             function tryParse (stack, input) {
                 var top, next;
-                while(top != '$'){
+                while(top != '$' && input.length > 0){
                     next = input[0].abstract;
                     top = stack.pop();
                     if (top == next) {
@@ -402,7 +402,7 @@ var Parser = {
             curMovement = [stack.slice(), input.slice(), {}];
             var top = stack.pop(), nextT = input.shift(), next = nextT.abstract;
             var stepPass = false;
-            while (top != '$') {
+            while (top != '$' && input.length > 0) {
                 if (top == next) {
                     lastPos = nextT.position;
                     building = toBuild[0];

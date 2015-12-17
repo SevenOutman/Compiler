@@ -376,7 +376,7 @@
                 var start = window.performance ? window.performance.now() : (new Date).now();
                 lexer.reset();
                 lexer.setInput(code);
-                if (lexer.lex()) {
+                if (lexer.lex(0)) {
                     parser.setInput(lexer.getSequence());
                     return;
                     var lexend = window.performance ? window.performance.now() : (new Date).now();

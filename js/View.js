@@ -399,7 +399,7 @@ var View = (function() {
             $(".tab-bar-cover").show();
             $("#box-opener-tree").trigger("click");
             $(".tree-box .placeholder").hide();
-            datavTree = datavTree || new Tree("tree-pane", {width: $(".tree-box .box-body").width(), height: $(".tree-box .box-body").height(), radius: 10});
+            datavTree = datavTree || new Tree("tree-pane", {width: 550, height: $(".tree-box .box-body").height(), radius: 10});
             datavTree.setSource(_treeArr);
             datavTree.render();
             //$("#btn-compile").prop("disabled", true);

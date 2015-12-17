@@ -75,6 +75,11 @@
             </ul>
             <ul class="nav navbar-nav navbar-right" id="compiling-btn-group" style="display: none;margin-right: -15px">
                 <li>
+                    <button class="btn navbar-btn-o" id="btn-stop"><span
+                            class="glyphicon glyphicon-stop"></span> Stop
+                    </button>
+                </li>
+                <li>
                     <button class="btn navbar-btn" id="btn-next"><span
                             class="glyphicon glyphicon-share-alt"></span> Next
                     </button>
@@ -113,6 +118,7 @@
             </div>
             <div class="center-box">
                 <div class="tree-box resizable hidden">
+                    <div class="resizer vertical"></div>
                     <div class="box-header">
                         <div class="box-title">Parser Tree</div>
                         <span class="box-caret glyphicon glyphicon-menu-right"></span>
@@ -548,7 +554,8 @@
                             $center = $(".center-box"),
                             $upper = $(".upper-box"),
                             $bottom = $(".bottom-box"),
-                            $editor = $(".editor-box");
+                            $editor = $(".editor-box"),
+                            $tree = $(".tree-box");
                     if ($box.hasClass("left-box")) {
                         var mouseX = e.clientX,
                                 leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
@@ -561,7 +568,7 @@
                     if ($box.hasClass("right-box")) {
                         var mouseX = e.clientX,
                                 rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
-                                        1, $main.width() - $left.width() - 1);
+                                        1, $main.width() - $tree.width() - 1);
                         $box.width(rightWidth - 1);
                         $center.css("margin-right", rightWidth + "px");
                     }
@@ -571,7 +578,15 @@
                                         0, $main.height() - $box.children(".box-header").height() - 1);
                         $box.height($main.height() - upperHeight);
                         $upper.height(upperHeight);
-                        View.console.scollToEnd();
+//                        View.console.scollToEnd();
+                    }
+                    if ($box.hasClass("tree-box")) {
+                        var mouseX = e.clientX,
+                                rightWidth = Math.mid($center.width() - (mouseX + mouseOffsetX + 5),
+                                        1, $center.width() - 1);
+                        $box.width(rightWidth - 1);
+                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
+                        $editor.css("margin-right", rightWidth + "px");
                     }
                 }
             }
@@ -709,7 +724,7 @@
                 }
             });
         });
-        $("#btn-ff").on("click", function () {
+        $("#btn-stop").on("click", function () {
             View.control.exitCompileMode();
         });
         $("#btn-next").on("click", function () {

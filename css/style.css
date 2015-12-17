@@ -228,6 +228,14 @@ a:focus:active {
     z-index: 1;
 }
 
+#btn-stop .glyphicon {
+    color: #561818;
+}
+
+#btn-stop:hover .glyphicon {
+    color: #dc0000;
+}
+
 .resizable {
     position: relative;
     /*overflow: hidden;*/
@@ -422,6 +430,11 @@ a:focus:active {
     /*height: calc(100% - 23px);*/
 }
 
+.tree-box.resizable .resizer {
+    top: 0;
+    left: -5px;
+}
+
 .editor-placeholder {
     position: absolute;
     overflow: hidden;
@@ -452,7 +465,7 @@ a:focus:active {
 }
 
 .tree-box .box-body {
-    background: #ffffff;
+    background: rgba(255, 255, 255, 1);
 }
 
 .tree-box .placeholder {
@@ -670,4 +683,9 @@ a:focus:active {
 .dropdown-menu > li.divider {
     margin: 3px 1px;
     background-color: rgba(81, 81, 81, .99);
+}
+
+/*------ tree.js ------*/
+tspan {
+    font-family: "Lucida Grande", 'Lato', 'Open Sans', Helvetica, Arial, sans-serif;
 }

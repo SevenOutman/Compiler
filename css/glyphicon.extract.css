@@ -74,6 +74,10 @@
     content: "\e095";
 }
 
+.glyphicon-stop:before {
+    content: "\e074";
+}
+
 .glyphicon-triangle-right:before {
     content: "\e250";
 }

@@ -408,11 +408,17 @@ var View = (function () {
             datavTree.setSource(_treeArr);
 
             interval = setInterval(function () {
+                datavTree.render({width: Math.max(550, $(".tree-box .box-body").width())});
 
-                datavTree.append([_treeArr.length + 1, _treeArr.length, 0, "" + Math.floor(1 + Math.random() * _treeArr.length), Math.random() < 0.5 ? "0" : "1"]);
-                datavTree.render();
+                if (_treeArr.length > 15) {
+                    _treeArr = [_treeArr[0], _treeArr[1]];
+                    datavTree.setSource(_treeArr);
+                } else {
+                    datavTree.append([_treeArr.length + 1, _treeArr.length, 0, "" + Math.floor(1 + Math.random() * _treeArr.length), Math.random() < 0.5 ? "0" : "1"]);
+                }
                 //}
             }, 1000);
+            //datavTree.render();
             //$("#btn-compile").prop("disabled", true);
             $(".left-box .box-caret").trigger("click");
             _editor.cm.setOption("readOnly", true);

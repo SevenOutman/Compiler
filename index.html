@@ -196,7 +196,7 @@
 <script src="lib/datavjs/deps/d3.min.js"></script>
 <script src="lib/datavjs/deps/d3.csv.js"></script>
 <script src="lib/datavjs/deps/d3.layout.min.js"></script>
-<script src="lib/datavjs/deps/raphael.min.js"></script>
+<script src="lib/datavjs/deps/raphael.js"></script>
 <script src="lib/datavjs/deps/eventproxy.js"></script>
 <script src="lib/datavjs/datav.js"></script>
 <script src="lib/datavjs/libs/tree.js"></script>
@@ -587,7 +587,7 @@
                                 rightWidth = Math.mid($center.width() - (mouseX + mouseOffsetX + 5),
                                         1, $center.width() - 1);
                         $box.width(rightWidth - 1);
-                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
+//                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
                         $editor.css("margin-right", rightWidth + "px");
                     }
                 }
@@ -647,7 +647,7 @@
             $(".box-open-menu").hide();
         });
         $("#box-opener").on("click", function (e) {
-            return false;
+//            return false;
             e.preventDefault();
             e.stopPropagation();
             $(".box-open-menu").show();

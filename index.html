@@ -216,6 +216,7 @@
 <script src="lib/toy.js"></script>
 <script src="lib/console.js"></script>
 <script src="js/PubSub.js"></script>
+<script src="js/PS.js"></script>
 <script src="js/Storage.js"></script>
 <script src="js/Cache.js"></script>
 <script src="js/ToyFile.js"></script>
@@ -720,6 +721,7 @@
                 if ($box.hasClass("tree-box")) {
                     if (!$box.hasClass("hidden")) {
                         $box.addClass("hidden");
+                        $box.children(".box-body").css("padding-left", "0");
                         $(".editor-box").css("margin-right", "0");
                     }
                 }

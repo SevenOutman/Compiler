@@ -1,21 +1,21 @@
 /**
  * Created by Doma on 15/12/8.
  */
-var View = (function() {
+var View = (function () {
     var _editor = {};
     _editor.cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
-        lineNumbers:             true,
-        mode:                    "toy",
-        indentUnit:              4,
-        theme:                   "monokai-so",
-        autoCloseBrackets:       true,
-        matchBrackets:           true,
-        styleActiveLine:         true,
+        lineNumbers: true,
+        mode: "toy",
+        indentUnit: 4,
+        theme: "monokai-so",
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        styleActiveLine: true,
         showCursorWhenSelecting: true,
-        scrollbarStyle:          "overlay",
-        selectionPointer:        true
+        scrollbarStyle: "overlay",
+        selectionPointer: true
     });
-    _editor.cm.on("change", function(cm, change) {
+    _editor.cm.on("change", function (cm, change) {
         var session = _editor.currentSession();
         if (null === session) {
             document.getElementById("btn-save").classList.remove("unsaved");
@@ -29,17 +29,17 @@ var View = (function() {
         }
     });
 
-    _editor.cm.on("cursorActivity", function(cm) {
+    _editor.cm.on("cursorActivity", function (cm) {
         var pos = cm.doc.getCursor();
         $("#current-line").text(pos.line + 1);
         $("#current-ch").text(pos.ch + 1);
     });
 
-    _editor.getContent = function() {
+    _editor.getContent = function () {
         return _editor.cm.getValue();
     };
 
-    _editor.setContent = function(content) {
+    _editor.setContent = function (content) {
         return _editor.cm.setValue(content);
     };
 
@@ -53,7 +53,7 @@ var View = (function() {
     }
 
     _editor.openedSessions = [];
-    _editor.openedSessions.find = function(sessionId) {
+    _editor.openedSessions.find = function (sessionId) {
         for (var i = 0; i < this.length; i++) {
             if (this[i].id === sessionId) {
                 return this[i];
@@ -62,7 +62,7 @@ var View = (function() {
         return null;
     }.bind(_editor.openedSessions);
 
-    _editor.openedSessions.findFile = function(fileName) {
+    _editor.openedSessions.findFile = function (fileName) {
         for (var i = 0; i < this.length; i++) {
             if (this[i].file.fileName() === fileName) {
                 return this[i];
@@ -71,9 +71,9 @@ var View = (function() {
         return null;
     }.bind(_editor.openedSessions);
 
-    _editor.currentSession = (function() {
+    _editor.currentSession = (function () {
         var _current = null;
-        return function(session) {
+        return function (session) {
             if (session && session !== _current) {
                 if (null !== _current) {
                     _current.content = _editor.getContent();
@@ -84,22 +84,22 @@ var View = (function() {
                 _editor.setContent(_current.content);
                 _editor.cm.doc.setHistory(_current.history);
                 _editor.cm.doc.setCursor(_current.cursorPosition);
-                var id  = "session-" + _current.id,
+                var id = "session-" + _current.id,
                     $li = $("#" + id);
 
 
                 if ($li.length < 1) {
-                    var $a    = $("<a></a>").text(session.file.fileName()),
+                    var $a = $("<a></a>").text(session.file.fileName()),
                         $span = $("<span></span>").addClass("tab-dismiss").html("&times;");
                     $li = $("<div></div>").attr("id", id).addClass("tab-cell");
-                    $span.on("click", (function(session) {
-                        return function() {
+                    $span.on("click", (function (session) {
+                        return function () {
                             View.editor.closeSession(session);
                             return false;
                         }
                     })(session));
-                    $li.on("click", (function(session) {
-                        return function() {
+                    $li.on("click", (function (session) {
+                        return function () {
                             _editor.bringSessionToFront(session);
                         }
                     })(session));
@@ -120,7 +120,7 @@ var View = (function() {
         }
     })();
 
-    _editor.bringSessionToFront = function(session) {
+    _editor.bringSessionToFront = function (session) {
         var saved = session.saved;
         _editor.currentSession(session);
         _editor.cm.focus();
@@ -130,9 +130,9 @@ var View = (function() {
         }
     };
 
-    _editor.closeSession = function(session) {
+    _editor.closeSession = function (session) {
         _editor.openedSessions.remove(session);
-        var id  = "session-" + session.id,
+        var id = "session-" + session.id,
             $li = $("#" + id);
         $li.remove();
         if (_editor.currentSession() == session) {
@@ -145,7 +145,7 @@ var View = (function() {
         }
     };
 
-    _editor.openFile = function(file) {
+    _editor.openFile = function (file) {
         $(".editor-placeholder").hide();
         $("#cursor-position").show();
         var session = file.isNewFile ? null : _editor.openedSessions.findFile(file.fileName());
@@ -156,31 +156,31 @@ var View = (function() {
         }
 
 
-        var id  = "toy-" + file.name,
+        var id = "toy-" + file.name,
             $li = $("#" + id);
         $li.trigger("click");
         _editor.bringSessionToFront(session);
     };
 
-    _editor.newFile = function() {
+    _editor.newFile = function () {
         _editor.openFile(new ToyFile);
     };
 
     var dialog = document.createElement("div"),
-        input  = document.createElement("input"),
-        span   = document.createElement("span");
+        input = document.createElement("input"),
+        span = document.createElement("span");
     dialog.id = "dialog-save";
     dialog.innerHTML = "File name: ";
     input.size = "untitled".length;
     input.value = "untitled";
-    input.oninput = function() {
+    input.oninput = function () {
         input.size = Math.max(input.value.length, 1);
     };
     span.innerHTML = ".toy";
     dialog.appendChild(input);
     dialog.appendChild(span);
 
-    _editor.save = function(force) {
+    _editor.save = function (force) {
         var session = _editor.currentSession();
         if (session) {
             if (!force) {
@@ -242,7 +242,7 @@ var View = (function() {
         }
     };
 
-    _editor.needSave = function() {
+    _editor.needSave = function () {
         if (!_editor.currentSession()) {
             return false;
         }
@@ -250,7 +250,7 @@ var View = (function() {
     };
 
     var renaming = null;
-    _editor.dialogRenameFile = function(file) {
+    _editor.dialogRenameFile = function (file) {
         renaming = file;
         if (renaming !== null) {
 
@@ -261,7 +261,7 @@ var View = (function() {
         }
     };
 
-    _editor.confirmRename = function() {
+    _editor.confirmRename = function () {
         if (renaming !== null) {
             var newName = $("#filename").val();
             if (null !== Cache.files.find(newName + ".toy")) {
@@ -283,18 +283,18 @@ var View = (function() {
                 Cache.files.push(renaming);
                 id = "toy-" + newName;
                 if ($("#" + id).length < 1) {
-                    var $li   = $("<li></li>").attr("id", id).text(renaming.fileName()),
+                    var $li = $("<li></li>").attr("id", id).text(renaming.fileName()),
                         $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
-                    $li.on("click", function() {
+                    $li.on("click", function () {
                         var $self = $(this);
                         if (!$self.hasClass("active")) {
                             $self.siblings(".active").removeClass("active");
                             $self.addClass("active");
                         }
-                    }).on("contextmenu", function() {
+                    }).on("contextmenu", function () {
                         $(this).trigger("click");
-                    }).on("dblclick", (function(file) {
-                        return function() {
+                    }).on("dblclick", (function (file) {
+                        return function () {
                             View.editor.openFile(file);
                         }
                     })(renaming));
@@ -320,18 +320,18 @@ var View = (function() {
     var _console = {};
 
     _console.cm = CodeMirror.fromTextArea(document.getElementById("console"), {
-        theme:          "monokai-so",
-        mode:           "console",
-        readOnly:       "nocursor",
+        theme: "monokai-so",
+        mode: "console",
+        readOnly: "nocursor",
         scrollbarStyle: "overlay",
         viewportMargin: Infinity
     });
 
-    _console.scollToEnd = function() {
+    _console.scollToEnd = function () {
         _console.cm.scrollIntoView(_console.cm.doc.lastLine(), 1);
     };
 
-    _console.cm.on("change", function(cm) {
+    _console.cm.on("change", function (cm) {
         cm.scrollIntoView(cm.doc.lastLine(), 1);
     });
 
@@ -343,7 +343,7 @@ var View = (function() {
         return lines = str.split("\n").slice(-n).join("\n");
     }
 
-    _console.log = function(str) {
+    _console.log = function (str) {
         if (_console.cm) {
             _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput(": ", str), 1000));
         } else {
@@ -351,7 +351,7 @@ var View = (function() {
         }
     };
 
-    _console.error = function(str) {
+    _console.error = function (str) {
         if (_console.cm) {
             if (str instanceof Object) {
                 str = str.toString();
@@ -362,7 +362,7 @@ var View = (function() {
         }
     };
 
-    _console.success = function(str) {
+    _console.success = function (str) {
         if (_console.cm) {
             _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("+ ", str), 1000));
         } else {
@@ -370,11 +370,11 @@ var View = (function() {
         }
     };
 
-    _console.popup = function() {
+    _console.popup = function () {
         $("#box-opener-console").trigger("click");
     };
 
-    _console.fold = function() {
+    _console.fold = function () {
     };
 
     var _control = {};
@@ -386,11 +386,10 @@ var View = (function() {
     };
     var datavTree = null,
         _treeArr = [
-            [1, "root", 3, ""],
-            [2, "{", 0, "1"],
-            [3, "stmt", 0, "1"],
-            [4, "}", 0, "1"]
-        ];
+            [1, "root", 3, "", 1, "0"],
+            [2, "1", 3, "1", 1, "0"],
+        ],
+        interval = null;
     _control.enterCompileMode = function () {
         if (_control.compiling !== null) {
             $("#compiling-filename").text(_control.compiling.fileName());
@@ -399,15 +398,32 @@ var View = (function() {
             $(".tab-bar-cover").show();
             $("#box-opener-tree").trigger("click");
             $(".tree-box .placeholder").hide();
-            datavTree = datavTree || new Tree("tree-pane", {width: 550, height: $(".tree-box .box-body").height(), radius: 10});
+            datavTree = datavTree || new Tree("tree-pane", {
+                    width: 550,
+                    height: $(".tree-box .box-body").height(),
+                    radius: 10
+                });
+            //for (var i = 0; i < 10; i++) {
+            //    _treeArr.push([_treeArr.length + 1, _treeArr.length, 0, "" + Math.floor(1 + Math.random() * _treeArr.length), Math.random() < 0.5 ? "0" : "1"]);
             datavTree.setSource(_treeArr);
-            datavTree.render();
+
+            interval = setInterval(function () {
+
+                datavTree.append([_treeArr.length + 1, _treeArr.length, 0, "" + Math.floor(1 + Math.random() * _treeArr.length), Math.random() < 0.5 ? "0" : "1"]);
+                datavTree.render();
+                //}
+            }, 1000);
             //$("#btn-compile").prop("disabled", true);
             $(".left-box .box-caret").trigger("click");
             _editor.cm.setOption("readOnly", true);
         }
     };
     _control.exitCompileMode = function () {
+        clearInterval(interval);
+        _treeArr = [
+            [1, "root", 3, "", 1, "0"],
+            [2, "1", 3, "1", 1, "0"],
+        ];
         $("#compiling-btn-group").hide();
         $("#editing-btn-group").show();
         $(".tab-bar-cover").hide();
@@ -419,10 +435,11 @@ var View = (function() {
         _editor.cm.setOption("readOnly", false);
         _control.compiling = null;
         $("#compiling-filename").text("");
+        _console.cm.setValue("");
     };
 
     return {
-        editor:  _editor,
+        editor: _editor,
         console: _console,
         control: _control
     };

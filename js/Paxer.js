@@ -472,6 +472,9 @@ var Parser = {
                 movements.push(curMovement);
                 if (!stepPass || singleStepping) {
                     singleSpot += 1;
+                    if (stepPass) {
+                        parser.generateSequentialNodes();
+                    }
                     return stepPass;
                 }
                 if (!singleStepping) {

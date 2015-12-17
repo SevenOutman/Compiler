@@ -376,8 +376,9 @@
                 var start = window.performance ? window.performance.now() : (new Date).now();
                 if (lexer.lex(code)) {
                     console.log(lexer.getSymbolTable());
+                    parser.setInput(lexer.getSequence());
                     var lexend = window.performance ? window.performance.now() : (new Date).now();
-                    if (parser.parse(lexer.getSequence())) {
+                    if (parser.parse(0)) {
                         console.log(parser.getRootS());
                         var end = window.performance ? window.performance.now() : (new Date).now();
                         View.console.success(parser.getMovementsF()
@@ -735,7 +736,7 @@
                     View.console.log('code successfully lexed')
                 }
             } else {
-                if (parser.parseByStep()) {
+                if (parser.parse(1)) {
                     View.console.log(parser.getCurMovementF());
                 } else {
                     View.console.log(parser.getErrMsg());

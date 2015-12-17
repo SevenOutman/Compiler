@@ -141,7 +141,11 @@ var Lexer = {
             matched, next, token;
             lexing = 0;
         };
-        lexer.lex = function () {
+        lexer.lexDone = function () {
+
+            return lexing >= input.length;
+        };
+        lexer.lex = function (singleStepping) {
             function tryMatch (input) {
                 var i;
                 for (i = 0; i < rules.length; i += 1) {
@@ -158,6 +162,7 @@ var Lexer = {
                 }
                 return false;
             }
+            curLexeme = '';
             while (lexing < input.length) {
                 next = input[lexing];
                 matched = tryMatch(curLexeme + next);
@@ -179,6 +184,12 @@ var Lexer = {
                         lexSequence.push(token);
                         if (token.abstract == 'ID')
                             symbolTable.handle(token);
+                        if (singleStepping) {
+                            pointer.reduce();
+                            curLexeme = "";
+                            lexing += 1;
+                            return true;
+                        }
                     }
                     pointer.reduce();
                     curLexeme = "";

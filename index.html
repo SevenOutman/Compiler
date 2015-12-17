@@ -374,19 +374,19 @@
                 // var processed = (new LexicalAnalyzer).run(View.editor.getContent());
                 // (new LLParser).run(processed);
                 var start = window.performance ? window.performance.now() : (new Date).now();
-                if (lexer.lex(code)) {
-                    console.log(lexer.getSymbolTable());
+                lexer.reset();
+                lexer.setInput(code);
+                if (lexer.lex()) {
                     parser.setInput(lexer.getSequence());
+                    return;
                     var lexend = window.performance ? window.performance.now() : (new Date).now();
                     if (parser.parse(0)) {
-                        console.log(parser.getRootS());
                         var end = window.performance ? window.performance.now() : (new Date).now();
                         View.console.success(parser.getMovementsF()
                                 + "Compile finished in " + (end - start).toFixed(4) + " millisecs. "
                                 + "Lexer: " + (lexend - start).toFixed(4) + "ms. "
                                 + "Parser: " + (end - lexend).toFixed(4) + "ms."
                                 + "\nCan we do it faster?");
-//                        return;
 
                         Pub("parsedone").on(document);
 
@@ -730,19 +730,26 @@
         });
         $("#btn-next").on("click", function () {
             if (parser.parseDone()) {
-                var code = View.editor.currentSession().content;
-                if (lexer.lex(code)) {
-                    parser.setInput(lexer.getSequence());
-                    View.console.log('code successfully lexed')
-                }
+                View.console.success('code parsed.');
             } else {
                 if (parser.parse(1)) {
-                    View.console.log(parser.getCurMovementF());
+                    View.console.success(parser.getCurMovementF());
                 } else {
-                    View.console.log(parser.getErrMsg());
+                    View.console.error(parser.getErrMsg());
                 }
             }
 
+        });
+        $("#btn-ff").on("click", function () {
+            if (parser.parseDone()) {
+                View.console.success('code parsed.');
+            } else {
+                if (parser.parse(0)) {
+                    View.console.success(parser.getMovementsF());
+                } else {
+                    View.console.error(parser.getErrMsg());
+                }
+            }
         });
         View.console.log("Compiler lauched at " + new Date().toTimeString());
     };

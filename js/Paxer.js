@@ -113,9 +113,13 @@ var Lexer = {
         };
         var pointer = Pointer.new();
         var symbolTable = SymbolTable.new();
-        var lexSequence;
-        var errorMsg = "";
         var lexer = {};
+        var lexSequence;
+        var errorMsg;
+        var input;
+        var curLexeme;
+        var matched, next, token;
+        var lexing = 0;
         lexer.getErrMsg = function () {
 
             return errorMsg;
@@ -124,16 +128,29 @@ var Lexer = {
 
             return symbolTable.get();
         };
-        lexer.lex = function (input) {
+        lexer.setInput = function (_input) {
+            lexer.reset();
+            input = _input;
+        };
+        lexer.reset = function () {
+            symbolTable.reset();
+            pointer.reset();
+            errorMsg = "";
+            lexSequence = [];
+            curLexeme = "";
+            matched, next, token;
+            lexing = 0;
+        };
+        lexer.lex = function () {
             function tryMatch (input) {
                 var i;
                 for (i = 0; i < rules.length; i += 1) {
                     if (rules.hasOwnProperty(i)) {
                         if (input.match(rules[i].regExp)) {
                             return {
-                                lexeme:   input,
-                                abstract: rules[i].abstract,
-                                position: pointer.get(),
+                                lexeme:       input,
+                                abstract:     rules[i].abstract,
+                                position:     pointer.get(),
                                 containValue: rules[i].containValue
                             };
                         }
@@ -141,15 +158,8 @@ var Lexer = {
                 }
                 return false;
             }
-            symbolTable.reset();
-            errorMsg = "";
-            pointer.reset();
-            lexSequence = [];
-            var curLexeme = "";
-            var matched, next, token;
-            var i = 0;
-            while (i < input.length) {
-                next = input[i];
+            while (lexing < input.length) {
+                next = input[lexing];
                 matched = tryMatch(curLexeme + next);
                 if (!matched) {
                     if (curLexeme=='') {
@@ -164,7 +174,7 @@ var Lexer = {
                             return false;
                         }
                     } else {
-                        i -= 1;
+                        lexing -= 1;
                         token = tryMatch(curLexeme);
                         lexSequence.push(token);
                         if (token.abstract == 'ID')
@@ -176,7 +186,7 @@ var Lexer = {
                     curLexeme += next;
                     pointer.shift(1);
                 }
-                i += 1;
+                lexing += 1;
             }
             token = tryMatch(curLexeme);
             if (token) {
@@ -253,15 +263,6 @@ var Parser = {
             {interminal: 'simpleexpr',       product: ['NUM'                                                     ]}, // 34
             {interminal: 'simpleexpr',       product: ['(', 'arithexpr', ')'                                     ]}  // 35
         ];
-        function isTerminal(symbol) {
-            var i;
-            for (i = 0; i < rules.length; i += 1) {
-                if (rules[i].interminal == symbol) {
-                    return false;
-                }
-            }
-            return true;
-        }
         var table = {
             program        : {'{':  1, '}':  0, 'if':  0, '(':  0, ')':  0, 'then':  0, 'else':  0, 'while':  0, 'int':  0, 'real':  0, 'ID':  0, 'NUM':  0, ',':  0, ';':  0, '+':  0, '-':  0, '*':  0, '/':  0, '=':  0, '<':  0, '>':  0, '<=':  0, '>=':  0, '==':  0, '$':  0},
             stmt           : {'{':  6, '}':  0, 'if':  3, '(':  0, ')':  0, 'then':  0, 'else':  0, 'while':  4, 'int':  2, 'real':  2, 'ID':  5, 'NUM':  0, ',':  0, ';':  0, '+':  0, '-':  0, '*':  0, '/':  0, '=':  0, '<':  0, '>':  0, '<=':  0, '>=':  0, '==':  0, '$':  0},
@@ -317,10 +318,8 @@ var Parser = {
                     node.formula = formula;
                 }
                 return node;
-            }
-        };
-        var epsilonNode = {
-            new: function () {
+            },
+            epsilon: function () {
                 var node = {};
                 node.abstract = 'ε';
                 node.name = Invalid;
@@ -335,16 +334,15 @@ var Parser = {
         var parser = {};
         var movements = [];
         var root;
-        var countNode;
         var errorMsg;
         var warningMsg;
         var stack = [], input = [];
+        var curMovement;
         var toBuild;
         var building;
-        var expected;
-        var curMovement;
         var lastPos;
         var curFormula;
+        var singleSpot;
         parser.reset = function () {
             stack      = ['$', 'program'];
             input      = [];
@@ -353,12 +351,43 @@ var Parser = {
             warningMsg = "";
             root       = Node.new('program');
             toBuild    = [root];
+            singleSpot = 0;
         };
         parser.setInput = function (_input) {
             parser.reset();
             input = _input;
         };
         parser.parse = function (singleStepping) {
+            function isTerminal(symbol) {
+                var i;
+                for (i = 0; i < rules.length; i += 1) {
+                    if (rules[i].interminal == symbol) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            function tryParse (stack, input) {
+                var top, next;
+                while(top != '$'){
+                    next = input[0].abstract;
+                    top = stack.pop();
+                    if (top == next) {
+                        input.shift();
+                    } else if (isTerminal(top)) {
+                        return false;
+                    } else if (table[top][next] == 0) {
+                        return false;
+                    } else if (table[top][next] > 0) {
+                        rule = table[top][next];
+                        var product = rules[rule].product.slice();
+                        while(product.length > 0) {
+                            stack.push(product.pop());
+                        }
+                    }
+                }
+                return input.length == 0;
+            }
             curMovement = [stack.slice(), input.slice(), {}];
             var top = stack.pop(), nextT = input.shift(), next = nextT.abstract;
             var stepPass = false;
@@ -397,7 +426,7 @@ var Parser = {
                         warningMsg = 'MISSING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
                         stepPass = true;
                     } else {
-                        expected = "";
+                        var expected = "";
                         var i;
                         for (i in table[top]) {
                             if (table[top][i] != 0) {
@@ -417,7 +446,7 @@ var Parser = {
                     var newNode;
                     building = toBuild.shift();
                     if (product.length == 0) {
-                        building.pushSubNode(epsilonNode.new());
+                        building.pushSubNode(Node.epsilon());
                     }
                     while(product.length > 0) {
                         item = product.pop();
@@ -431,14 +460,18 @@ var Parser = {
                 }
                 movements.push(curMovement);
                 if (!stepPass || singleStepping) {
+                    singleSpot += 1;
                     return stepPass;
                 }
-                top = stack.pop();
-                nextT = input.shift();
-                next = nextT.abstract;
+                if (!singleStepping) {
+                    curMovement = [stack.slice(), input.slice(), {}];
+                    top = stack.pop();
+                    nextT = input.shift();
+                    next = nextT.abstract;
+                }
             }
             if (input.length == 0) {
-                movements.push([stack.slice(), input.slice(), {}]);
+                movements.push(curMovement);
                 return true;
             } else {
                 errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\' AT ROW ' + input[0].position.first_row + ', COL ' + input[0].position.first_col;
@@ -449,31 +482,10 @@ var Parser = {
 
             return input.length == 0;
         };
-        function tryParse (stack, input) {
-            var top, next;
-            while(top != '$'){
-                next = input[0].abstract;
-                top = stack.pop();
-                if (top == next) {
-                    input.shift();
-                } else if (isTerminal(top)) {
-                    return false;
-                } else if (table[top][next] == 0) {
-                    return false;
-                } else if (table[top][next] > 0) {
-                    rule = table[top][next];
-                    var product = rules[rule].product.slice();
-                    while(product.length > 0) {
-                        stack.push(product.pop());
-                    }
-                }
-            }
-            return input.length == 0;
-        }
         parser.getRoot = function () {
 
             return root;
-        };
+        }
         parser.getRootS = function () {
             function filterNode (node) {
                 var nodeS = {};
@@ -491,7 +503,34 @@ var Parser = {
                 return nodeS;
             }
             return filterNode(root);
-        }
+        };
+        parser.generateSequentialNodes = function () {
+            function digNode(fartherID, node) {
+                var thisID = countNode.toString();
+                countNode += 1;
+                if (typeof(node) === typeof(Node.new())) {
+                    var sequentialNodes = [];
+                    var cur = [thisID, node.name, 0, fartherID];
+                    var subNodes = node.getSubNodes();
+                    var i;
+                    for (i = 0; i < subNodes.length; i += 1) {
+                        var subSqu = digNode(thisID, subNodes[i]);
+                        var j;
+                        for (j = 0; j < subSqu.length; j += 1) {
+                            sequentialNodes.push(subSqu[j]);
+                        }
+                        cur[2] += subSqu[0][2] + 1;
+                    }
+                    sequentialNodes.unshift(cur);
+                    return sequentialNodes;
+                } else {
+                    var cur = [thisID, node, 0, fartherID];
+                    return [cur];
+                }
+            }
+            var countNode = 0;
+            return digNode('', parser.getRoot());
+        };
         parser.getErrMsg = function () {
 
             return errorMsg;
@@ -511,13 +550,13 @@ var Parser = {
                 }
                 return str;
             }
-            var aMovements = [];
+            var arrMovements = [];
             var length0 = 0, length1 = 0, length2 = 0;
             var move, thisMove;
             var sSTACK, sINPUT, sACTION;
             var i, j;
             var inputLimit = 22;
-            for (i = 0; i < movements.length; i += 1) {
+            for (i = singleSpot; i < movements.length; i += 1) {
                 move = movements[i];
                 thisMove = [];
 
@@ -550,18 +589,18 @@ var Parser = {
                 }
                 thisMove.push(sACTION);
 
-                aMovements.push(thisMove);
+                arrMovements.push(thisMove);
             }
             var i;
-            for (i = 0; i < aMovements.length; i += 1) {
-                aMovements[i][0] = padBlank(aMovements[i][0], length0);
-                aMovements[i][1] = padBlank(aMovements[i][1], length1);
-                aMovements[i][2] = padBlank(aMovements[i][2], length2);
+            for (i = 0; i < arrMovements.length; i += 1) {
+                arrMovements[i][0] = padBlank(arrMovements[i][0], length0);
+                arrMovements[i][1] = padBlank(arrMovements[i][1], length1);
+                arrMovements[i][2] = padBlank(arrMovements[i][2], length2);
             }
             var sMovements = '\n' + ([padBlank('STACK', length0), padBlank('INPUT', length1), padBlank('ACTION', length2)]).join('    ') + '\n';
             var i;
-            for (i = 0; i < aMovements.length; i += 1) {
-                sMovements += ([aMovements[i][0], aMovements[i][1], aMovements[i][2]]).join('    ') + '\n';
+            for (i = 0; i < arrMovements.length; i += 1) {
+                sMovements += ([arrMovements[i][0], arrMovements[i][1], arrMovements[i][2]]).join('    ') + '\n';
             }
             return sMovements;
         };
@@ -570,7 +609,7 @@ var Parser = {
             var sINPUT = '';
             var i;
             for (i = 0; i < curMovement[1].length; i++) {
-                sINPUT += curMovement[1][i].abstract + ' ';
+                sINPUT += curMovement[1][i].lexeme + ' ';
             }
             if (sINPUT.length > 20) {
                 sINPUT = sINPUT.substring(0, 17) + ' ...';
@@ -580,41 +619,14 @@ var Parser = {
                 sACTION = curMovement[2].interminal + ' -> ';
                 if (curMovement[2].hasOwnProperty('product')) {
                     for (var i = 0; i < curMovement[2].product.length; i++) {
-                        sACTION += curMovement[2].product[i];
+                        sACTION += curMovement[2].product[i] + ' ';
                     }
                 } else {
                     sACTION += 'ε';
                 }
             }
             return [sSTACK, sINPUT, sACTION].join('  |  ');
-        }
-        parser.generateSequentialNodes = function () {
-            countNode = 0;
-            return digNode('', parser.getRoot());
         };
-        function digNode(fartherID, node) {
-            var thisID = countNode.toString();
-            countNode += 1;
-            if (typeof(node) === typeof(Node.new())) {
-                var sequentialNodes = [];
-                var cur = [thisID, node.name, 0, fartherID];
-                var subNodes = node.getSubNodes();
-                var i;
-                for (i = 0; i < subNodes.length; i += 1) {
-                    var subSqu = digNode(thisID, subNodes[i]);
-                    var j;
-                    for (j = 0; j < subSqu.length; j += 1) {
-                        sequentialNodes.push(subSqu[j]);
-                    }
-                    cur[2] += subSqu[0][2] + 1;
-                }
-                sequentialNodes.unshift(cur);
-                return sequentialNodes;
-            } else {
-                var cur = [thisID, node, 0, fartherID];
-                return [cur];
-            }
-        }
         return parser;
     }
 };

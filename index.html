@@ -736,6 +736,9 @@
             } else {
                 if (parser.parse(1)) {
                     View.console.success(parser.getCurMovementF());
+//                    console.log(parser.generateSequentialNodes());
+                    View.treePen.setSource(parser.generateSequentialNodes());
+                    View.treePen.render();
                 } else {
                     View.console.error(parser.getErrMsg());
                 }

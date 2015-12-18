@@ -384,12 +384,16 @@ var View = (function () {
         _control.compiling = file;
         _control.enterCompileMode();
     };
-    var datavTree = null,
+
+    var _treePen = new Tree("tree-pane", {
+            radius: 10
+        }),
         _treeArr = [
             [1, "root", 3, "", 1, "0"],
             [2, "1", 3, "1", 1, "0"],
         ],
         interval = null;
+
     _control.enterCompileMode = function () {
         if (_control.compiling !== null) {
             $("#compiling-filename").text(_control.compiling.fileName());
@@ -398,32 +402,32 @@ var View = (function () {
             $(".tab-bar-cover").show();
             $("#box-opener-tree").trigger("click");
             $(".tree-box .placeholder").hide();
-            datavTree = datavTree || new Tree("tree-pane", {
-                    width: 550,
-                    height: $(".tree-box .box-body").height(),
-                    radius: 10
-                });
+            _treePen.setOptions({
+                width: 550,
+                height: $(".tree-box .box-body").height()
+            });
             //for (var i = 0; i < 10; i++) {
             //    _treeArr.push([_treeArr.length + 1, _treeArr.length, 0, "" + Math.floor(1 + Math.random() * _treeArr.length), Math.random() < 0.5 ? "0" : "1"]);
-            datavTree.setSource(_treeArr);
+            //_treePen.setSource(_treeArr);
 
-            interval = setInterval(function () {
-                datavTree.render({width: Math.max(550, $(".tree-box .box-body").width())});
-
-                if (_treeArr.length > 15) {
-                    _treeArr = [_treeArr[0], _treeArr[1]];
-                    datavTree.setSource(_treeArr);
-                } else {
-                    datavTree.append([_treeArr.length + 1, _treeArr.length, 0, "" + Math.floor(1 + Math.random() * _treeArr.length), Math.random() < 0.5 ? "0" : "1"]);
-                }
-                //}
-            }, 1000);
+            //interval = setInterval(function () {
+            //    _treePen.render({width: Math.max(550, $(".tree-box .box-body").width())});
+            //
+            //    if (_treeArr.length > 15) {
+            //        _treeArr = [_treeArr[0], _treeArr[1]];
+            //        _treePen.setSource(_treeArr);
+            //    } else {
+            //        _treePen.append([_treeArr.length + 1, _treeArr.length, 0, "" + Math.floor(1 + Math.random() * _treeArr.length), Math.random() < 0.5 ? "0" : "1"]);
+            //}
+            //}
+            //}, 1000);
             //datavTree.render();
             //$("#btn-compile").prop("disabled", true);
             $(".left-box .box-caret").trigger("click");
             _editor.cm.setOption("readOnly", true);
         }
     };
+
     _control.exitCompileMode = function () {
         clearInterval(interval);
         _treeArr = [
@@ -444,9 +448,12 @@ var View = (function () {
         _console.cm.setValue("");
     };
 
+
     return {
         editor: _editor,
         console: _console,
-        control: _control
+        control: _control,
+        treePen: _treePen
     };
-})();
+})
+();

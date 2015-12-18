@@ -35,7 +35,7 @@ var SymbolTable = {
         };
         symbolTable.get = function () {
 
-            return tableA;
+            return tableA.slice();
         };
         symbolTable.getD = function () {
 
@@ -308,6 +308,8 @@ var Parser = {
                 node.value = Invalid;
                 node.type = Invalid;
                 node.formula = Invalid;
+                node.new = true;
+                node.parsed = false;
                 node.pushSubNode = function (sNode) {
                     subNodes.unshift(sNode);
                 };
@@ -332,7 +334,8 @@ var Parser = {
                         }
                     }
                     node.formula = formula;
-                }
+                };
+                newNodes.push(node);
                 return node;
             },
             epsilon: function () {
@@ -359,6 +362,7 @@ var Parser = {
         var lastPos;
         var curFormula;
         var singleSpot;
+        var newNodes = [];
         parser.reset = function () {
             parseErr   = false;
             stack      = ['$', 'program'];
@@ -366,6 +370,7 @@ var Parser = {
             movements  = [];
             errorMsg   = "";
             warningMsg = "";
+            newNodes   = [];
             root       = Node.new('program');
             toBuild    = [root];
             singleSpot = 0;
@@ -410,13 +415,21 @@ var Parser = {
                 }
                 return input.length == 0;
             }
+            function cleanNewNodes () {
+                for (var i = 0; i < newNodes.length; i++) {
+                    newNodes[i].new = false;
+                }
+                newNodes = [];
+            }
             curMovement = [stack.slice(), input.slice(), {}];
             var top = stack.pop(), nextT = input[0], next = nextT.abstract;
             var stepPass = false;
             while (top != '$' && input.length > 0) {
+                cleanNewNodes();
                 if (top == next) {
                     lastPos = nextT.position;
                     building = toBuild.pop();
+                    building.parsed = true;
                     building.assign(nextT, curFormula);
                     input.shift();
                     stepPass = true;
@@ -537,10 +550,6 @@ var Parser = {
 
             return input.length == 0;
         };
-        parser.getRoot = function () {
-
-            return root;
-        };
         parser.getRootS = function () {
             function filterNode (node) {
                 var nodeS = {};
@@ -563,12 +572,9 @@ var Parser = {
             function digNode(fartherID, node) {
                 var thisID = countNode.toString();
                 countNode += 1;
-                if (node == building) {
-                    notFoundUnfinishedNodeYet = false;
-                }
                 if (typeof(node) === typeof(Node.new())) {
                     var sequentialNodes = [];
-                    var cur = [thisID, node.abstract, 0, fartherID, notFoundUnfinishedNodeYet ? '0':'1'];
+                    var cur = [thisID, node.abstract, 0, fartherID, node.parsed ? '0':'1', node.new ? '1':'0'];
                     var subNodes = node.getSubNodes();
                     var i;
                     for (i = 0; i < subNodes.length; i += 1) {
@@ -583,13 +589,13 @@ var Parser = {
                     sequentialNodes.unshift(cur);
                     return sequentialNodes;
                 } else {
-                    var cur = [thisID, node, 0, fartherID, '0'];
+                    var cur = [thisID, node, 0, fartherID, node.parsed ? '0':'1', node.new ? '1':'0'];
                     return [cur];
                 }
             }
             var countNode = 0;
             var notFoundUnfinishedNodeYet = true;
-            return digNode('', parser.getRoot());
+            return digNode('', root);
         };
         parser.getErrMsg = function () {
 
@@ -598,10 +604,6 @@ var Parser = {
         parser.getWarningMsg = function () {
 
             return warningMsg;
-        };
-        parser.getMovements = function () {
-
-            return movements;
         };
         parser.getMovementsF = function () {
             function padBlank(str, length) {

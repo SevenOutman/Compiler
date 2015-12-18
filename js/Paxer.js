@@ -1,8 +1,8 @@
 var SymbolTable = {
     new: function () {
         var symbolTable = {};
-        var tableD = {};
-        var tableA = [], indexA = {};
+        var tableD;
+        var tableA, indexA;
         var count = 0;
         symbolTable.handle = function (token) {
             function addSymbol(token) {
@@ -204,12 +204,17 @@ var Lexer = {
                 lexSequence.push(token);
             }
             pointer.reduce();
-            lexSequence.push({
+            token = {
                 lexeme:    "$",
                 abstract:  "$",
                 position: pointer.get()
-            });
+            };
+            lexSequence.push(token);
             return true;
+        };
+        lexer.getToken = function () {
+
+            return token;
         };
         lexer.getSequence = function () {
 
@@ -343,11 +348,11 @@ var Parser = {
             }
         };
         var parser = {};
-        var movements = [];
+        var movements;
         var root;
         var errorMsg;
         var warningMsg;
-        var stack = [], input = [];
+        var stack, input;
         var curMovement;
         var toBuild;
         var building;
@@ -368,6 +373,11 @@ var Parser = {
         parser.setInput = function (_input) {
             parser.reset();
             input = _input;
+        };
+        parser.pushToken = function (token) {
+            nextT = token;
+            next = nextT.abstract;
+            input.push(token);
         };
         parser.parse = function (singleStepping) {
             function isTerminal(symbol) {
@@ -401,24 +411,25 @@ var Parser = {
                 return input.length == 0;
             }
             curMovement = [stack.slice(), input.slice(), {}];
-            var top = stack.pop(), nextT = input.shift(), next = nextT.abstract;
+            var top = stack.pop(), nextT = input[0], next = nextT.abstract;
             var stepPass = false;
             while (top != '$' && input.length > 0) {
                 if (top == next) {
                     lastPos = nextT.position;
-                    building = toBuild.shift();
+                    building = toBuild.pop();
                     building.assign(nextT, curFormula);
+                    input.shift();
                     stepPass = true;
                 } else if (isTerminal(top)) {
                     errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
                 } else if (table[top][next] == 0) {
                     //BACK TO LAST STATE
                     stack.push(top);
-                    input.unshift(nextT);
                     //RECOVERY START
                     var recovered = false;
                     //TRY ADDING EVERY EXPECTED
-                    if (!recovered) {
+                    var tryAdd = false;
+                    if (!recovered && tryAdd) {
                         var possibleItem;
                         for (i in table[top]) {
                             if (table[top][i] != 0) {
@@ -474,12 +485,11 @@ var Parser = {
                     }
                     stepPass = recovered;
                 } else if (table[top][next] > 0) {
-                    input.unshift(nextT);
                     curFormula = table[top][next];
                     var rule = table[top][next];
                     var product = rules[rule].product.slice();
                     var item, newNode;
-                    building = toBuild.shift();
+                    building = toBuild.pop();
                     if (product.length == 0) {
                         building.pushSubNode(Node.epsilon());
                     }
@@ -488,7 +498,7 @@ var Parser = {
                         stack.push(item);
                         newNode = Node.new(item);
                         building.pushSubNode(newNode);
-                        toBuild.unshift(newNode);
+                        toBuild.push(newNode);
                     }
                     curMovement[2] = rules[rule];
                     stepPass = true;
@@ -503,11 +513,14 @@ var Parser = {
                 if (!singleStepping) {
                     curMovement = [stack.slice(), input.slice(), {}];
                     top = stack.pop();
-                    nextT = input.shift();
+                    nextT = input[0];
                     next = nextT.abstract;
                 }
             }
-            building = toBuild.shift();
+            if (top == '$') {
+                input.shift();
+            }
+            building = toBuild.pop();
             if (input.length == 0) {
                 movements.push(curMovement);
                 return true;
@@ -517,6 +530,10 @@ var Parser = {
             }
         };
         parser.parseDone = function () {
+
+            return input.length == 0;
+        };
+        parser.needPush = function () {
 
             return input.length == 0;
         };

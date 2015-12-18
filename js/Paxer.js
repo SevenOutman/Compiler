@@ -355,6 +355,7 @@ var Parser = {
         var curFormula;
         var singleSpot;
         parser.reset = function () {
+            parseErr   = false;
             stack      = ['$', 'program'];
             input      = [];
             movements  = [];
@@ -405,9 +406,8 @@ var Parser = {
             while (top != '$' && input.length > 0) {
                 if (top == next) {
                     lastPos = nextT.position;
-                    building = toBuild[0];
+                    building = toBuild.shift();
                     building.assign(nextT, curFormula);
-                    toBuild.shift();
                     stepPass = true;
                 } else if (isTerminal(top)) {
                     errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
@@ -477,10 +477,8 @@ var Parser = {
                     input.unshift(nextT);
                     curFormula = table[top][next];
                     var rule = table[top][next];
-                    var i;
                     var product = rules[rule].product.slice();
-                    var item;
-                    var newNode;
+                    var item, newNode;
                     building = toBuild.shift();
                     if (product.length == 0) {
                         building.pushSubNode(Node.epsilon());
@@ -495,7 +493,9 @@ var Parser = {
                     curMovement[2] = rules[rule];
                     stepPass = true;
                 }
-                movements.push(curMovement);
+                if (stepPass) {
+                    movements.push(curMovement);
+                }
                 if (!stepPass || singleStepping) {
                     singleSpot += 1;
                     return stepPass;
@@ -507,6 +507,7 @@ var Parser = {
                     next = nextT.abstract;
                 }
             }
+            building = toBuild.shift();
             if (input.length == 0) {
                 movements.push(curMovement);
                 return true;
@@ -545,9 +546,12 @@ var Parser = {
             function digNode(fartherID, node) {
                 var thisID = countNode.toString();
                 countNode += 1;
+                if (node == building) {
+                    notFoundUnfinishedNodeYet = false;
+                }
                 if (typeof(node) === typeof(Node.new())) {
                     var sequentialNodes = [];
-                    var cur = [thisID, node.name, 0, fartherID];
+                    var cur = [thisID, node.abstract, 0, fartherID, notFoundUnfinishedNodeYet ? '0':'1'];
                     var subNodes = node.getSubNodes();
                     var i;
                     for (i = 0; i < subNodes.length; i += 1) {
@@ -557,15 +561,17 @@ var Parser = {
                             sequentialNodes.push(subSqu[j]);
                         }
                         cur[2] += subSqu[0][2] + 1;
+                        cur[4] = subSqu[0][4];
                     }
                     sequentialNodes.unshift(cur);
                     return sequentialNodes;
                 } else {
-                    var cur = [thisID, node, 0, fartherID];
+                    var cur = [thisID, node, 0, fartherID, '0'];
                     return [cur];
                 }
             }
             var countNode = 0;
+            var notFoundUnfinishedNodeYet = true;
             return digNode('', parser.getRoot());
         };
         parser.getErrMsg = function () {

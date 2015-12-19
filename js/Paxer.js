@@ -630,14 +630,19 @@ var Parser = {
                         if (!node.parsed) {
                             var cur = [thisID, node.abstract, 0, fartherID, onParsingBranch ? '1':'0', node.new ? '1':'0'];
                             var subSqu, subNodes = node.getSubNodes();
+                            var passedFirstNotParsed = true;
                             var i, j;
                             for (i = 0; i < subNodes.length; i += 1) {
-                                subSqu = digNode(thisID, subNodes[i], i == 0 && onParsingBranch);
+                                subSqu = digNode(thisID, subNodes[i], passedFirstNotParsed && onParsingBranch);
+                                if (!subNodes[i].parsed) {
+                                    passedFirstNotParsed = false;
+                                }
                                 for (j = 0; j < subSqu.length; j += 1) {
                                     sequentialNodes.push(subSqu[j]);
                                 }
                                 if (subSqu.length > 0) {
                                     cur[2] += subSqu[0][2] + 1;
+                                    notFirst = true
                                 }
                             }
                             sequentialNodes.unshift(cur);

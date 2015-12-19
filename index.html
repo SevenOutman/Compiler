@@ -711,8 +711,8 @@
                 paxer.go();
                 switch (paxer.getStatus()) {
                     case "NORMAL":
-                        View.console.success(parser.getCurMovementF());
-                        View.treePen.setSource(parser.getSequentialNodes());
+                        View.console.success(paxer.getCurMovementF());
+                        View.treePen.setSource(paxer.getSequentialNodes());
                         View.treePen.render();
                         break;
                     case "ERROR":
@@ -730,13 +730,13 @@
                 View.console.success('code parsed.');
             } else {
                 Benchmark.mark("parse");
-                while (!["DONE", "ERROR"].has(paxer.getStatus())) {
+                while (paxer.getStatus() != "DONE" && paxer.getStatus() != "ERROR") {
                     paxer.go();
                     switch (paxer.getStatus()) {
                         case "NORMAL":
-                            View.console.success(parser.getCurMovementF());
-                            View.treePen.setSource(parser.getSequentialNodes());
-                            View.treePen.render();
+                            View.console.success(paxer.getCurMovementF());
+//                            View.treePen.setSource(paxer.getSequentialNodes());
+//                            View.treePen.render();
                             break;
                         case "ERROR":
                             View.console.error(paxer.getErrMsg());
@@ -748,12 +748,10 @@
                 }
 //                if (parser.parse(0)) {
                 if (paxer.getStatus() == "DONE") {
-
                     var time = Benchmark.measure("parse");
 //                    View.console.success(parser.getMovementsF());
                     View.console.success("Compile finished in " + time.toFixed(4) + " millisecs.");
                     View.console.success("Can we make it faster?");
-
                 } else {
                     View.console.error(paxer.getErrMsg());
                 }

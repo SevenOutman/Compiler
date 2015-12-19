@@ -709,7 +709,7 @@
             } else {
                 if (parser.parse(1)) {
                     View.console.success(parser.getCurMovementF());
-                    View.treePen.setSource(parser.generateSequentialNodes());
+                    View.treePen.setSource(parser.getSequentialNodes());
                     View.treePen.render();
                 } else {
                     View.console.error(parser.getErrMsg());

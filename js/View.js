@@ -381,7 +381,7 @@ var View = (function () {
     };
 
     var _treePen = new Tree("tree-pane", {
-            radius: 15
+            radius: 10
         });
     _treePen.clear = function () {
         _treePen.canvas.clear();

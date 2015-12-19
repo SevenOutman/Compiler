@@ -323,8 +323,8 @@ var Parser = {
                 node.formula = Invalid;
                 node.new = true;
                 node.parsed = false;
-                node.pushSubNode = function (sNode) {
-                    subNodes.push(sNode);
+                node.addSubNode = function (sNode) {
+                    subNodes.unshift(sNode);
                 };
                 node.getSubNodes = function () {
                     return subNodes.slice();
@@ -555,13 +555,13 @@ var Parser = {
                     var item, newNode;
                     building = toBuild.pop();
                     if (product.length == 0) {
-                        building.pushSubNode(Node.epsilon());
+                        building.addSubNode(Node.epsilon());
                     }
                     while(product.length > 0) {
                         item = product.pop();
                         stack.push(item);
                         newNode = Node.new(item);
-                        building.pushSubNode(newNode);
+                        building.addSubNode(newNode);
                         toBuild.push(newNode);
                     }
                     curMovement[2] = rules[rule];
@@ -622,32 +622,31 @@ var Parser = {
         };
         parser.getSequentialNodes = function () {
             function generateSequentialNodes () {
-                function digNode(fartherID, node) {
+                function digNode(fartherID, node, onParsingBranch) {
                     var thisID = countNode.toString();
                     countNode += 1;
                     if (typeof(node) === typeof(Node.new())) {
                         var sequentialNodes = [];
-                        var cur = [thisID, node.abstract, 0, fartherID, node.parsed ? '0':'1', node.new ? '1':'0'];
-                        var subNodes = node.getSubNodes();
-                        var i;
-                        for (i = 0; i < subNodes.length; i += 1) {
-                            var subSqu = digNode(thisID, subNodes[i]);
-                            var j;
-                            for (j = 0; j < subSqu.length; j += 1) {
-                                sequentialNodes.push(subSqu[j]);
+                        if (!node.parsed) {
+                            var cur = [thisID, node.abstract, 0, fartherID, onParsingBranch ? '1':'0', node.new ? '1':'0'];
+                            var subSqu, subNodes = node.getSubNodes();
+                            var i, j;
+                            for (i = 0; i < subNodes.length; i += 1) {
+                                subSqu = digNode(thisID, subNodes[i], i == 0 && onParsingBranch);
+                                for (j = 0; j < subSqu.length; j += 1) {
+                                    sequentialNodes.push(subSqu[j]);
+                                }
+                                if (subSqu.length > 0) {
+                                    cur[2] += subSqu[0][2] + 1;
+                                }
                             }
-                            cur[2] += subSqu[0][2] + 1;
-                            cur[4] = subSqu[0][4];
+                            sequentialNodes.unshift(cur);
                         }
-                        sequentialNodes.unshift(cur);
                         return sequentialNodes;
-                    } else {
-                        var cur = [thisID, node, 0, fartherID, node.parsed ? '0':'1', node.new ? '1':'0'];
-                        return [cur];
                     }
                 }
                 var countNode = 0;
-                return digNode('', root);
+                return digNode('', root, true);
             }
             return generateSequentialNodes();
         };

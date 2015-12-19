@@ -6,8 +6,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Compiler</title>
-    <!-- Bootstrap -->
-    <!--<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">-->
     <link rel="stylesheet" href="lib/codemirror/lib/codemirror.css">
     <link rel="stylesheet" href="lib/monokai-so.css">
     <link rel="stylesheet" href="lib/codemirror/addon/dialog/dialog.css">
@@ -150,6 +148,7 @@
             <div class="box-header">
                 <div class="box-title">Console</div>
                 <span class="box-caret glyphicon glyphicon-menu-down"></span>
+                <span class="box-expand glyphicon glyphicon-menu-up"></span>
             </div>
             <div class="console-container">
                 <div class="console-seal"></div>
@@ -184,14 +183,13 @@
         <input type="file" name="" id="source_file" style="display: none;">
     </div>
 </div>
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+
 <script src="lib/jquery-2.1.4.min.js"></script>
 <script>
     $.browser = {};
     $.browser.msie = !$.support.leadingWhitespace;
 </script>
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<!--<script src="lib/bootstrap/js/bootstrap.min.js"></script>-->
+
 <script src="lib/contextjs/context.js"></script>
 <script src="lib/datavjs/deps/d3.min.js"></script>
 <script src="lib/datavjs/deps/d3.csv.js"></script>
@@ -204,19 +202,17 @@
 <!--<script src="js/Lexical.js"></script>-->
 <!--<script src="js/LL.js"></script>-->
 <script src="lib/codemirror/lib/codemirror.js"></script>
-<script src="lib/codemirror/addon/dialog/dialog.js"></script>
 <script src="lib/codemirror/addon/edit/matchbrackets.js"></script>
 <script src="lib/codemirror/addon/edit/closebrackets.js"></script>
 <script src="lib/codemirror/addon/selection/active-line.js"></script>
 <script src="lib/codemirror/addon/scroll/simplescrollbars.js"></script>
 <script src="lib/codemirror/addon/selection/selection-pointer.js"></script>
 
-
+<script src="js/Benchmark.js"></script>
 <script src="js/include.js"></script>
 <script src="lib/toy.js"></script>
 <script src="lib/console.js"></script>
 <script src="js/PubSub.js"></script>
-<script src="js/PS.js"></script>
 <script src="js/Storage.js"></script>
 <script src="js/Cache.js"></script>
 <script src="js/ToyFile.js"></script>
@@ -251,15 +247,13 @@
         Storage.setItem("stored-files", JSON.stringify(storedFiles));
     };
 
-    window.onload = function () {
-        // var lexical = new LexicalAnalyzer;
-        // var ll = new LLParser();
+    $(function () {
         var lexer = Lexer.new();
         var parser = Parser.new();
 
-        document.getElementById("cover-open").addEventListener("click", function () {
+        document.getElementById("cover-open").onclick = function () {
             View.editor.newFile();
-        }, false);
+        };
         Cache.files = [];
         Cache.files.find = function (fileName) {
             for (var i = 0; i < this.length; i++) {
@@ -327,22 +321,8 @@
                             .replace(/(else|then)\s+\{/g, "$1{")
                             .replace(/}\s+(else)/, "}$1")
                             .trim() + " ";
-            for (var i = 0; i < code.length; i++) {
-                if (code[i] == " ") {
-                    processed += buffer;
-
-                    if (["then", "else", "then{", "else{", "}else{", "{", "}", ";"].has(buffer)) {
-                        processed += "\n";
-                    } else {
-                        processed += " ";
-                    }
-
-                    buffer = "";
-                } else {
-                    buffer += code[i];
-                }
-            }
-            processed = processed.replace(/\s+(;|\))/g, "$1")
+            processed = code.replace(/(then|else|then\{|else\{|}else\{|\{|}|;)\s/g, "$1\n")
+                    .replace(/\s+(;|\))/g, "$1")
                     .replace(/\(\s+/g, "(")
                     .replace(/(then|else)\{/g, "$1 {")
                     .replace(/}(else)/, "} $1");
@@ -357,11 +337,6 @@
 
             var session = View.editor.currentSession();
             if (null !== session) {
-
-                View.console.popup();
-                $("#box-opener-structure").trigger("click");
-//                $(".left-box .box-caret").trigger("click");
-
                 var code;
                 if (!session.file.isNewFile) {
                     View.editor.save();
@@ -372,35 +347,16 @@
                     code = View.editor.getContent();
                 }
                 View.control.compilie(session.file);
-                // var processed = (new LexicalAnalyzer).run(View.editor.getContent());
-                // (new LLParser).run(processed);
-                var start = window.performance ? window.performance.now() : (new Date).now();
                 lexer.reset();
                 lexer.setInput(code);
                 if (lexer.lex(0)) {
                     parser.setInput(lexer.getSequence());
-                    return;
-                    var lexend = window.performance ? window.performance.now() : (new Date).now();
-                    if (parser.parse(0)) {
-                        var end = window.performance ? window.performance.now() : (new Date).now();
-                        View.console.success(parser.getMovementsF()
-                                + "Compile finished in " + (end - start).toFixed(4) + " millisecs. "
-                                + "Lexer: " + (lexend - start).toFixed(4) + "ms. "
-                                + "Parser: " + (end - lexend).toFixed(4) + "ms."
-                                + "\nCan we do it faster?");
-
-                        Pub("parsedone").on(document);
-
-                        session.file.tree = new TreeFile(session.file, parser.generateSequentialNodes());
-                    } else {
-                        View.console.error(parser.getErrMsg());
-                    }
                 } else {
                     View.console.error(lexer.getErrMsg());
                 }
             }
         };
-        Sub(document).to("parsedone", function () {
+        S("parsedone", function () {
             $(".right-box .placeholder").text("Loading...");
             var output = "",
                     level = 0,
@@ -533,19 +489,19 @@
         var moving_resizer = null,
                 mouseOffsetY = 0,
                 mouseOffsetX = 0;
-        [].forEach.call($(".resizer"), function (el) {
-            el.addEventListener("mousedown", function (e) {
+        $.each($(".resizer"), function (index, el) {
+            $(el).on("mousedown", function (e) {
                 moving_resizer = el;
                 mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
                 mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
                 $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
 
-            }, false);
+            });
         });
-        document.addEventListener("mouseup", function () {
+        $(document).on("mouseup", function () {
             moving_resizer = null;
             $("#resizing-mask").hide();
-        }, false);
+        });
         document.getElementById("resizing-mask").addEventListener("mousemove", function (e) {
             if (moving_resizer instanceof HTMLElement) {
                 var $box = $(moving_resizer).parent(".resizable");
@@ -580,7 +536,6 @@
                                         0, $main.height() - $box.children(".box-header").height() - 1);
                         $box.height($main.height() - upperHeight);
                         $upper.height(upperHeight);
-//                        View.console.scollToEnd();
                     }
                     if ($box.hasClass("tree-box")) {
                         var mouseX = e.clientX,
@@ -642,12 +597,9 @@
             }
         ]);
         $(document).on("click", function (e) {
-//            e.preventDefault();
-//            e.stopPropagation();
             $(".box-open-menu").hide();
         });
         $("#box-opener").on("click", function (e) {
-//            return false;
             e.preventDefault();
             e.stopPropagation();
             $(".box-open-menu").show();
@@ -727,6 +679,19 @@
                 }
             });
         });
+        $.each($(".box-expand"), function (index, el) {
+            $(el).on("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var $box = $(this).parents(".resizable");
+                if ($box.hasClass("bottom-box")) {
+                    if (!$box.hasClass("hidden")) {
+                        $(".upper-box").css("height", "0");
+                        $box.css("height", "100%");
+                    }
+                }
+            });
+        });
         $("#btn-stop").on("click", function () {
             View.control.exitCompileMode();
         });
@@ -736,7 +701,6 @@
             } else {
                 if (parser.parse(1)) {
                     View.console.success(parser.getCurMovementF());
-//                    console.log(parser.generateSequentialNodes());
                     View.treePen.setSource(parser.generateSequentialNodes());
                     View.treePen.render();
                 } else {
@@ -749,15 +713,19 @@
             if (parser.parseDone()) {
                 View.console.success('code parsed.');
             } else {
+                Benchmark.mark("parse");
                 if (parser.parse(0)) {
+                    var time = Benchmark.measure("parse");
                     View.console.success(parser.getMovementsF());
+                    View.console.success("Compile finished in " + time.toFixed(4) + " millisecs.");
+                    View.console.success("Can we make it faster?");
                 } else {
                     View.console.error(parser.getErrMsg());
                 }
             }
         });
         View.console.log("Compiler lauched at " + new Date().toTimeString());
-    };
+    });
 </script>
 </body>
 

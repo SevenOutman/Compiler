@@ -296,7 +296,8 @@ a:focus:active {
     white-space: nowrap;
 }
 
-.box-caret {
+.box-caret,
+.box-expand {
     float: right;
     margin-right: 5px;
     top: 0;

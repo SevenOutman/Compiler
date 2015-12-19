@@ -3,10 +3,15 @@
  */
 (function (window) {
     var _topics = {},
-        _publish = function (type, args) {
-            if (_topics[type]) {
-                for (var i = 0; i < _topics[type].length; i++) {
-                    _topics[type][i](args);
+        _publish = function () {
+            if (arguments.length > 0) {
+                var type = arguments[0],
+                    args = arguments.slice(1);
+                if (_topics[type]) {
+                    for (var i = 0; i < _topics[type].length; i++) {
+                        console.log(_topics[type][i])
+                        setTimeout(_topics[type][i].bind(this, args), 0);
+                    }
                 }
             }
         },

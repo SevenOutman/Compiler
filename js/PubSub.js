@@ -2,63 +2,41 @@
  * Created by Doma on 15/12/13.
  */
 
-(function(window) {
-    var _members   = [],
-        _subscribe = function(obj, type, act) {
-            if ("function" === typeof act) {
-                var mem = null;
-                for (var i = 0; i < _members.length; i++) {
-                    if (_members[i].target === obj) {
-                        mem = _members[i];
-                        break;
-                    }
+(function (window) {
+    var _topics = {},
+        _publish = function (type, args) {
+            if (type && _topics[type]) {
+                for (var i = 0; i < _topics[type].length; i++) {
+                    setTimeout((function (act, self) {
+                        return function () {
+                            act.apply(self, args);
+                        }
+                    })(_topics[type][i], this), 0);
                 }
-                if (mem === null) {
-                    mem = {
-                        target: obj,
-                        subs:   {}
-                    };
-                    _members.push(mem);
-                }
-                mem.subs[type] = mem.subs[type] || [];
-                mem.subs[type].push(act.bind(obj));
             }
         },
-        _publish   = function(obj, type) {
-            for (var i = 0; i < _members.length; i++) {
-                var mem = _members[i];
-                if (mem.target === obj) {
-                    if (mem.subs[type] && mem.subs[type] instanceof Array) {
-                        for (var j = 0; j < mem.subs[type].length; j++) {
-                            setTimeout(mem.subs[type][j], 0);
-                        }
-                    }
+        _subscribe = function (type, act) {
+            if (typeof act === typeof function () {
+                }) {
+
+                if (!_topics[type]) {
+                    _topics[type] = [];
                 }
+                _topics[type].push(act);
             }
         };
 
-    window.Sub = function(obj) {
+    window.P = function (type) {
+        _publish(type, Array.prototype.slice.call(arguments, 1));
         return {
-            to: function(type, act) {
-                _subscribe(obj, type, act);
-                return this;
-            }
-        }
+            p: P
+        };
     };
-    window.Pub = function(type) {
-        var pubs = [type];
+
+    window.S = function (type, act) {
+        _subscribe(type, act);
         return {
-            and: function(type) {
-                pubs.push(type);
-                return this;
-            },
-            on:  function(obj) {
-                setTimeout(function() {
-                    for (var i = 0; i < pubs.length; i++) {
-                        _publish(obj, pubs[i]);
-                    }
-                }, 0);
-            }
-        }
+            s: S
+        };
     };
 })(window);

@@ -357,7 +357,7 @@ var View = (function () {
             $("#box-opener-console").trigger("click");
             $(".tree-box .placeholder").hide();
             _treePen.clear().setOptions({
-                width: 550,
+                width: $(".tree-box .box-body").width(),
                 height: $(".tree-box .box-body").height()
             });
             $(".left-box .box-caret").trigger("click");

@@ -16,6 +16,21 @@ function SemanticAnalyzer() {
 
     var _errors = [];
 
+    var _eat = function (tree, st) {
+
+        var root = tree;
+        symboltable = st;
+        symboltable.get = function (name) {
+            for (var i = 0; i < symboltable.length; i++) {
+                if (symboltable[i].name == name) {
+                    return symboltable[i];
+                }
+            }
+        };
+        activeID = null;
+        _recursive(root);
+    };
+
     function _recursive(node) {
         if (node.abstract == "ID") {
             var symbol = symboltable.get(node.name);
@@ -62,20 +77,7 @@ function SemanticAnalyzer() {
     }
 
     return {
-        eat: function (tree, st) {
-            var root = tree;
-            symboltable = st;
-            symboltable.get = function (name) {
-                for (var i = 0; i < symboltable.length; i++) {
-                    if (symboltable[i].name == name) {
-                        return symboltable[i];
-                    }
-                }
-            };
-            stack = [];
-            activeID = null;
-            _recursive(root);
-        }
+        eat: _eat
     }
 }
 

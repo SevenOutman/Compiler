@@ -36,6 +36,14 @@
             </div>
         </div>
     </div>
+    <div id="about-mask">
+        <div class="dialog" id="about-dialog">
+            <div class="dialog-banner">
+                <h1><span class="glyphicon glyphicon-console"></span> Compiler</h1>
+                <p>Created by SevenOutman, ExinCoda and Rachel.</p>
+            </div>
+        </div>
+    </div>
     <nav class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
         <div class="container-fluid" style="padding-right: 15px">
             <div class="navbar-header">
@@ -45,7 +53,7 @@
             </div>
             <ul class="nav navbar-nav navbar-left">
                 <li>
-                    <button class="btn navbar-btn-o">
+                    <button class="btn navbar-btn-o" id="btn-about">
                         <span class="glyphicon glyphicon-cog"></span>
                     </button>
                 </li>
@@ -723,6 +731,16 @@
                     View.console.error(parser.getErrMsg());
                 }
             }
+        });
+        $("#about-mask").on("click", function () {
+            $(this).hide();
+        });
+        $("#about-dialog").on("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        $("#btn-about").on("click", function () {
+            $("#about-mask").show();
         });
         View.console.log("Compiler lauched at " + new Date().toTimeString());
     });

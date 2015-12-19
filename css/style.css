@@ -138,6 +138,41 @@ a:focus:active {
     background: rgb(75, 80, 82);
 }
 
+#about-mask {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    padding-top: 20%;
+    background: rgba(0, 0, 0, .4);
+    display: none;
+    z-index: 10001;
+}
+
+#about-dialog {
+    width: 600px;
+    height: auto;
+    margin: 0 auto;
+    max-width: 80%;
+    background: rgb(60, 63, 65);
+    color: rgb(187, 187, 187);
+    border-radius: 3px;
+    font-size: 13px;
+    overflow: hidden;
+    -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+    -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+}
+
+.dialog-banner {
+    width: 100%;
+    height: 200px;
+    background: #FEDD31;
+    color: #000000;
+    text-align: center;
+    padding: 40px;
+}
+
 .container-fluid {
     max-width: 100%;
     /*max-width: 960px;*/

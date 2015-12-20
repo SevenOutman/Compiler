@@ -355,12 +355,13 @@ var Parser = {
                 return node;
             },
             epsilon: function () {
-                var node = {};
-                var subNodes = [];
+                var node      = {};
+                var subNodes  = [];
                 node.abstract = 'ε';
-                node.name = Invalid;
-                node.value = Invalid;
-                node.type = Invalid;
+                node.name     = Invalid;
+                node.value    = Invalid;
+                node.type     = Invalid;
+                node.parsed   = false;
                 node.getSubNodes = function () {
                     return subNodes.slice();
                 }
@@ -373,7 +374,8 @@ var Parser = {
         var movements;
         var root;
         var errorMsg;
-        var warningMsg;
+        var warningMsgs;
+        var curWarningMsg;
         var stack, input;
         var curMovement;
         var toBuild;
@@ -387,18 +389,19 @@ var Parser = {
             return curStatus;
         };
         parser.reset = function () {
-            parseErr    = false;
-            stack       = ['$', 'program'];
-            input       = [];
-            movements   = [];
-            errorMsg    = "";
-            warningMsg  = "";
-            newNodes    = [];
-            root        = Node.new('program');
-            toBuild     = [root];
-            singleSpot  = 0;
-            curStatus   = status[3];
-            curMovement = [stack.slice(), input.slice(), {}];
+            parseErr      = false;
+            stack         = ['$', 'program'];
+            input         = [];
+            movements     = [];
+            errorMsg      = "";
+            warningMsgs   = [];
+            curWarningMsg = "";
+            newNodes      = [];
+            root          = Node.new('program');
+            toBuild       = [root];
+            singleSpot    = 0;
+            curStatus     = status[3];
+            curMovement   = [stack.slice(), input.slice(), {}];
         };
         parser.setInput = function (_input) {
             parser.reset();
@@ -449,7 +452,6 @@ var Parser = {
             }
             if (curStatus != status[0] && curStatus != status[1]) return false;
 
-            curStatus = status[0]
             curMovement = [stack.slice(), input.slice(), {}];
             var top = stack.pop(), nextT = input[0], next = nextT.abstract;
             while (top != '$' && input.length > 0) {
@@ -487,7 +489,8 @@ var Parser = {
                             if (recovered) {
                                 input.unshift(possibleItem);
                                 next = input[0].abstract;
-                                warningMsg = 'MISSING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                                curWarningMsg = 'MISSING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                                warningMsgs.push(curWarningMsg);
                             }
                         }
                         //TRY POPING UNTIL MATCH
@@ -502,7 +505,8 @@ var Parser = {
                                 next = nextT.abstract;
                             }
                             if (top != '$') {
-                                warningMsg = 'SKIPPED ' + skipped.join(', ');
+                                curWarningMsg = 'SKIPPED ' + skipped.join(', ');
+                                warningMsgs.push(curWarningMsg);
                                 recovered = true;
                             }
                             if (recovered) {
@@ -525,7 +529,8 @@ var Parser = {
                         }
                         if (recovered) {
                             curStatus = status[1];
-                            curMovement[2] = warningMsg;
+                            curMovement[2] = curWarningMsg;
+                            warningMsgs.push(curWarningMsg);
                         }
                         curStatus = recovered ? status[1] : status[2];
                     } else {
@@ -544,8 +549,9 @@ var Parser = {
                         } else {
                             input.shift();
                             curStatus = status[1];
-                            warningMsg = 'SKIP ' + '\'' + next + '\'';
-                            curMovement[2] = warningMsg;
+                            curWarningMsg = 'SKIP ' + '\'' + next + '\'' + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                            warningMsgs.push(curWarningMsg);
+                            curMovement[2] = curWarningMsg;
                         }
                     }
                 } else if (table[top][next] > 0) {
@@ -556,6 +562,7 @@ var Parser = {
                     building = toBuild.pop();
                     if (product.length == 0) {
                         building.addSubNode(Node.epsilon());
+                        building.parsed = true;
                     }
                     while(product.length > 0) {
                         item = product.pop();
@@ -622,18 +629,19 @@ var Parser = {
         };
         parser.getSequentialNodes = function () {
             function checkParsed (node) {
-                var allParsed = true;
                 var subNodes = node.getSubNodes();
-                if (subNodes.length == 0) {
-                    allParsed = false;
-                }
-                for (var i = 0; i < subNodes.length; i++) {
-                    if (!subNodes[i].parsed) {
-                        allParsed = false;
-                        checkParsed(subNodes[i]);
+                if (subNodes.length > 0) {
+                    var allParsed = true;
+                    for (var i = 0; i < subNodes.length; i++) {
+                        if (!subNodes[i].parsed) {
+                            checkParsed(subNodes[i]);
+                            if (!subNodes[i].parsed) {
+                                allParsed = false;
+                            }
+                        }
                     }
+                    node.parsed = allParsed;
                 }
-                node.parsed = allParsed;
             }
             function generateSequentialNodes () {
                 function digNode(fartherID, node, onParsingBranch) {
@@ -646,7 +654,6 @@ var Parser = {
                         var countUnparsed = 0;
                         var i, j;
                         for (i = 0; i < subNodes.length; i += 1) {
-                            //console.log([subNodes[i].abstract, subNodes[i].parsed?'parsed':'notParsed', ((countUnparsed+(!subNodes[i].parsed?1:0))==1)&&onParsingBranch?'onBranch':'notOnBranch'].join('  '))
                             if (!subNodes[i].parsed) {
                                 countUnparsed += 1;
                                 subSqu = digNode(thisID, subNodes[i], countUnparsed == 1 && onParsingBranch);
@@ -665,9 +672,8 @@ var Parser = {
                 var countNode = 0;
                 return digNode('', root, true);
             }
-            var seq = generateSequentialNodes();
             checkParsed(root);
-            return seq;
+            return generateSequentialNodes();
         };
         parser.treeChanged = function () {
 
@@ -679,7 +685,7 @@ var Parser = {
         };
         parser.getWarningMsg = function () {
 
-            return warningMsg;
+            return warningMsgs.join('\n');
         };
         parser.getMovementsF = function () {
             function padBlank(str, length) {
@@ -851,10 +857,7 @@ var Paxer = {
 
             return errorMsg;
         };
-        paxer.getWarningMsg = function () {
-
-            return warningMsg;
-        };
+        paxer.getWarningMsg      = parser.getWarningMsg;
         paxer.getSymbolTable     = lexer.getSymbolTable;
         paxer.getSequentialNodes = parser.getSequentialNodes;
         paxer.getMovementsF      = parser.getMovementsF;

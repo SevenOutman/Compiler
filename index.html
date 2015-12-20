@@ -712,6 +712,7 @@
             switch (paxer.getStatus()) {
                 case "DONE":
                     View.console.success(paxer.getCurMovementF());
+                    View.console.error(paxer.getWarningMsg());
                     View.treePen.setSource(paxer.getSequentialNodes());
                     View.console.success('code parsed.');
                     return;
@@ -719,7 +720,6 @@
                     View.console.error(paxer.getErrMsg());
                     return;
                 case "WARNING":
-                    View.console.error(paxer.getWarningMsg());
                 case "NORMAL":
                     View.console.success(paxer.getCurMovementF());
                     View.treePen.setSource(paxer.getSequentialNodes());
@@ -739,6 +739,7 @@
                         case 'DONE':
                             var time = Benchmark.measure("parse");
                             View.console.success(paxer.getMovementsF());
+                            View.console.error(paxer.getWarningMsg());
                             View.console.success("Compile finished in " + time.toFixed(4) + " millisecs.");
                             View.console.success("Can we make it faster?");
                             break;
@@ -746,7 +747,6 @@
                             View.console.error(paxer.getErrMsg());
                             break;
                         case "WARNING":
-                            View.console.error(paxer.getWarningMsg());
                         case "NORMAL":
 //                            View.console.success(paxer.getCurMovementF());
 //                            View.treePen.setSource(paxer.getSequentialNodes());

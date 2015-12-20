@@ -374,7 +374,8 @@ var Parser = {
         var movements;
         var root;
         var errorMsg;
-        var warningMsg;
+        var warningMsgs;
+        var curWarningMsg;
         var stack, input;
         var curMovement;
         var toBuild;
@@ -388,18 +389,19 @@ var Parser = {
             return curStatus;
         };
         parser.reset = function () {
-            parseErr    = false;
-            stack       = ['$', 'program'];
-            input       = [];
-            movements   = [];
-            errorMsg    = "";
-            warningMsg  = "";
-            newNodes    = [];
-            root        = Node.new('program');
-            toBuild     = [root];
-            singleSpot  = 0;
-            curStatus   = status[3];
-            curMovement = [stack.slice(), input.slice(), {}];
+            parseErr      = false;
+            stack         = ['$', 'program'];
+            input         = [];
+            movements     = [];
+            errorMsg      = "";
+            warningMsgs   = [];
+            curWarningMsg = "";
+            newNodes      = [];
+            root          = Node.new('program');
+            toBuild       = [root];
+            singleSpot    = 0;
+            curStatus     = status[3];
+            curMovement   = [stack.slice(), input.slice(), {}];
         };
         parser.setInput = function (_input) {
             parser.reset();
@@ -450,7 +452,6 @@ var Parser = {
             }
             if (curStatus != status[0] && curStatus != status[1]) return false;
 
-            curStatus = status[0]
             curMovement = [stack.slice(), input.slice(), {}];
             var top = stack.pop(), nextT = input[0], next = nextT.abstract;
             while (top != '$' && input.length > 0) {
@@ -488,7 +489,8 @@ var Parser = {
                             if (recovered) {
                                 input.unshift(possibleItem);
                                 next = input[0].abstract;
-                                warningMsg = 'MISSING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                                curWarningMsg = 'MISSING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                                warningMsgs.push(curWarningMsg);
                             }
                         }
                         //TRY POPING UNTIL MATCH
@@ -503,7 +505,8 @@ var Parser = {
                                 next = nextT.abstract;
                             }
                             if (top != '$') {
-                                warningMsg = 'SKIPPED ' + skipped.join(', ');
+                                curWarningMsg = 'SKIPPED ' + skipped.join(', ');
+                                warningMsgs.push(curWarningMsg);
                                 recovered = true;
                             }
                             if (recovered) {
@@ -526,7 +529,8 @@ var Parser = {
                         }
                         if (recovered) {
                             curStatus = status[1];
-                            curMovement[2] = warningMsg;
+                            curMovement[2] = curWarningMsg;
+                            warningMsgs.push(curWarningMsg);
                         }
                         curStatus = recovered ? status[1] : status[2];
                     } else {
@@ -545,8 +549,9 @@ var Parser = {
                         } else {
                             input.shift();
                             curStatus = status[1];
-                            warningMsg = 'SKIP ' + '\'' + next + '\'';
-                            curMovement[2] = warningMsg;
+                            curWarningMsg = 'SKIP ' + '\'' + next + '\'' + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                            warningMsgs.push(curWarningMsg);
+                            curMovement[2] = curWarningMsg;
                         }
                     }
                 } else if (table[top][next] > 0) {
@@ -668,9 +673,7 @@ var Parser = {
                 return digNode('', root, true);
             }
             checkParsed(root);
-            var seq = generateSequentialNodes();
-            console.log(seq);
-            return seq;
+            return generateSequentialNodes();
         };
         parser.treeChanged = function () {
 
@@ -682,7 +685,7 @@ var Parser = {
         };
         parser.getWarningMsg = function () {
 
-            return warningMsg;
+            return warningMsgs.join('\n');
         };
         parser.getMovementsF = function () {
             function padBlank(str, length) {
@@ -854,10 +857,7 @@ var Paxer = {
 
             return errorMsg;
         };
-        paxer.getWarningMsg = function () {
-
-            return warningMsg;
-        };
+        paxer.getWarningMsg      = parser.getWarningMsg;
         paxer.getSymbolTable     = lexer.getSymbolTable;
         paxer.getSequentialNodes = parser.getSequentialNodes;
         paxer.getMovementsF      = parser.getMovementsF;

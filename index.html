@@ -502,6 +502,10 @@
             });
         });
         $(document).on("mouseup", function () {
+            var $box = $(moving_resizer).parent(".resizable");
+            if ($box.hasClass("bottom-box") || $box.hasClass("tree-box")) {
+                P("treeboxresized");
+            }
             moving_resizer = null;
             $("#resizing-mask").hide();
         });
@@ -625,6 +629,7 @@
                     if ($box.hasClass("hidden")) {
                         $box.removeClass("hidden").css("height", "30%");
                         $(".upper-box").css("height", "70%");
+                        P("treeboxresized");
                     }
                 }
                 if (id == "box-opener-workspace") {
@@ -659,6 +664,7 @@
                     if (!$box.hasClass("hidden")) {
                         $box.addClass("hidden");
                         $(".upper-box").css("height", "100%");
+                        P("treeboxresized");
                     }
                 }
                 if ($box.hasClass("left-box")) {

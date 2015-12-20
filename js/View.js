@@ -353,13 +353,13 @@ var View = (function () {
             $("#compiling-btn-group").show();
             $(".tab-bar-cover").show();
             $("#box-opener-tree").trigger("click");
-            $("#box-opener-structure").trigger("click");
-            $("#box-opener-console").trigger("click");
-            $(".tree-box .placeholder").hide();
             _treePen.clear().setOptions({
                 width: $(".tree-box .box-body").width(),
                 height: $(".tree-box .box-body").height()
             });
+            $("#box-opener-structure").trigger("click");
+            $("#box-opener-console").trigger("click");
+            $(".tree-box .placeholder").hide();
             $(".left-box .box-caret").trigger("click");
             _editor.cm.setOption("readOnly", true);
         }
@@ -387,6 +387,13 @@ var View = (function () {
         _treePen.canvas.clear();
         return _treePen;
     };
+
+    S("treeboxresized", function () {
+        _treePen.render({
+            width: $(".tree-box .box-body").width(),
+            height: $(".tree-box .box-body").height()
+        });
+    });
 
     return {
         editor: _editor,

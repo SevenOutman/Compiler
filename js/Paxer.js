@@ -355,12 +355,13 @@ var Parser = {
                 return node;
             },
             epsilon: function () {
-                var node = {};
-                var subNodes = [];
+                var node      = {};
+                var subNodes  = [];
                 node.abstract = 'ε';
-                node.name = Invalid;
-                node.value = Invalid;
-                node.type = Invalid;
+                node.name     = Invalid;
+                node.value    = Invalid;
+                node.type     = Invalid;
+                node.parsed   = false;
                 node.getSubNodes = function () {
                     return subNodes.slice();
                 }
@@ -556,6 +557,7 @@ var Parser = {
                     building = toBuild.pop();
                     if (product.length == 0) {
                         building.addSubNode(Node.epsilon());
+                        building.parsed = true;
                     }
                     while(product.length > 0) {
                         item = product.pop();
@@ -622,18 +624,19 @@ var Parser = {
         };
         parser.getSequentialNodes = function () {
             function checkParsed (node) {
-                var allParsed = true;
                 var subNodes = node.getSubNodes();
-                if (subNodes.length == 0) {
-                    allParsed = false;
-                }
-                for (var i = 0; i < subNodes.length; i++) {
-                    if (!subNodes[i].parsed) {
-                        allParsed = false;
-                        checkParsed(subNodes[i]);
+                if (subNodes.length > 0) {
+                    var allParsed = true;
+                    for (var i = 0; i < subNodes.length; i++) {
+                        if (!subNodes[i].parsed) {
+                            checkParsed(subNodes[i]);
+                            if (!subNodes[i].parsed) {
+                                allParsed = false;
+                            }
+                        }
                     }
+                    node.parsed = allParsed;
                 }
-                node.parsed = allParsed;
             }
             function generateSequentialNodes () {
                 function digNode(fartherID, node, onParsingBranch) {
@@ -646,7 +649,6 @@ var Parser = {
                         var countUnparsed = 0;
                         var i, j;
                         for (i = 0; i < subNodes.length; i += 1) {
-                            //console.log([subNodes[i].abstract, subNodes[i].parsed?'parsed':'notParsed', ((countUnparsed+(!subNodes[i].parsed?1:0))==1)&&onParsingBranch?'onBranch':'notOnBranch'].join('  '))
                             if (!subNodes[i].parsed) {
                                 countUnparsed += 1;
                                 subSqu = digNode(thisID, subNodes[i], countUnparsed == 1 && onParsingBranch);
@@ -665,8 +667,9 @@ var Parser = {
                 var countNode = 0;
                 return digNode('', root, true);
             }
-            var seq = generateSequentialNodes();
             checkParsed(root);
+            var seq = generateSequentialNodes();
+            console.log(seq);
             return seq;
         };
         parser.treeChanged = function () {

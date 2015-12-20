@@ -23,11 +23,10 @@ Array.prototype.front = function () {
 Array.prototype.remove = function (elem) {
     for (var i = 0; i < this.length; i++) {
         if (this[i] === elem) {
-            this.splice(i, 1);
+            return this.splice(i, 1);
         }
     }
 };
-
 
 Math.mid = function (x, y, z) {
     if (arguments.length != 3) {

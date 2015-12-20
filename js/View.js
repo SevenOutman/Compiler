@@ -374,7 +374,7 @@ var View = (function () {
             $(".tree-box .placeholder").hide();
             $(".left-box .box-caret").trigger("click");
             _editor.cm.setOption("readOnly", true);
-
+            _console.cm.setValue("");
         }
     };
 
@@ -390,7 +390,6 @@ var View = (function () {
         _editor.cm.setOption("readOnly", false);
         _control.compiling = null;
         $("#compiling-filename").text("");
-        _console.cm.setValue("");
     };
 
     var _treePen = new Tree("tree-pane", {

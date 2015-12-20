@@ -619,7 +619,7 @@
             View.editor.confirmRename();
         });
         $.each($(".box-open-menu").find("a"), function (index, el) {
-            $(el).on("click", function (e) {
+            $(el).on("click", function (e, prevent) {
                 e.preventDefault();
                 e.stopPropagation();
                 $(".box-open-menu").hide();
@@ -629,7 +629,9 @@
                     if ($box.hasClass("hidden")) {
                         $box.removeClass("hidden").css("height", "30%");
                         $(".upper-box").css("height", "70%");
-                        P("treeboxresized");
+                        if (!prevent) {
+                            P("treeboxresized");
+                        }
                     }
                 }
                 if (id == "box-opener-workspace") {
@@ -665,6 +667,7 @@
                         $box.addClass("hidden");
                         $(".upper-box").css("height", "100%");
                         P("treeboxresized");
+
                     }
                 }
                 if ($box.hasClass("left-box")) {
@@ -713,7 +716,6 @@
                 case "DONE":
                     View.console.success(paxer.getCurMovementF());
                     View.console.warn(paxer.getWarningMsg());
-                    View.treePen.setSource(paxer.getSequentialNodes());
                     View.console.success('code parsed.');
                     return;
                 case "ERROR":
@@ -723,6 +725,7 @@
                 case "NORMAL":
                     View.console.success(paxer.getCurMovementF());
                     View.treePen.setSource(paxer.getSequentialNodes());
+                    console.log(paxer.getSequentialNodes());
                     View.treePen.render();
             }
         });

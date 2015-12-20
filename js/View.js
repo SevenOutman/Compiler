@@ -360,15 +360,21 @@ var View = (function () {
             $("#compiling-btn-group").show();
             $(".tab-bar-cover").show();
             $("#box-opener-tree").trigger("click");
+            $("#box-opener-structure").trigger("click");
+            $("#box-opener-console").trigger("click", true);
             _treePen.clear().setOptions({
                 width: $(".tree-box .box-body").width(),
                 height: $(".tree-box .box-body").height()
             });
-            $("#box-opener-structure").trigger("click");
-            $("#box-opener-console").trigger("click");
+            _treePen.setSource([
+                ["0", "program", 1, "", "1", "0"],
+                //["1", "compundstmt", 0, "0", "1", "0"]
+            ]);
+            _treePen.render();
             $(".tree-box .placeholder").hide();
             $(".left-box .box-caret").trigger("click");
             _editor.cm.setOption("readOnly", true);
+
         }
     };
 
@@ -388,8 +394,8 @@ var View = (function () {
     };
 
     var _treePen = new Tree("tree-pane", {
-            radius: 10
-        });
+        radius: 10
+    });
     _treePen.clear = function () {
         _treePen.canvas.clear();
         return _treePen;

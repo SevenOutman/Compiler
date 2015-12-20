@@ -214,6 +214,7 @@ var Lexer = {
             token = tryMatch(curLexeme);
             if (token) {
                 lexSequence.push(token);
+                return true;
             }
             pointer.reduce();
             token = {
@@ -386,17 +387,18 @@ var Parser = {
             return curStatus;
         };
         parser.reset = function () {
-            parseErr   = false;
-            stack      = ['$', 'program'];
-            input      = [];
-            movements  = [];
-            errorMsg   = "";
-            warningMsg = "";
-            newNodes   = [];
-            root       = Node.new('program');
-            toBuild    = [root];
-            singleSpot = 0;
-            curStatus  = status[3];
+            parseErr    = false;
+            stack       = ['$', 'program'];
+            input       = [];
+            movements   = [];
+            errorMsg    = "";
+            warningMsg  = "";
+            newNodes    = [];
+            root        = Node.new('program');
+            toBuild     = [root];
+            singleSpot  = 0;
+            curStatus   = status[3];
+            curMovement = [stack.slice(), input.slice(), {}];
         };
         parser.setInput = function (_input) {
             parser.reset();
@@ -445,11 +447,9 @@ var Parser = {
                 }
                 newNodes = [];
             }
-            if (curStatus != status[0] && curStatus != status[1]) {
-                return false;
-            } else {
-                curStatus = status[0];
-            }
+            if (curStatus != status[0] && curStatus != status[1]) return false;
+
+            curStatus = status[0]
             curMovement = [stack.slice(), input.slice(), {}];
             var top = stack.pop(), nextT = input[0], next = nextT.abstract;
             while (top != '$' && input.length > 0) {
@@ -621,39 +621,53 @@ var Parser = {
             return filterNode(root);
         };
         parser.getSequentialNodes = function () {
+            function checkParsed (node) {
+                var allParsed = true;
+                var subNodes = node.getSubNodes();
+                if (subNodes.length == 0) {
+                    allParsed = false;
+                }
+                for (var i = 0; i < subNodes.length; i++) {
+                    if (!subNodes[i].parsed) {
+                        allParsed = false;
+                        checkParsed(subNodes[i]);
+                    }
+                }
+                node.parsed = allParsed;
+            }
             function generateSequentialNodes () {
                 function digNode(fartherID, node, onParsingBranch) {
                     var thisID = countNode.toString();
                     countNode += 1;
                     if (typeof(node) === typeof(Node.new())) {
                         var sequentialNodes = [];
-                        if (!node.parsed) {
-                            var cur = [thisID, node.abstract, 0, fartherID, onParsingBranch ? '1':'0', node.new ? '1':'0'];
-                            var subSqu, subNodes = node.getSubNodes();
-                            var passedFirstNotParsed = true;
-                            var i, j;
-                            for (i = 0; i < subNodes.length; i += 1) {
-                                subSqu = digNode(thisID, subNodes[i], passedFirstNotParsed && onParsingBranch);
-                                if (!subNodes[i].parsed) {
-                                    passedFirstNotParsed = false;
-                                }
+                        var cur = [thisID, node.abstract, 0, fartherID, onParsingBranch ? '1':'0', node.new ? '1':'0'];
+                        var subSqu, subNodes = node.getSubNodes();
+                        var countUnparsed = 0;
+                        var i, j;
+                        for (i = 0; i < subNodes.length; i += 1) {
+                            //console.log([subNodes[i].abstract, subNodes[i].parsed?'parsed':'notParsed', ((countUnparsed+(!subNodes[i].parsed?1:0))==1)&&onParsingBranch?'onBranch':'notOnBranch'].join('  '))
+                            if (!subNodes[i].parsed) {
+                                countUnparsed += 1;
+                                subSqu = digNode(thisID, subNodes[i], countUnparsed == 1 && onParsingBranch);
                                 for (j = 0; j < subSqu.length; j += 1) {
                                     sequentialNodes.push(subSqu[j]);
                                 }
                                 if (subSqu.length > 0) {
                                     cur[2] += subSqu[0][2] + 1;
-                                    notFirst = true
                                 }
                             }
-                            sequentialNodes.unshift(cur);
                         }
+                        sequentialNodes.unshift(cur);
                         return sequentialNodes;
                     }
                 }
                 var countNode = 0;
                 return digNode('', root, true);
             }
-            return generateSequentialNodes();
+            var seq = generateSequentialNodes();
+            checkParsed(root);
+            return seq;
         };
         parser.treeChanged = function () {
 
@@ -680,7 +694,7 @@ var Parser = {
             var sSTACK, sINPUT, sACTION;
             var i, j;
             var inputLimit = 22;
-            for (i = singleSpot; i < movements.length; i += 1) {
+            for (i = 0; i < movements.length; i += 1) {
                 move = movements[i];
                 thisMove = [];
 
@@ -783,38 +797,30 @@ var Paxer = {
             curStatus = status[0];
         };
         paxer.go = function() {
-            if (curStatus != status[0] && curStatus != status[1]) {
-                return;
-            } else {
-                curStatus = status[0];
-            }
+            if (curStatus != status[0] && curStatus != status[1]) return;
+            curStatus = status[0];
             var singleStepping = true;
             if (parser.needPush()) {
-                lexer.lex(singleStepping);
                 switch (lexer.getStatus()) {
                     case 'DONE':
-                        console.log('lex done');
-                        var token = lexer.getToken();
-                        parser.pushToken(token);
-                        break;
+                        return;
                     case 'ERROR':
                         errorMsg = lexer.getErrMsg();
                         curStatus = status[2];
                         return;
                     case 'NORMAL':
-                        var token = lexer.getToken();
-                        parser.pushToken(token);
+                        lexer.lex(singleStepping);
+                        parser.pushToken(lexer.getToken());
                         break;
                     default:
                         console.log('UNEXPECTED LEXER STATUS');
                         curStatus = status[2];
-                        break;
+                        return;
                 }
             }
             parser.parse(singleStepping);
             switch (parser.getStatus()) {
                 case 'DONE':
-                    console.log('parse done');
                     break;
                 case 'ERROR':
                     errorMsg = parser.getErrMsg();
@@ -830,8 +836,11 @@ var Paxer = {
                     curStatus = status[2];
                     break;
             }
-            if (lexer.lexDone() && parser.parseDone()) {
+            if (lexer.lexDone() != parser.parseDone()) {
                 curStatus = status[2];
+            }
+            if (lexer.lexDone() && parser.parseDone()) {
+                curStatus = status[3];
             }
         };
         paxer.getStatus = function () {

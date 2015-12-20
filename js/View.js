@@ -330,6 +330,13 @@ var View = (function () {
             window.console.log(str);
         }
     };
+    _console.warn = function (str) {
+        if (_console.cm) {
+            _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("@ ", str), 1000));
+        } else {
+            window.console.log(str);
+        }
+    };
 
     _console.popup = function () {
         $("#box-opener-console").trigger("click");

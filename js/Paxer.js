@@ -549,7 +549,7 @@ var Parser = {
                         } else {
                             input.shift();
                             curStatus = status[1];
-                            curWarningMsg = 'SKIP ' + '\'' + next + '\'' + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                            curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
                             warningMsgs.push(curWarningMsg);
                             curMovement[2] = curWarningMsg;
                         }

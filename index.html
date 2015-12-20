@@ -712,7 +712,7 @@
             switch (paxer.getStatus()) {
                 case "DONE":
                     View.console.success(paxer.getCurMovementF());
-                    View.console.error(paxer.getWarningMsg());
+                    View.console.warn(paxer.getWarningMsg());
                     View.treePen.setSource(paxer.getSequentialNodes());
                     View.console.success('code parsed.');
                     return;

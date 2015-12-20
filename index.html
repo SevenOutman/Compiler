@@ -705,25 +705,29 @@
             View.control.exitCompileMode();
         });
         $("#btn-next").on("click", function () {
-            if (paxer.getStatus() == 'DONE' || paxer.getStatus() == 'ERROR') {
-                return;
-            }
-            paxer.go();
-            switch (paxer.getStatus()) {
-                case "DONE":
-                    View.console.success(paxer.getCurMovementF());
-                    View.console.warn(paxer.getWarningMsg());
-                    View.treePen.setSource(paxer.getSequentialNodes());
-                    View.console.success('code parsed.');
-                    return;
-                case "ERROR":
-                    View.console.error(paxer.getErrMsg());
-                    return;
-                case "WARNING":
-                case "NORMAL":
-                    View.console.success(paxer.getCurMovementF());
-                    View.treePen.setSource(paxer.getSequentialNodes());
-                    View.treePen.render();
+            if (paxer.getStatus() == "DONE") {
+                View.console.success('code parsed.');
+            } else if (paxer.getStatus() == "ERROR") {
+                View.console.error(paxer.getErrMsg());
+            } else {
+                paxer.go();
+                switch (paxer.getStatus()) {
+                    case "DONE":
+                        View.console.success(paxer.getCurMovementF());
+                        View.console.warn(paxer.getWarningMsg());
+                        View.treePen.setSource(paxer.getSequentialNodes());
+                        View.treePen.render();
+                        View.console.success('code parsed.');
+                        return;
+                    case "ERROR":
+                        View.console.error(paxer.getErrMsg());
+                        return;
+                    case "WARNING":
+                    case "NORMAL":
+                        View.console.success(paxer.getCurMovementF());
+                        View.treePen.setSource(paxer.getSequentialNodes());
+                        View.treePen.render();
+                }
             }
         });
         $("#btn-ff").on("click", function () {

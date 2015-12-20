@@ -463,8 +463,28 @@ var Parser = {
                     building.assign(nextT, curFormula);
                     input.shift();
                 } else if (isTerminal(top)) {
-                    errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
-                    curStatus = status[2];
+                    stack.push(top);
+                    if (next == '$') {
+                        curStatus = status[2];
+                        var expected = '';
+                        var i;
+                        for (i in table[top]) {
+                            if (table[top][i] != 0) {
+                                expected += '\'' + i + '\'|';
+                            }
+                        }
+                        curStatus = status[2];
+                        expected = expected.substring(0, expected.length - 1);
+                        errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                    } else {
+                        input.shift();
+                        curStatus = status[1];
+                        curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        warningMsgs.push(curWarningMsg);
+                        curMovement[2] = curWarningMsg;
+                    }
+                    // errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
+                    // curStatus = status[2];
                 } else if (table[top][next] == 0) {
                     //BACK TO LAST STATE
                     stack.push(top);

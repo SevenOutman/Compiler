@@ -479,14 +479,11 @@ var Parser = {
                     } else {
                         input.shift();
                         curStatus = status[1];
-                        curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
                         warningMsgs.push(curWarningMsg);
                         curMovement[2] = curWarningMsg;
                     }
-                    // errorMsg = 'CAME UP WITH UNEXPECTED TERMINAL \'' + input[0].lexeme + '\', EXPECTING ' + top;
-                    // curStatus = status[2];
                 } else if (table[top][next] == 0) {
-                    //BACK TO LAST STATE
                     stack.push(top);
                     if (!singleStepping) {
                         //RECOVERY START
@@ -569,7 +566,7 @@ var Parser = {
                         } else {
                             input.shift();
                             curStatus = status[1];
-                            curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                            curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
                             warningMsgs.push(curWarningMsg);
                             curMovement[2] = curWarningMsg;
                         }

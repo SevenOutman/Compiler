@@ -345,8 +345,11 @@
         document.getElementById("btn-compile").onclick = function () {
             var session = View.editor.currentSession();
             if (null !== session) {
-                var code;
+
                 Cache.st = {};
+                P("symboltablechanged", []);
+
+                var code;
                 View.control.compilie(session.file);
                 if (!session.file.isNewFile) {
                     View.editor.save();
@@ -357,6 +360,7 @@
                     code = View.editor.getContent();
                 }
                 paxer.setInput(code);
+
             }
         };
         S("parsedone", function () {
@@ -709,12 +713,20 @@
         S("symboltablechanged", function (st) {
             var $body = $(".right-box .box-body"),
                     $placeholder = $(".right-box .placeholder"),
-                    $ul;
+                    $ul,
+                    showmap = {};
 
             if ($("#symbol-list").length < 1) {
                 $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list").appendTo($body);
             } else {
-                $ul = $("#symbol-list").empty();
+                $ul = $("#symbol-list");
+                $.each($ul.children("li"), function (index, el) {
+                    var $li = $(el),
+                            id = $li.attr("data-id"),
+                            show = $li.children(".li-caret").hasClass("glyphicon-triangle-bottom");
+                    showmap[id] = show;
+                });
+                $ul.empty();
             }
 
             if (st.length < 1) {
@@ -725,7 +737,8 @@
                     var symbol = st[i],
                             id = "symbol-" + symbol.name,
                             $li = $("<li></li>").attr("data-id", id).html(symbol.name),
-                            $caret = $("<span></span>").addClass("glyphicon glyphicon-triangle-right li-caret").prependTo($li),
+                            $caret = $("<span></span>").addClass("glyphicon li-caret")
+                                    .addClass(showmap[id] ? "glyphicon-triangle-bottom" : "glyphicon-triangle-right").prependTo($li),
                             extraText = "type: " + symbol.type + ", occurance: " + symbol.positions.length,
                             $extra = $("<span></span>").addClass("extra").text(extraText).appendTo($li);
 
@@ -733,6 +746,7 @@
                         var $self = $(this),
                                 $li = $self.parent(),
                                 show = $self.hasClass("glyphicon-triangle-right");
+
                         $.each($("[data-pos='" + $li.attr("data-id") + "']"), function (index, el) {
                             if (show) {
                                 $(el).show();
@@ -756,7 +770,10 @@
                         var pos = symbol.positions[j],
                                 liText = "[" + (j + 1) + "] line: " + pos.first_row + ", ch: " + pos.first_col,
                                 $posli = $("<li></li>").attr("data-pos", id).text(liText).css("margin-left", "30px");
-                        $posli.appendTo($ul).hide();
+                        if (!showmap[id]) {
+                            $posli.hide();
+                        }
+                        $posli.appendTo($ul)
                     }
                 }
                 $ul.show();

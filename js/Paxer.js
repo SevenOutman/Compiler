@@ -351,6 +351,9 @@ var Parser = {
                     }
                     node.formula = formula;
                 };
+                node.shiftSubNode = function () {
+                    subNodes.shift();
+                };
                 newNodes.push(node);
                 return node;
             },
@@ -384,6 +387,7 @@ var Parser = {
         var singleSpot;
         var newNodes = [];
         var curFormula;
+        var lastStmtsNode;
         parser.getStatus = function () {
 
             return curStatus;
@@ -463,26 +467,38 @@ var Parser = {
                     building.assign(nextT, curFormula);
                     input.shift();
                 } else if (isTerminal(top)) {
-                    stack.push(top);
-                    if (next == '$') {
-                        curStatus = status[2];
-                        var expected = '';
-                        var i;
-                        for (i in table[top]) {
-                            if (table[top][i] != 0) {
-                                expected += '\'' + i + '\'|';
-                            }
+                    curStatus = status[1];
+                    warningMsgs.push(curWarningMsg);
+                    if (top != 'stmts') {
+                        while (top != 'stmts') {
+                            top = stack.pop();
+                            building = toBuild.pop();
                         }
-                        curStatus = status[2];
-                        expected = expected.substring(0, expected.length - 1);
-                        errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
-                    } else {
-                        input.shift();
-                        curStatus = status[1];
-                        curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
-                        warningMsgs.push(curWarningMsg);
-                        curMovement[2] = curWarningMsg;
+                        stack.push(top);
                     }
+                    while (lastStmtsNode.getSubNodes().length > 0) {
+                        lastStmtsNode.shiftSubNode();
+                    }
+                    toBuild.push(lastStmtsNode);
+                    // if (next == '$') {
+                    //     curStatus = status[2];
+                    //     var expected = '';
+                    //     var i;
+                    //     for (i in table[top]) {
+                    //         if (table[top][i] != 0) {
+                    //             expected += '\'' + i + '\'|';
+                    //         }
+                    //     }
+                    //     curStatus = status[2];
+                    //     expected = expected.substring(0, expected.length - 1);
+                    //     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                    // } else {
+                    //     input.shift();
+                    //     curStatus = status[1];
+                    //     curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
+                    //     warningMsgs.push(curWarningMsg);
+                    //     curMovement[2] = curWarningMsg;
+                    // }
                 } else if (table[top][next] == 0) {
                     stack.push(top);
                     if (!singleStepping) {
@@ -551,25 +567,62 @@ var Parser = {
                         }
                         curStatus = recovered ? status[1] : status[2];
                     } else {
-                        if (next == '$') {
-                            curStatus = status[2];
-                            var expected = '';
-                            var i;
-                            for (i in table[top]) {
-                                if (table[top][i] != 0) {
-                                    expected += '\'' + i + '\'|';
-                                }
+                        if (top != 'stmts') {
+                            while (top != 'stmts') {
+                                top = stack.pop();
+                                building = toBuild.pop();
                             }
-                            curStatus = status[2];
-                            expected = expected.substring(0, expected.length - 1);
-                            errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                            stack.push(top);
+                        }
+                        while (lastStmtsNode.getSubNodes().length > 0) {
+                            lastStmtsNode.shiftSubNode();
+                        }
+                        toBuild.push(lastStmtsNode);
+
+                        if (table[top][next] > 0) {
+                            curFormula = table[top][next];
+                            var rule = table[top][next];
+                            var product = rules[rule].product.slice();
+                            var item, newNode;
+                            building = toBuild.pop();
+                            if (product.length == 0) {
+                                building.addSubNode(Node.epsilon());
+                                building.parsed = true;
+                            }
+                            while(product.length > 0) {
+                                item = product.pop();
+                                stack.push(item);
+                                newNode = Node.new(item);
+                                building.addSubNode(newNode);
+                                toBuild.push(newNode);
+                            }
+                            curMovement[2] = rules[rule];
                         } else {
                             input.shift();
                             curStatus = status[1];
-                            curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
+                            curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.position.first_row + ', COL ' + nextT.position.first_col;
                             warningMsgs.push(curWarningMsg);
                             curMovement[2] = curWarningMsg;
                         }
+                        // if (next == '$') {
+                        //     curStatus = status[2];
+                        //     var expected = '';
+                        //     var i;
+                        //     for (i in table[top]) {
+                        //         if (table[top][i] != 0) {
+                        //             expected += '\'' + i + '\'|';
+                        //         }
+                        //     }
+                        //     curStatus = status[2];
+                        //     expected = expected.substring(0, expected.length - 1);
+                        //     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        // } else {
+                        //     input.shift();
+                        //     curStatus = status[1];
+                        //     curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
+                        //     warningMsgs.push(curWarningMsg);
+                        //     curMovement[2] = curWarningMsg;
+                        // }
                     }
                 } else if (table[top][next] > 0) {
                     curFormula = table[top][next];
@@ -580,6 +633,10 @@ var Parser = {
                     if (product.length == 0) {
                         building.addSubNode(Node.epsilon());
                         building.parsed = true;
+                    } else {
+                        if (rules[rule].interminal == 'stmts') {
+                            lastStmtsNode = building;
+                        }
                     }
                     while(product.length > 0) {
                         item = product.pop();

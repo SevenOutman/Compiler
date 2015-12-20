@@ -373,6 +373,7 @@ var Parser = {
         };
         var parser = {};
         var status = ['NORMAL', 'WARNING', 'ERROR', 'DONE'];
+        var recovering;
         var curStatus;
         var movements;
         var root;
@@ -406,6 +407,7 @@ var Parser = {
             singleSpot    = 0;
             curStatus     = status[3];
             curMovement   = [stack.slice(), input.slice(), {}];
+            recovering    = false;
         };
         parser.setInput = function (_input) {
             parser.reset();
@@ -466,20 +468,19 @@ var Parser = {
                     building.parsed = true;
                     building.assign(nextT, curFormula);
                     input.shift();
-                } else if (isTerminal(top)) {
+                } else if (isTerminal(top) || recovering) {
+                    recovering = true;
                     curStatus = status[1];
-                    warningMsgs.push(curWarningMsg);
-                    if (top != 'stmts') {
-                        while (top != 'stmts') {
-                            top = stack.pop();
-                            building = toBuild.pop();
+                    building = toBuild.pop();
+                    var tempPop = stack.pop();
+                    if (tempPop == 'stmts') {
+                        recovering = false;
+                        toBuild.push(lastStmtsNode);
+                        while (lastStmtsNode.getSubNodes().length > 0) {
+                            lastStmtsNode.shiftSubNode();
                         }
-                        stack.push(top);
                     }
-                    while (lastStmtsNode.getSubNodes().length > 0) {
-                        lastStmtsNode.shiftSubNode();
-                    }
-                    toBuild.push(lastStmtsNode);
+                    stack.push(tempPop);
                     // if (next == '$') {
                     //     curStatus = status[2];
                     //     var expected = '';
@@ -568,36 +569,13 @@ var Parser = {
                         curStatus = recovered ? status[1] : status[2];
                     } else {
                         if (top != 'stmts') {
-                            while (top != 'stmts') {
-                                top = stack.pop();
-                                building = toBuild.pop();
-                            }
-                            stack.push(top);
-                        }
-                        while (lastStmtsNode.getSubNodes().length > 0) {
-                            lastStmtsNode.shiftSubNode();
-                        }
-                        toBuild.push(lastStmtsNode);
-
-                        if (table[top][next] > 0) {
-                            curFormula = table[top][next];
-                            var rule = table[top][next];
-                            var product = rules[rule].product.slice();
-                            var item, newNode;
+                            top = stack.pop();
                             building = toBuild.pop();
-                            if (product.length == 0) {
-                                building.addSubNode(Node.epsilon());
-                                building.parsed = true;
-                            }
-                            while(product.length > 0) {
-                                item = product.pop();
-                                stack.push(item);
-                                newNode = Node.new(item);
-                                building.addSubNode(newNode);
-                                toBuild.push(newNode);
-                            }
-                            curMovement[2] = rules[rule];
                         } else {
+                            toBuild.push(lastStmtsNode);
+                            while (lastStmtsNode.getSubNodes().length > 0) {
+                                lastStmtsNode.shiftSubNode();
+                            }
                             input.shift();
                             curStatus = status[1];
                             curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.position.first_row + ', COL ' + nextT.position.first_col;
@@ -625,6 +603,7 @@ var Parser = {
                         // }
                     }
                 } else if (table[top][next] > 0) {
+                    recovering = false;
                     curFormula = table[top][next];
                     var rule = table[top][next];
                     var product = rules[rule].product.slice();

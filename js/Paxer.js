@@ -314,9 +314,10 @@ var Parser = {
             simpleexpr     : {'{':  0, '}':  0, 'if':  0, '(': 35, ')':  0, 'then':  0, 'else':  0, 'while':  0, 'int':  0, 'real':  0, 'ID': 33, 'NUM': 34, ',':  0, ';':  0, '+':  0, '-':  0, '*':  0, '/':  0, '=':  0, '<':  0, '>':  0, '<=':  0, '>=':  0, '==':  0, '$':  0}
         };
         var Node = {
-            new: function (abstract) {
+            new: function (abstract, fatherNode) {
                 var node = {};
                 var subNodes = [];
+                node.fatherNode = fatherNode;
                 node.abstract = abstract;
                 node.name = Invalid;
                 node.value = Invalid;
@@ -402,7 +403,7 @@ var Parser = {
             warningMsgs   = [];
             curWarningMsg = "";
             newNodes      = [];
-            root          = Node.new('program');
+            root          = Node.new('program', Node.new());
             toBuild       = [root];
             singleSpot    = 0;
             curStatus     = status[3];
@@ -628,7 +629,7 @@ var Parser = {
                     while(product.length > 0) {
                         item = product.pop();
                         stack.push(item);
-                        newNode = Node.new(item);
+                        newNode = Node.new(item, building);
                         building.addSubNode(newNode);
                         toBuild.push(newNode);
                     }
@@ -684,6 +685,7 @@ var Parser = {
                 nodeS.value = node.value;
                 nodeS.type = node.type;
                 nodeS.subNodes = subNodesS;
+                nodeS.fatherNode = node.fatherNode;
                 return nodeS;
             }
             return filterNode(root);

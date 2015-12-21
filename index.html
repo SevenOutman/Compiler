@@ -907,6 +907,13 @@
                 P("symboltablechanged", tst);
             }
         });
+
+        S("semantichaserror", function (errors) {
+            for (var i = 0; i < errors.length; i++) {
+                View.console.error(errors[i].toString());
+            }
+        });
+
         $("#btn-ff").on("click", function () {
             if (paxer.getStatus() == "DONE") {
                 View.console.success('code parsed.');
@@ -929,18 +936,10 @@
                             break;
                         case "WARNING":
                         case "NORMAL":
-//                            View.console.success(paxer.getCurMovementF());
-//                            View.treePen.setSource(paxer.getSequentialNodes());
-//                            View.treePen.render();
                             break;
                     }
                 }
                 semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
-                if (semantic.hasError()) {
-                    for (var i = 0, e = semantic.getErrors(); i < e.length; i++) {
-                        View.console.error(e[i].toString());
-                    }
-                }
 //                P("symboltablechanged", paxer.getSymbolTable());
             }
         });

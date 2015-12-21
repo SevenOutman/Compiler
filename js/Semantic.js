@@ -30,6 +30,9 @@ function SemanticAnalyzer() {
         activeID = null;
         _recursive(root);
         P("symboltablechanged", symboltable);
+        if (!!_errors.length) {
+            P("semantichaserror", _errors);
+        }
     };
 
     function _recursive(node) {

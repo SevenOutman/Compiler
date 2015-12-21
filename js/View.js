@@ -13,7 +13,8 @@ var View = (function () {
         styleActiveLine: true,
         showCursorWhenSelecting: true,
         scrollbarStyle: "overlay",
-        selectionPointer: true
+        selectionPointer: true,
+        styleSelectedText: true
     });
     _editor.cm.on("change", function (cm, change) {
         var session = _editor.currentSession();

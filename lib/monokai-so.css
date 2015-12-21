@@ -37,6 +37,7 @@
 .cm-s-monokai-so .CodeMirror-guttermarker-subtle {
     color: #d0d0d0;
 }
+
 .cm-s-monokai-so .CodeMirror-linenumber {
     /*color: #d0d0d0;*/
     color: rgba(136, 136, 136, .5);
@@ -121,4 +122,9 @@
 .cm-s-monokai-so .CodeMirror-matchingbracket {
     text-decoration: underline;
     color: white !important;
+}
+
+.cm-s-monokai-so .CodeMirror-selectedtext {
+    color: #000 !important;
+    background: yellow;
 }

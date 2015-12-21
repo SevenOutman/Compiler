@@ -215,6 +215,7 @@
 <script src="lib/codemirror/addon/selection/active-line.js"></script>
 <script src="lib/codemirror/addon/scroll/simplescrollbars.js"></script>
 <script src="lib/codemirror/addon/selection/selection-pointer.js"></script>
+<script src="lib/codemirror/addon/selection/mark-selection.js"></script>
 
 <script src="js/Benchmark.js"></script>
 <script src="js/include.js"></script>
@@ -766,10 +767,27 @@
                             $self.siblings(".active").removeClass("active");
                             $self.addClass("active");
                         }
-                    }).on("dblclick", function (e) {
+                    }).on("dblclick", function () {
                         $(this).trigger("click");
                         $(this).children(".li-caret").trigger("click");
-                    }).appendTo($ul);
+                    }).on("click", (function (symbol) {
+                        return function () {
+                            for (var k = 0; k < symbol.positions.length; k++) {
+                                var pos = symbol.positions[k]
+                                if (k == 0) {
+                                    View.editor.cm.doc.setSelection({
+                                        line: pos.first_row - 1,
+                                        ch: pos.first_col - 1
+                                    }, {line: pos.last_row - 1, ch: pos.last_col - 1});
+                                }else {
+                                    View.editor.cm.doc.addSelection({
+                                        line: pos.first_row - 1,
+                                        ch: pos.first_col - 1
+                                    }, {line: pos.last_row - 1, ch: pos.last_col - 1});
+                                }
+                            }
+                        }
+                    })(symbol)).appendTo($ul);
                     if (activemap[id]) {
                         $li.addClass("active");
                     }
@@ -780,7 +798,20 @@
                         if (!showmap[id]) {
                             $posli.hide();
                         }
-                        $posli.appendTo($ul)
+                        $posli.on("click", function () {
+                            var $self = $(this);
+                            if (!$self.hasClass("active")) {
+                                $self.siblings(".active").removeClass("active");
+                                $self.addClass("active");
+                            }
+                        }).on("click", (function (pos) {
+                            return function () {
+                                View.editor.cm.doc.setSelection({
+                                    line: pos.first_row - 1,
+                                    ch: pos.first_col - 1
+                                }, {line: pos.last_row - 1, ch: pos.last_col - 1});
+                            }
+                        })(pos)).appendTo($ul);
                     }
                 }
                 $ul.show();
@@ -887,8 +918,8 @@
             switch (paxer.getStatus()) {
                 case "DONE":
                     View.console.success(paxer.getCurMovementF());
-                    View.console.warn(paxer.getWarningMsg());
                     View.console.success('code parsed.');
+                    View.console.warn(paxer.getWarningMsg());
                     return;
                 case "ERROR":
                     View.console.error(paxer.getErrMsg());

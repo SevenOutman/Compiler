@@ -1,7 +1,7 @@
 var SymbolTable = {
     new: function () {
         var symbolTable = {};
-        var tableD;
+        //var tableD;
         var tableA, indexA;
         var count = 0;
         symbolTable.handle = function (token) {
@@ -14,21 +14,21 @@ var SymbolTable = {
                 };
                 tableA.push(symbol);
                 indexA[token.lexeme] = count;
-                tableD[token.lexeme] = symbol;
+                //tableD[token.lexeme] = symbol;
                 count += 1;
             }
             function updateSymbol(token) {
-                tableD[token.lexeme].positions.push(token.position);
+                //tableD[token.lexeme].positions.push(token.position);
                 tableA[indexA[token.lexeme]].positions.push(token.position);
             }
-            if (!tableD.hasOwnProperty(token.lexeme) && !tableA.hasOwnProperty(indexA[token.lexeme])) {
+            if (!tableA.hasOwnProperty(indexA[token.lexeme])) {
                 addSymbol(token);
             } else {
                 updateSymbol(token);
             }
         };
         symbolTable.reset = function () {
-            tableD = {};
+            //tableD = {};
             tableA = [];
             indexA = {};
             count  = 0;
@@ -39,7 +39,7 @@ var SymbolTable = {
         };
         symbolTable.getD = function () {
 
-            return tableD;
+            //return tableD;
         };
         symbolTable.getLength = function () {
 
@@ -471,6 +471,10 @@ var Parser = {
                 } else if (isTerminal(top) || recovering) {
                     recovering = true;
                     curStatus = status[1];
+                    curWarningMsg = ['UNEXPECTED',nextT.lexeme,'AT','ROW',lastPos.last_row + ',','COL',lastPos.last_col + '.','POPPED','OUT','\'' + top + '\''].join(' ');
+                    curMovement[2] = curWarningMsg;
+                    warningMsgs.push(curWarningMsg);
+                    building.parsed = true;
                     building = toBuild.pop();
                     var tempPop = stack.pop();
                     if (tempPop == 'stmts') {
@@ -569,7 +573,11 @@ var Parser = {
                         curStatus = recovered ? status[1] : status[2];
                     } else {
                         if (top != 'stmts') {
+                            curWarningMsg = ['UNEXPECTED',nextT.lexeme,'AT','ROW',lastPos.last_row + ',','COL',lastPos.last_col + '.','POPPED','OUT','\'' + top + '\''].join(' ');
+                            curMovement[2] = curWarningMsg;
+                            warningMsgs.push(curWarningMsg);
                             top = stack.pop();
+                            building.parsed = true;
                             building = toBuild.pop();
                         } else {
                             toBuild.push(lastStmtsNode);

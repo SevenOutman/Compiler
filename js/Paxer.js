@@ -145,7 +145,6 @@ var Lexer = {
             errorMsg = "";
             lexSequence = [];
             curLexeme = "";
-            matched, next, token;
             lexing = 0;
             curStatus = status[2];
         };
@@ -331,6 +330,9 @@ var Parser = {
                 node.getSubNodes = function () {
                     return subNodes.slice();
                 };
+                node.setPosition = function (position) {
+                    node.position = position;
+                };
                 node.assign = function (token, formula) {
                     if (token.containValue) {
                         switch (token.abstract) {
@@ -466,6 +468,7 @@ var Parser = {
                 if (top == next) {
                     lastPos = nextT.position;
                     building = toBuild.pop();
+                    building.setPosition(nextT.position);
                     building.parsed = true;
                     building.assign(nextT, curFormula);
                     input.shift();
@@ -672,23 +675,26 @@ var Parser = {
             return input.length == 0;
         };
         parser.getRootS = function () {
-            function filterNode (node) {
+            function filterNode (node, fatherNode) {
                 var nodeS = {};
                 var subNodesS = [];
                 var subNodes = node.getSubNodes();
-                var i;
-                for (i = 0; i < subNodes.length; i++) {
-                    subNodesS.push(filterNode(subNodes[i]));
-                }
                 nodeS.abstract = node.abstract;
                 nodeS.name = node.name;
                 nodeS.value = node.value;
                 nodeS.type = node.type;
                 nodeS.subNodes = subNodesS;
-                nodeS.fatherNode = node.fatherNode;
+                nodeS.fatherNode = fatherNode;
+                if (node.position != undefined) {
+                    nodeS.position = node.position;
+                }
+                var i;
+                for (i = 0; i < subNodes.length; i++) {
+                    subNodesS.push(filterNode(subNodes[i], nodeS));
+                }
                 return nodeS;
             }
-            return filterNode(root);
+            return filterNode(root, undefined);
         };
         parser.getSequentialNodes = function () {
             function checkParsed (node) {

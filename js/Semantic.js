@@ -121,6 +121,13 @@ function SemanticAnalyzer() {
                         symbol.type = node.type;
                         break;
                     }
+                    case "assgstmt":
+                    {
+                        if (!symbol.type && 0 == symbol.occurance) {
+                            _errors.push(new SemanticError("Undeclared identifier '" + symbol.name + "'", symbol.positions[symbol.occurance]));
+                        }
+                        break;
+                    }
                 }
                 break;
             }

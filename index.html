@@ -789,7 +789,7 @@
                         }
                     })(symbol)).appendTo($ul);
                     if (activemap[id]) {
-                        $li.trigger("click");
+//                        $li.trigger("click");
                     }
                     for (var j = 0; j < symbol.positions.length; j++) {
                         var pos = symbol.positions[j],
@@ -813,92 +813,12 @@
                             }
                         })(pos)).appendTo($ul);
                         if (activemap[$posli.attr("data-id")]) {
-                            $posli.trigger("click");
+//                            $posli.trigger("click");
                         }
                     }
                 }
                 $ul.show();
                 $placeholder.hide();
-            }
-            return;
-            var output = "",
-                    level = 0,
-                    root = parser.getRootS(),
-                    $ul;
-
-
-            scanTree(root, "none");
-            $(".right-box .placeholder").remove();
-            $ul.appendTo($(".right-box .box-body"));
-
-//                        View.console.log(output);
-            function scanTree(node, parentMark) {
-                var indent = "",
-                        n = 1;
-                while ($("[data-id='structure-" + node.abstract + "-" + n + "']").length > 0) {
-                    n++;
-                }
-                for (var i = 0; i < level; i++) {
-                    output += "  ";
-                    indent += "&nbsp;&nbsp;";
-                }
-                output += node.abstract + "\n";
-
-                var id = "structure-" + node.abstract + "-" + n,
-                        $li = $("<li></li>").attr("data-id", id).attr("data-parent", parentMark).html(node.abstract),
-                        $caret = $("<span></span>").addClass("glyphicon glyphicon-triangle-bottom li-caret")
-                                .css("margin-left", (level * 15 - 15) + "px"),
-                        $extra = $("<span></span>").addClass("extra");
-                if (node.abstract == "ID") {
-                    $extra.text(node.name);
-                } else if (node.abstract == "NUM") {
-                    $extra.text(node.value);
-                }
-                if (node.subNodes.length < 1) {
-                    $caret.addClass("no-child");
-                } else {
-                    $caret.on("click", function (e) {
-                        toggleFold($li, $caret.hasClass("glyphicon-triangle-bottom"), false);
-                    });
-                }
-                $li.on("click", function () {
-                    var $self = $(this);
-                    if (!$self.hasClass("active")) {
-                        $self.siblings(".active").removeClass("active");
-                        $self.addClass("active");
-                    }
-                }).on("dblclick", function () {
-                    $caret.trigger("click");
-                });
-                $ul.append($li.prepend($caret).append($extra));
-                for (var i = 0, subs = node.subNodes; i < subs.length; i++) {
-                    level++;
-                    scanTree(subs[i], id);
-                }
-                level--;
-            }
-
-            function toggleFold($li, fold, includeSelf) {
-                var id = $li.attr("data-id");
-
-                $.each($("[data-parent='" + id + "']"), function (index, el) {
-                    toggleFold($(el), fold, true);
-                });
-                if (includeSelf) {
-                    if (fold) {
-                        $li.hide();
-                    } else {
-                        $li.show();
-                    }
-                }
-                if (fold) {
-                    $li.find(".li-caret").removeClass("glyphicon-triangle-bottom")
-                            .addClass("glyphicon-triangle-right");
-                } else {
-                    $li.find(".li-caret").addClass("glyphicon-triangle-bottom")
-                            .removeClass("glyphicon-triangle-right");
-                }
-
             }
         });
         var stEquals = function (nst) {
@@ -917,12 +837,15 @@
             if (paxer.getStatus() == 'DONE' || paxer.getStatus() == 'ERROR') {
                 return;
             }
+            View.editor.cm.doc.setCursor({line: 5, ch: 2});
             paxer.go();
             switch (paxer.getStatus()) {
                 case "DONE":
+                    semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
                     View.console.success(paxer.getCurMovementF());
                     View.console.success('code parsed.');
                     View.console.warn(paxer.getWarningMsg());
+                    View.console.error(semantic.getErrorMsg());
                     return;
                 case "ERROR":
                     View.console.error(paxer.getErrMsg());

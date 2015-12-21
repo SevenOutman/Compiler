@@ -29,9 +29,11 @@ function SemanticAnalyzer() {
         };
         activeID = null;
         _recursive(root);
+        P("symboltablechanged", symboltable);
     };
 
     function _recursive(node) {
+        //console.log(node);
         if (node.abstract == "ID") {
             var symbol = symboltable.get(node.name);
             if (undefined === symbol.occurance) {
@@ -40,10 +42,8 @@ function SemanticAnalyzer() {
                 symbol.occurance++;
             }
             symbolStack.push(symbol);
-        } else if (node.abstract == "type") {
-            activeType = node.value;
-        } else if ([">"]) {
-
+        } else if (node.abstract == "int" || node.abstract == "real") {
+            activeType = node.abstract;
         }
 
         if (node.abstract == ";") {

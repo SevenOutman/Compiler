@@ -259,6 +259,7 @@
         var lexer = Lexer.new();
         var parser = Parser.new();
         var paxer = Paxer.new();
+        var semantic = new SemanticAnalyzer();
 
         document.getElementById("cover-open").onclick = function () {
             View.editor.newFile();
@@ -714,7 +715,8 @@
             var $body = $(".right-box .box-body"),
                     $placeholder = $(".right-box .placeholder"),
                     $ul,
-                    showmap = {};
+                    showmap = {},
+                    activemap = {};
 
             if ($("#symbol-list").length < 1) {
                 $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list").appendTo($body);
@@ -723,8 +725,10 @@
                 $.each($ul.children("li"), function (index, el) {
                     var $li = $(el),
                             id = $li.attr("data-id"),
-                            show = $li.children(".li-caret").hasClass("glyphicon-triangle-bottom");
+                            show = $li.children(".li-caret").hasClass("glyphicon-triangle-bottom"),
+                            active = $li.hasClass("active");
                     showmap[id] = show;
+                    activemap[id] = active;
                 });
                 $ul.empty();
             }
@@ -766,6 +770,9 @@
                         $(this).trigger("click");
                         $(this).children(".li-caret").trigger("click");
                     }).appendTo($ul);
+                    if (activemap[id]) {
+                        $li.addClass("active");
+                    }
                     for (var j = 0; j < symbol.positions.length; j++) {
                         var pos = symbol.positions[j],
                                 liText = "[" + (j + 1) + "] line: " + pos.first_row + ", ch: " + pos.first_col,
@@ -928,7 +935,8 @@
                             break;
                     }
                 }
-                P("symboltablechanged", paxer.getSymbolTable());
+                semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
+//                P("symboltablechanged", paxer.getSymbolTable());
             }
         });
         $("#about-mask").on("click", function () {

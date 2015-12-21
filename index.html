@@ -842,7 +842,6 @@
             if (paxer.getStatus() == 'DONE' || paxer.getStatus() == 'ERROR') {
                 return;
             }
-            View.editor.cm.doc.setCursor({line: 5, ch: 2});
             paxer.go();
             switch (paxer.getStatus()) {
                 case "DONE":
@@ -903,11 +902,7 @@
                     case 'ERROR':
                         View.console.error(paxer.getErrMsg());
                         break;
-                    case "WARNING":
-                    case "NORMAL":
-                        break;
                 }
-//                P("symboltablechanged", paxer.getSymbolTable());
             }
         });
         $("#about-mask").on("click", function () {

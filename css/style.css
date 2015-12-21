@@ -502,6 +502,7 @@ a:focus:active {
 
 .tree-box .box-body {
     background: rgba(255, 255, 255, 1);
+    overflow: hidden;
 }
 
 .tree-box .placeholder {

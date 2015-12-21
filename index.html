@@ -779,7 +779,7 @@
                                         line: pos.first_row - 1,
                                         ch: pos.first_col - 1
                                     }, {line: pos.last_row - 1, ch: pos.last_col - 1});
-                                }else {
+                                } else {
                                     View.editor.cm.doc.addSelection({
                                         line: pos.first_row - 1,
                                         ch: pos.first_col - 1
@@ -789,12 +789,12 @@
                         }
                     })(symbol)).appendTo($ul);
                     if (activemap[id]) {
-                        $li.addClass("active");
+                        $li.trigger("click");
                     }
                     for (var j = 0; j < symbol.positions.length; j++) {
                         var pos = symbol.positions[j],
                                 liText = "[" + (j + 1) + "] line: " + pos.first_row + ", ch: " + pos.first_col,
-                                $posli = $("<li></li>").attr("data-pos", id).text(liText).css("margin-left", "30px");
+                                $posli = $("<li></li>").attr("data-id", "pos-" + symbol.name + "-" + j).attr("data-pos", id).text(liText).css("margin-left", "30px");
                         if (!showmap[id]) {
                             $posli.hide();
                         }
@@ -812,6 +812,9 @@
                                 }, {line: pos.last_row - 1, ch: pos.last_col - 1});
                             }
                         })(pos)).appendTo($ul);
+                        if (activemap[$posli.attr("data-id")]) {
+                            $posli.trigger("click");
+                        }
                     }
                 }
                 $ul.show();
@@ -954,23 +957,24 @@
                 Benchmark.mark("parse");
                 while (paxer.getStatus() != "DONE" && paxer.getStatus() != "ERROR") {
                     paxer.go();
-                    switch (paxer.getStatus()) {
-                        case 'DONE':
-                            var time = Benchmark.measure("parse");
-                            View.console.success(paxer.getMovementsF());
-                            View.console.warn(paxer.getWarningMsg());
-                            View.console.success("Compile finished in " + time.toFixed(4) + " millisecs.");
-                            View.console.success("Can we make it faster?");
-                            break;
-                        case 'ERROR':
-                            View.console.error(paxer.getErrMsg());
-                            break;
-                        case "WARNING":
-                        case "NORMAL":
-                            break;
-                    }
                 }
-                semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
+                switch (paxer.getStatus()) {
+                    case 'DONE':
+                        semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
+                        var time = Benchmark.measure("parse");
+                        View.console.success(paxer.getMovementsF());
+                        View.console.warn(paxer.getWarningMsg());
+                        View.console.error(semantic.getErrorMsg());
+                        View.console.success("Compile finished in " + time.toFixed(4) + " millisecs.");
+                        View.console.success("Can we make it faster?");
+                        break;
+                    case 'ERROR':
+                        View.console.error(paxer.getErrMsg());
+                        break;
+                    case "WARNING":
+                    case "NORMAL":
+                        break;
+                }
 //                P("symboltablechanged", paxer.getSymbolTable());
             }
         });

@@ -17,7 +17,7 @@ function SemanticAnalyzer() {
     var _errors = [];
 
     var _eat = function (tree, st) {
-
+        _errors = [];
         var root = tree;
         symboltable = st;
         symboltable.get = function (name) {
@@ -30,9 +30,9 @@ function SemanticAnalyzer() {
         activeID = null;
         _recursive(root);
         P("symboltablechanged", symboltable);
-        if (!!_errors.length) {
-            P("semantichaserror", _errors);
-        }
+        //if (!!_errors.length) {
+        //    P("semantichaserror", _errors);
+        //}
     };
 
     function _recursive(node) {
@@ -85,6 +85,15 @@ function SemanticAnalyzer() {
         },
         getErrors: function () {
             return _errors;
+        },
+        getErrorMsg: function () {
+            if (!!_errors.length) {
+                var msg = "";
+                for (var i = 0; i < _errors.length; i++) {
+                    msg += _errors[i].toString() + "\n";
+                }
+                return msg;
+            }
         }
     }
 }

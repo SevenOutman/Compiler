@@ -314,28 +314,38 @@ var View = (function () {
     };
 
     _console.error = function (str) {
-        if (_console.cm) {
-            if (str instanceof Object) {
-                str = str.toString();
+        if (str) {
+            if (_console.cm) {
+                if (str instanceof Object) {
+                    str = str.toString();
+                }
+                _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("- ", str), 1000));
+            } else {
+                window.console.log(str);
             }
-            _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("- ", str), 1000));
-        } else {
-            window.console.log(str);
         }
     };
 
     _console.success = function (str) {
-        if (_console.cm) {
-            _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("+ ", str), 1000));
-        } else {
-            window.console.log(str);
+        if (str) {
+
+            if (_console.cm) {
+                _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("+ ", str), 1000));
+            } else {
+                window.console.log(str);
+            }
+
         }
     };
     _console.warn = function (str) {
-        if (_console.cm) {
-            _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("@ ", str), 1000));
-        } else {
-            window.console.log(str);
+        if (str) {
+
+            if (_console.cm) {
+                _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("@ ", str), 1000));
+            } else {
+                window.console.log(str);
+            }
+
         }
     };
 
@@ -362,7 +372,14 @@ var View = (function () {
             $(".tab-bar-cover").show();
             $("#box-opener-tree").trigger("click");
             $("#box-opener-structure").trigger("click");
-            $("#box-opener-console").trigger("click", true);
+            //$("#box-opener-console").trigger("click", true);
+
+            var $box = $(".bottom-box");
+            if ($box.hasClass("hidden")) {
+                $box.removeClass("hidden");
+            }
+            $box.css("height", "30%");
+            $(".upper-box").css("height", "70%");
             _treePen.clear().setOptions({
                 width: $(".tree-box .box-body").width(),
                 height: $(".tree-box .box-body").height()
@@ -387,7 +404,11 @@ var View = (function () {
         $("#box-opener-workspace").trigger("click");
         $(".right-box .box-caret").trigger("click");
         $(".tree-box .box-caret").trigger("click");
-        $(".bottom-box .box-caret").trigger("click");
+        //$(".bottom-box .box-caret").trigger("click");
+        if (!$(".bottom-box").hasClass("hidden")) {
+            $(".bottom-box").css("height", "30%");
+            $(".upper-box").css("height", "70%");
+        }
         _editor.cm.setOption("readOnly", false);
         _control.compiling = null;
         $("#compiling-filename").text("");

@@ -413,6 +413,13 @@ function SemanticAnalyzer() {
                 }
                 return msg;
             }
+        },
+        getAssembly: function () {
+            var result = "";
+            for (var i = 0; i < _assembly.length; i++ ) {
+                result += _assembly[i] + "\n";
+            }
+            return result;
         }
     }
 }

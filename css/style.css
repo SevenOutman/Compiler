@@ -499,7 +499,17 @@ a:focus:active {
     border-left: 1px solid rgb(40, 40, 40);
     z-index: 300;
 }
+.assembly-only {
+    display: none;
+}
 
+.assembly .assembly-only {
+    display: block;
+}
+
+.assembly .hidden-assembly {
+    display: none;
+}
 .tree-box .box-body {
     background: rgba(255, 255, 255, 1);
     overflow: hidden;

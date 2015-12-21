@@ -370,6 +370,8 @@ var View = (function () {
             $("#editing-btn-group").hide();
             $("#compiling-btn-group").show();
             $(".tab-bar-cover").show();
+            $(".tree-box").removeClass("assembly");
+            _assembly.cm.setValue("");
             $("#box-opener-tree").trigger("click");
             $("#box-opener-structure").trigger("click");
             //$("#box-opener-console").trigger("click", true);
@@ -429,7 +431,17 @@ var View = (function () {
         });
     });
 
+    var _assembly = {};
+    _assembly.cm = CodeMirror.fromTextArea(document.getElementById("assembly"), {
+        theme: "monokai-so",
+        mode: "console",
+        readOnly: "nocursor",
+        scrollbarStyle: "overlay",
+        viewportMargin: Infinity
+    });
+
     return {
+        assembly: _assembly,
         editor: _editor,
         console: _console,
         control: _control,

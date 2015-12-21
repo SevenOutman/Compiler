@@ -17,11 +17,13 @@ function SemanticAnalyzer() {
     var _errors = [];
     var _assembly = [],
         _assemblyStack = [];
-    var _t = 0;
+    var _t = 0,
+        _f = 0;
 
 
     var _eat = function (tree, st) {
         _t = 0;
+        _f = 0;
         _errors = [];
         _assembly = [];
         var root = tree;
@@ -36,7 +38,8 @@ function SemanticAnalyzer() {
         activeID = null;
         //_recursive(root);
         _r(root);
-        console.log(root);
+        _assembly.push(f(_f++));
+        console.log(_assembly);
 
         P("symboltablechanged", symboltable);
         //if (!!_errors.length) {
@@ -45,10 +48,14 @@ function SemanticAnalyzer() {
     };
 
     function l(type, ad1, ad2, ad3) {
-        var a1 = ad1 || "",
-            a2 = ad2 || "",
-            a3 = ad3 || "";
-        return type + " " + a1 + ", " + a2 + ", " + a3;
+        var a1 = ad1 === null ? "" : ad1,
+            a2 = ad2 === null ? "" : ad2,
+            a3 = ad3 === null ? "" : ad3;
+        return "    " + type + " " + a1 + ", " + a2 + ", " + a3;
+    }
+
+    function f(_F) {
+        return "f" + _F;
     }
 
     function _r(node) {
@@ -130,7 +137,6 @@ function SemanticAnalyzer() {
                 node.value = _r(node.subNodes[2]).value;
                 var id = _r(node.subNodes[0]).name;
                 _assembly.push(l("mov", id, null, node.value));
-                console.log(_assembly);
                 break;
             }
             case "arithexpr":
@@ -255,6 +261,70 @@ function SemanticAnalyzer() {
                 }
                 break;
             }
+            case "whilestmt":
+            {
+                var boolexpr = node.subNodes[2],
+                    stmt = node.subNodes[4];
+                _assembly.push(f(_f++));
+                _r(boolexpr);
+                _r(stmt);
+                _assembly.push(l("jmp", null, null, "f" + (_f - 1)));
+                //_assembly.push(f(_f++));
+                break;
+            }
+            case "boolexpr":
+            {
+                node.value = "t" + _t++;
+                var arithexpr1 = node.subNodes[0],
+                    boolop = node.subNodes[1],
+                    arithexpr2 = node.subNodes[2];
+                var first = _r(arithexpr1),
+                    second = _r(arithexpr2);
+                switch (_r(boolop).value) {
+                    case "<": {
+                        _assembly.push(l("lt", node.value, first.value, second.value));
+                        break;
+                    }
+                    case ">": {
+                        _assembly.push(l("gt", node.value, first.value, second.value));
+                        break;
+                    }
+                    case "<=": {
+                        _assembly.push(l("le", node.value, first.value, second.value));
+                        break;
+                    }
+                    case ">=": {
+                        _assembly.push(l("ge", node.value, first.value, second.value));
+                        break;
+                    }
+                    case "==": {
+                        _assembly.push(l("eq", node.value, first.value, second.value));
+                        break;
+                    }
+                }
+                _assembly.push(l("jmpf", node.value, null, "f" + _f));
+                break;
+            }
+            case "boolop":
+            {
+                node.value = node.subNodes[0].abstract;
+                break;
+            }
+            case "ifstmt":
+            {
+                var boolop = node.subNodes[2],
+                    stmt1 = node.subNodes[5],
+                    stmt2 = node.subNodes[7];
+
+                _assembly.push(f(_f++));
+                _r(boolop);
+                _r(stmt1);
+                _assembly.push(l("jmp", null, null, "f" + (_f + 1)));
+                _assembly.push(f(_f++));
+                _r(stmt2);
+                //_assembly.push(f(_f++));
+                break;
+            }
             default:
                 break;
         }
@@ -264,7 +334,6 @@ function SemanticAnalyzer() {
 
 
     function _recursive(node) {
-        console.log(node);
         if (node.abstract == "ID") {
             var symbol = symboltable.get(node.name);
             if (undefined === symbol.occurance) {
@@ -283,7 +352,6 @@ function SemanticAnalyzer() {
             if (node.abstract == ";") {
                 var asbly = "mov " + symbolStack.rear().name + ", , " + NUMStack.rear();
                 _assembly.push(asbly);
-                console.log(_assembly);
             }
         }
 

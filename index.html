@@ -936,6 +936,11 @@
                     }
                 }
                 semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
+                if (semantic.hasError()) {
+                    for (var i = 0, e = semantic.getErrors(); i < e.length; i++) {
+                        View.console.error(e[i].toString());
+                    }
+                }
 //                P("symboltablechanged", paxer.getSymbolTable());
             }
         });

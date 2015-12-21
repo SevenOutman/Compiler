@@ -33,7 +33,6 @@ function SemanticAnalyzer() {
     };
 
     function _recursive(node) {
-        //console.log(node);
         if (node.abstract == "ID") {
             var symbol = symboltable.get(node.name);
             if (undefined === symbol.occurance) {
@@ -63,8 +62,8 @@ function SemanticAnalyzer() {
         if (nodeStack.rear() && nodeStack.rear().abstract != "list") {
             if (node.abstract == "ID") {
                 var symbol = symbolStack.rear();
-                if (!symbol.type) {
-                    _errors.push(new SemanticError("Undeclared identifier '" + symbol.name, symbol.positions[symbol.occurance]));
+                if (!symbol.type && symbol.occurance == 0) {
+                    _errors.push(new SemanticError("Undeclared identifier '" + symbol.name + "'", symbol.positions[symbol.occurance]));
                 }
             }
         }
@@ -77,10 +76,20 @@ function SemanticAnalyzer() {
     }
 
     return {
-        eat: _eat
+        eat: _eat,
+        hasError: function () {
+            return !!_errors.length;
+        },
+        getErrors: function () {
+            return _errors;
+        }
     }
 }
 
 function SemanticError(msg, position) {
-
+    this.msg = msg;
+    this.position = position;
 }
+SemanticError.prototype.toString = function () {
+    return "Error: " + this.msg + " at line: " + this.position.first_row + ", ch: " + this.position.first_col;
+};

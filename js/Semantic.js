@@ -54,10 +54,14 @@ function SemanticAnalyzer() {
             symbolStack.pop();// activeID = activeNUM = null;
         }
 
+        // try declare
         if (nodeStack.rear() && nodeStack.rear().abstract == "list") {
             if (node.abstract == "ID") {
                 var symbol = symbolStack.rear();
                 if (activeType !== null) {
+                    if (symbol.type) {
+                        _errors.push(new SemanticError("Duplicated declaration of '" + symbol.name + "'", symbol.positions[symbol.occurance]));
+                    }
                     symbol.type = activeType;
                 }
             }

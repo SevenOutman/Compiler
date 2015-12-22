@@ -15,11 +15,17 @@ var Benchmark = (function () {
             for (var i = 0; i < repeat; i++) {
                 func.apply(self || this, Array.prototype.slice.call(arguments, 3));
             }
-            return _measure("test");
+            var result = _measure("test");
+            _clear("test");
+            return result;
+        },
+        _clear = function (name) {
+            delete marks[name];
         };
     return {
         mark: _mark,
         measure: _measure,
-        test: _test
+        test: _test,
+        clear: _clear
     };
 })();

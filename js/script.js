@@ -561,15 +561,19 @@ $(function () {
             }
             switch (paxer.getStatus()) {
                 case 'DONE':
+                    var paxTime = Benchmark.measure("parse");
                     semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
-                    var time = Benchmark.measure("parse");
-                    View.console.success(paxer.getMovementsF());
-                    View.console.warn(paxer.getWarningMsg());
-                    View.console.error(semantic.getErrorMsg());
-                    View.console.success("Compile finished in " + time.toFixed(4) + " millisecs.");
-                    View.console.success("Can we make it faster?");
+                    var semaTime = Benchmark.measure("parse") - paxTime;
                     $(".tree-box").addClass("assembly");
                     View.assembly.cm.setValue(semantic.getAssembly());
+                    View.console.success(paxer.getMovementsF());
+                    //var mfTime = Benchmark.measure("parse") - (paxTime + semaTime);
+                    View.console.warn(paxer.getWarningMsg());
+                    View.console.error(semantic.getErrorMsg());
+                    View.console.success("Compile finished in " + (paxTime + semaTime).toFixed(4) + " millisecs.");
+                    View.console.success("Paxer: " + paxTime.toFixed(4) + " ms. Semantic: " + semaTime.toFixed(4) + "ms.");
+                    //View.console.success("MovementsF: " + mfTime.toFixed(4) + " ms.");
+                    View.console.success("Can we make it faster?");
                     break;
                 case 'ERROR':
                     View.console.error(paxer.getErrMsg());

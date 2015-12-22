@@ -29,7 +29,7 @@ function SemanticAnalyzer() {
             }
         };
         _r(root);
-        _assembly.push(f(_f++));
+        _assembly[_assembly.length] = f(_f++);
 
         P("symboltablechanged", symboltable);
     };
@@ -43,6 +43,10 @@ function SemanticAnalyzer() {
 
     function f(_F) {
         return "f" + _F;
+    }
+
+    function t(_T) {
+        return "t" + _T;
     }
 
     function _r(node) {
@@ -130,7 +134,7 @@ function SemanticAnalyzer() {
             {
                 node.value = _r(node.subNodes[2]).value;
                 var id = _r(node.subNodes[0]).name;
-                _assembly.push(l("mov", id, null, node.value));
+                _assembly[_assembly.length] = l("mov", id, null, node.value);
                 break;
             }
             case "arithexpr":
@@ -141,14 +145,14 @@ function SemanticAnalyzer() {
                     switch (second.type) {
                         case "+":
                         {
-                            node.value = "t" + _t++;
-                            _assembly.push(l("add", node.value, first.value, second.value));
+                            node.value = t(_t++);
+                            _assembly[_assembly.length] = l("add", node.value, first.value, second.value);
                             break;
                         }
                         case "-":
                         {
-                            node.value = "t" + _t++;
-                            _assembly.push(l("sub", node.value, first.value, second.value));
+                            node.value = t(_t++);
+                            _assembly[_assembly.length] = l("sub", node.value, first.value, second.value);
                             break;
                         }
                     }
@@ -165,18 +169,18 @@ function SemanticAnalyzer() {
                     switch (second.type) {
                         case "*":
                         {
-                            node.value = "t" + _t++;
-                            _assembly.push(l("mul", node.value, first.value, second.value));
+                            node.value = t(_t++);
+                            _assembly[_assembly.length] = l("mul", node.value, first.value, second.value);
                             break;
                         }
                         case "/":
                         {
-                            node.value = "t" + _t++;
+                            node.value = t(_t++);
                             if (second.value == 0) {
                                 _errors.push(new SemanticError("Cannot be divided by 0"));
-                                _assembly.push(l("*div", node.value, first.value, second.value));
+                                _assembly[_assembly.length] = l("*div", node.value, first.value, second.value);
                             } else {
-                                _assembly.push(l("div", node.value, first.value, second.value));
+                                _assembly[_assembly.length] = l("div", node.value, first.value, second.value);
                             }
                             break;
                         }
@@ -196,14 +200,14 @@ function SemanticAnalyzer() {
                         switch (second.type) {
                             case "+":
                             {
-                                node.value = "t" + _t++;
-                                _assembly.push(l("add", node.value, first.value, second.value));
+                                node.value = t(_t++);
+                                _assembly[_assembly.length] = l("add", node.value, first.value, second.value);
                                 break;
                             }
                             case "-":
                             {
-                                node.value = "t" + _t++;
-                                _assembly.push(l("sub", node.value, first.value, second.value));
+                                node.value = t(_t++);
+                                _assembly[_assembly.length] = l("sub", node.value, first.value, second.value);
                                 break;
                             }
                         }
@@ -218,15 +222,16 @@ function SemanticAnalyzer() {
                 if (node.subNodes[1]) {
                     node.value = _r(node.subNodes[1]).value;
                 } else {
-                    switch (node.subNodes[0].abstract) {
+                    var ID_NUM = node.subNodes[0];
+                    switch (ID_NUM.abstract) {
                         case "ID":
                         {
-                            node.value = node.subNodes[0].name;
+                            node.value = ID_NUM.name;
                             break;
                         }
                         case "NUM":
                         {
-                            node.value = node.subNodes[0].value;
+                            node.value = ID_NUM.value;
                             break;
                         }
                     }
@@ -243,18 +248,18 @@ function SemanticAnalyzer() {
                         switch (second.type) {
                             case "*":
                             {
-                                node.value = "t" + _t++;
-                                _assembly.push(l("mult", node.value, first.value, second.value));
+                                node.value = t(_t++);
+                                _assembly[_assembly.length] = l("mult", node.value, first.value, second.value);
                                 break;
                             }
                             case "/":
                             {
-                                node.value = "t" + _t++;
+                                node.value = t(_t++);
                                 if (second.value == 0) {
                                     _errors.push(new SemanticError("Cannot be divided by 0"));
-                                    _assembly.push(l("*div", node.value, first.value, second.value));
+                                    _assembly[_assembly.length] = l("*div", node.value, first.value, second.value);
                                 } else {
-                                    _assembly.push(l("div", node.value, first.value, second.value));
+                                    _assembly[_assembly.length] = l("div", node.value, first.value, second.value);
                                 }
                                 break;
                             }
@@ -269,10 +274,10 @@ function SemanticAnalyzer() {
             {
                 var boolexpr = node.subNodes[2],
                     stmt = node.subNodes[4];
-                _assembly.push(f(_f++));
+                _assembly[_assembly.length] = f(_f++);
                 _r(boolexpr);
                 _r(stmt);
-                _assembly.push(l("jmp", null, null, "f" + (_f - 1)));
+                _assembly[_assembly.length] = l("jmp", null, null, "f" + (_f - 1));
                 break;
             }
             case "boolexpr":
@@ -286,31 +291,31 @@ function SemanticAnalyzer() {
                 switch (_r(boolop).value) {
                     case "<":
                     {
-                        _assembly.push(l("lt", node.value, first.value, second.value));
+                        _assembly[_assembly.length] = l("lt", node.value, first.value, second.value);
                         break;
                     }
                     case ">":
                     {
-                        _assembly.push(l("gt", node.value, first.value, second.value));
+                        _assembly[_assembly.length] = l("gt", node.value, first.value, second.value);
                         break;
                     }
                     case "<=":
                     {
-                        _assembly.push(l("le", node.value, first.value, second.value));
+                        _assembly[_assembly.length] = l("le", node.value, first.value, second.value);
                         break;
                     }
                     case ">=":
                     {
-                        _assembly.push(l("ge", node.value, first.value, second.value));
+                        _assembly[_assembly.length] = l("ge", node.value, first.value, second.value);
                         break;
                     }
                     case "==":
                     {
-                        _assembly.push(l("eq", node.value, first.value, second.value));
+                        _assembly[_assembly.length] = l("eq", node.value, first.value, second.value);
                         break;
                     }
                 }
-                _assembly.push(l("jmpf", node.value, null, "f" + _f));
+                _assembly[_assembly.length] = l("jmpf", node.value, null, "f" + _f);
                 break;
             }
             case "boolop":
@@ -324,11 +329,11 @@ function SemanticAnalyzer() {
                     stmt1 = node.subNodes[5],
                     stmt2 = node.subNodes[7];
 
-                _assembly.push(f(_f++));
+                _assembly[_assembly.length] = f(_f++);
                 _r(boolop);
                 _r(stmt1);
-                _assembly.push(l("jmp", null, null, "f" + (_f + 1)));
-                _assembly.push(f(_f++));
+                _assembly[_assembly.length] = l("jmp", null, null, "f" + (_f + 1));
+                _assembly[_assembly.length] = f(_f++);
                 _r(stmt2);
                 break;
             }
@@ -357,7 +362,7 @@ function SemanticError(msg, position) {
 SemanticError.prototype.toString = function () {
     var msg = "Error: " + this.msg;
     if (this.position) {
-        msg += " at line: " + this.position.first_row + ", ch: " + this.position.first_col;
+        msg = [msg, " at line: ", this.position.first_row, ", ch: ", this.position.first_col].join("");
     }
     return msg;
 };

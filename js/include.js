@@ -27,6 +27,20 @@ Array.prototype.remove = function (elem) {
         }
     }
 };
+if (!String.prototype.repeat) {
+    String.prototype.repeat = function(n) {
+        "use strict";
+        var o = '', s = this;
+        if (n < 1) return o;
+        while (n > 1) {
+            if (n & 1) o += s;
+            n >>= 1;
+            s += s;
+        }
+        return o + s;
+    }
+}
+
 
 Math.mid = function (x, y, z) {
     if (arguments.length != 3) {

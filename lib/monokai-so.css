@@ -123,8 +123,3 @@
     text-decoration: underline;
     color: white !important;
 }
-
-.cm-s-monokai-so .CodeMirror-selectedtext {
-    color: #000 !important;
-    background: yellow;
-}

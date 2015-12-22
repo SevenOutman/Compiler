@@ -4,19 +4,11 @@
 function SemanticAnalyzer() {
     var symboltable = null;
 
-    var nodeStack = [],
-        IDStack = [],
-        NUMStack = [],
-        symbolStack = [],
-        opStack = [];
-
-    var activeType = null,
-        activeID = null,
-        activeNUM = null;
+    var nodeStack = [];
 
     var _errors = [];
-    var _assembly = [],
-        _assemblyStack = [];
+    var _assembly = [];
+
     var _t = 0,
         _f = 0;
 
@@ -24,6 +16,7 @@ function SemanticAnalyzer() {
     var _eat = function (tree, st) {
         _t = 0;
         _f = 0;
+        nodeStack = [];
         _errors = [];
         _assembly = [];
         var root = tree;
@@ -35,16 +28,10 @@ function SemanticAnalyzer() {
                 }
             }
         };
-        activeID = null;
-        //_recursive(root);
         _r(root);
         _assembly.push(f(_f++));
-        console.log(_assembly);
 
         P("symboltablechanged", symboltable);
-        //if (!!_errors.length) {
-        //    P("semantichaserror", _errors);
-        //}
     };
 
     function l(type, ad1, ad2, ad3) {
@@ -185,7 +172,12 @@ function SemanticAnalyzer() {
                         case "/":
                         {
                             node.value = "t" + _t++;
-                            _assembly.push(l("div", node.value, first.value, second.value));
+                            if (second.value == 0) {
+                                _errors.push(new SemanticError("Cannot be divided by 0"));
+                                _assembly.push(l("*div", node.value, first.value, second.value));
+                            } else {
+                                _assembly.push(l("div", node.value, first.value, second.value));
+                            }
                             break;
                         }
                     }
@@ -258,7 +250,12 @@ function SemanticAnalyzer() {
                             case "/":
                             {
                                 node.value = "t" + _t++;
-                                _assembly.push(l("div", node.value, first.value, second.value));
+                                if (second.value == 0) {
+                                    _errors.push(new SemanticError("Cannot be divided by 0"));
+                                    _assembly.push(l("*div", node.value, first.value, second.value));
+                                } else {
+                                    _assembly.push(l("div", node.value, first.value, second.value));
+                                }
                                 break;
                             }
                         }
@@ -276,7 +273,6 @@ function SemanticAnalyzer() {
                 _r(boolexpr);
                 _r(stmt);
                 _assembly.push(l("jmp", null, null, "f" + (_f - 1)));
-                //_assembly.push(f(_f++));
                 break;
             }
             case "boolexpr":
@@ -288,23 +284,28 @@ function SemanticAnalyzer() {
                 var first = _r(arithexpr1),
                     second = _r(arithexpr2);
                 switch (_r(boolop).value) {
-                    case "<": {
+                    case "<":
+                    {
                         _assembly.push(l("lt", node.value, first.value, second.value));
                         break;
                     }
-                    case ">": {
+                    case ">":
+                    {
                         _assembly.push(l("gt", node.value, first.value, second.value));
                         break;
                     }
-                    case "<=": {
+                    case "<=":
+                    {
                         _assembly.push(l("le", node.value, first.value, second.value));
                         break;
                     }
-                    case ">=": {
+                    case ">=":
+                    {
                         _assembly.push(l("ge", node.value, first.value, second.value));
                         break;
                     }
-                    case "==": {
+                    case "==":
+                    {
                         _assembly.push(l("eq", node.value, first.value, second.value));
                         break;
                     }
@@ -329,7 +330,6 @@ function SemanticAnalyzer() {
                 _assembly.push(l("jmp", null, null, "f" + (_f + 1)));
                 _assembly.push(f(_f++));
                 _r(stmt2);
-                //_assembly.push(f(_f++));
                 break;
             }
             default:
@@ -339,87 +339,13 @@ function SemanticAnalyzer() {
         return node;
     }
 
-
-    function _recursive(node) {
-        if (node.abstract == "ID") {
-            var symbol = symboltable.get(node.name);
-            if (undefined === symbol.occurance) {
-                symbol.occurance = 0;
-            } else {
-                symbol.occurance++;
-            }
-            symbolStack.push(symbol);
-        } else if (node.abstract == "int" || node.abstract == "real") {
-            activeType = node.abstract;
-        } else if (node.abstract == "NUM") {
-            NUMStack.push(node.value);
-        }
-
-        if (nodeStack.rear() && nodeStack.rear().abstract == "assgstmt") {
-            if (node.abstract == ";") {
-                var asbly = "mov " + symbolStack.rear().name + ", , " + NUMStack.rear();
-                _assembly.push(asbly);
-            }
-        }
-
-
-        // try declare
-        if (nodeStack.rear() && nodeStack.rear().abstract == "list") {
-            if (node.abstract == "ID") {
-                var symbol = symbolStack.rear();
-                if (activeType !== null) {
-                    if (symbol.type) {
-                        _errors.push(new SemanticError("Duplicated declaration of '" + symbol.name + "'", symbol.positions[symbol.occurance]));
-                    }
-                    symbol.type = activeType;
-                }
-            }
-        }
-        if (nodeStack.rear() && nodeStack.rear().abstract != "list") {
-            if (node.abstract == "ID") {
-                var symbol = symbolStack.rear();
-                if (!symbol.type && symbol.occurance == 0) {
-                    _errors.push(new SemanticError("Undeclared identifier '" + symbol.name + "'", symbol.positions[symbol.occurance]));
-                }
-            }
-        }
-
-        if (node.abstract == ";") {
-            activeType = null;
-            NUMStack.pop();
-            symbolStack.pop();
-        }
-
-        nodeStack.push(node);
-        for (var i = 0; i < node.subNodes.length; i++) {
-            _recursive(node.subNodes[i]);
-        }
-        nodeStack.pop();
-    }
-
     return {
         eat: _eat,
-        hasError: function () {
-            return !!_errors.length;
-        },
-        getErrors: function () {
-            return _errors;
-        },
         getErrorMsg: function () {
-            if (!!_errors.length) {
-                var msg = "";
-                for (var i = 0; i < _errors.length; i++) {
-                    msg += _errors[i].toString() + "\n";
-                }
-                return msg;
-            }
+            return _errors.join("\n");
         },
         getAssembly: function () {
-            var result = "";
-            for (var i = 0; i < _assembly.length; i++ ) {
-                result += _assembly[i] + "\n";
-            }
-            return result;
+            return _assembly.join("\n");
         }
     }
 }
@@ -429,5 +355,9 @@ function SemanticError(msg, position) {
     this.position = position;
 }
 SemanticError.prototype.toString = function () {
-    return "Error: " + this.msg + " at line: " + this.position.first_row + ", ch: " + this.position.first_col;
+    var msg = "Error: " + this.msg;
+    if (this.position) {
+        msg += " at line: " + this.position.first_row + ", ch: " + this.position.first_col;
+    }
+    return msg;
 };

@@ -353,19 +353,16 @@ var View = (function () {
         $("#box-opener-console").trigger("click");
     };
 
-    _console.fold = function () {
-    };
-
     var _control = {};
     _control.compiling = null;
     _control.compilie = function (file) {
-        //return;
         _control.compiling = file;
         _control.enterCompileMode();
     };
 
     _control.enterCompileMode = function () {
         if (_control.compiling !== null) {
+            $("body").addClass("compiling");
             $("#compiling-filename").text(_control.compiling.fileName());
             $("#editing-btn-group").hide();
             $("#compiling-btn-group").show();
@@ -393,12 +390,14 @@ var View = (function () {
             _treePen.render();
             $(".tree-box .placeholder").hide();
             $(".left-box .box-caret").trigger("click");
-            _editor.cm.setOption("readOnly", true);
+            _editor.cm.setOption("readOnly", "nocursor");
             _console.cm.setValue("");
         }
     };
 
     _control.exitCompileMode = function () {
+        $("body").removeClass("compiling");
+
         $("#compiling-btn-group").hide();
         $("#editing-btn-group").show();
         $(".tab-bar-cover").hide();

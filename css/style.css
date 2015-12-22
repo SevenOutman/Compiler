@@ -39,6 +39,13 @@ a:focus:active {
     background: rgba(128, 128, 128, .7);
 }
 
+
+.compiling .cm-s-monokai-so .CodeMirror-selectedtext {
+    color: #000 !important;
+    background: yellow;
+}
+
+
 .console-container .CodeMirror {
     /*font-size: 10px;*/
 }

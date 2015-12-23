@@ -1,10 +1,11 @@
 var SymbolTable = {
     new: function () {
         var symbolTable = {};
+        //var tableD;
         var tableA, indexA;
         var count = 0;
         symbolTable.handle = function (token) {
-            if (!tableA.hasOwnProperty(indexA[token.lexeme])) {
+            function addSymbol(token) {
                 var symbol = {
                     name:      token.lexeme,
                     type:      undefined,
@@ -13,20 +14,35 @@ var SymbolTable = {
                 };
                 tableA.push(symbol);
                 indexA[token.lexeme] = count;
+                //tableD[token.lexeme] = symbol;
                 count += 1;
-            } else {
+            }
+            function updateSymbol(token) {
+                //tableD[token.lexeme].positions.push(token.position);
                 tableA[indexA[token.lexeme]].positions.push(token.position);
+            }
+            if (!tableA.hasOwnProperty(indexA[token.lexeme])) {
+                addSymbol(token);
+            } else {
+                updateSymbol(token);
             }
         };
         symbolTable.reset = function () {
+            //tableD = {};
             tableA = [];
             indexA = {};
             count  = 0;
         };
         symbolTable.get = function () {
+
             return tableA.slice();
         };
+        symbolTable.getD = function () {
+
+            //return tableD;
+        };
         symbolTable.getLength = function () {
+
             return count;
         };
         return symbolTable;
@@ -107,12 +123,15 @@ var Lexer = {
         var matched, next, token;
         var lexing = 0;
         lexer.getErrMsg = function () {
+
             return errorMsg;
         };
         lexer.getStatus = function () {
+
             return curStatus;
         };
         lexer.getSymbolTable = function () {
+
             return symbolTable.get();
         };
         lexer.setInput = function (_input) {
@@ -130,6 +149,7 @@ var Lexer = {
             curStatus = status[2];
         };
         lexer.lexDone = function () {
+
             return curStatus == status[2];
         };
         lexer.lex = function (singleStepping) {
@@ -197,8 +217,8 @@ var Lexer = {
             }
             pointer.reduce();
             token = {
-                lexeme:   "$",
-                abstract: "$",
+                lexeme:    "$",
+                abstract:  "$",
                 position: pointer.get()
             };
             lexSequence.push(token);
@@ -206,9 +226,11 @@ var Lexer = {
             return true;
         };
         lexer.getToken = function () {
+
             return token;
         };
         lexer.getSequence = function () {
+
             return lexSequence;
         };
         lexer.getSequenceByAbstract = function () {
@@ -363,14 +385,18 @@ var Parser = {
         var stack, input;
         var curMovement;
         var toBuild;
+        var building;
         var lastPos;
+        var singleSpot;
         var newNodes = [];
         var curFormula;
         var lastStmtsNode;
         parser.getStatus = function () {
+
             return curStatus;
         };
         parser.reset = function () {
+            parseErr      = false;
             stack         = ['$', 'program'];
             input         = [];
             movements     = [];
@@ -380,6 +406,7 @@ var Parser = {
             newNodes      = [];
             root          = Node.new('program', Node.new());
             toBuild       = [root];
+            singleSpot    = 0;
             curStatus     = status[3];
             curMovement   = [stack.slice(), input.slice(), {}];
         };
@@ -389,27 +416,52 @@ var Parser = {
             curStatus = status[0];
         };
         parser.pushToken = function (token) {
+            nextT = token;
+            next = nextT.abstract;
             input.push(token);
         };
-        parser.parse = function () {
+        parser.parse = function (singleStepping) {
             function isTerminal(symbol) {
-                for (var i = 0; i < rules.length; i += 1) {
-                    if (rules[i].interminal == symbol) return false;
+                var i;
+                for (i = 0; i < rules.length; i += 1) {
+                    if (rules[i].interminal == symbol) {
+                        return false;
+                    }
                 }
                 return true;
             }
-            function cleanNewNodes () {
-                var lastNewNode;
-                while (newNodes.length > 0){
-                    lastNewNode = newNodes.pop();
-                    lastNewNode.new = false;
+            function tryParse (stack, input) {
+                var top, next;
+                while(top != '$' && input.length > 0){
+                    next = input[0].abstract;
+                    top = stack.pop();
+                    if (top == next) {
+                        input.shift();
+                    } else if (isTerminal(top)) {
+                        return false;
+                    } else if (table[top][next] == 0) {
+                        return false;
+                    } else if (table[top][next] > 0) {
+                        rule = table[top][next];
+                        var product = rules[rule].product.slice();
+                        while(product.length > 0) {
+                            stack.push(product.pop());
+                        }
+                    }
                 }
+                return input.length == 0;
+            }
+            function cleanNewNodes () {
+                for (var i = 0; i < newNodes.length; i++) {
+                    newNodes[i].new = false;
+                }
+                newNodes = [];
             }
             if (curStatus != status[0] && curStatus != status[1]) return false;
 
             curMovement = [stack.slice(), input.slice(), {}];
             var top = stack.pop(), nextT = input[0], next = nextT.abstract;
-            var building = toBuild.pop();
+            building = toBuild.pop();
             while (top != '$' && input.length > 0) {
                 cleanNewNodes();
                 if (top == next) {
@@ -435,20 +487,125 @@ var Parser = {
                     } else {
                         stack.push(tempPop);
                     }
+                        // if (next == '$') {
+                        //     curStatus = status[2];
+                        //     var expected = '';
+                        //     var i;
+                        //     for (i in table[top]) {
+                        //         if (table[top][i] != 0) {
+                        //             expected += '\'' + i + '\'|';
+                        //         }
+                        //     }
+                        //     curStatus = status[2];
+                        //     expected = expected.substring(0, expected.length - 1);
+                        //     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        // } else {
+                        //     input.shift();
+                        //     curStatus = status[1];
+                        //     curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
+                        //     warningMsgs.push(curWarningMsg);
+                        //     curMovement[2] = curWarningMsg;
+                        // }
                 } else if (table[top][next] == 0) {
-                    if (top != 'stmts') {
-                        curWarningMsg = ['UNEXPECTED',nextT.lexeme,'AT','ROW',lastPos.last_row + ',','COL',lastPos.last_col + '.','POPPED','OUT','\'' + top + '\''].join(' ');
-                        curMovement[2] = curWarningMsg;
-                        warningMsgs.push(curWarningMsg);
-                        building.parsed = true;
+                    if (!singleStepping) {
+                        //RECOVERY START
+                        var recovered = false;
+                        //TRY ADDING EVERY EXPECTED
+                        var tryAdd = false;
+                        if (!recovered && tryAdd) {
+                            var possibleItem;
+                            for (i in table[top]) {
+                                if (table[top][i] != 0) {
+                                    possibleItem = {'abstract': i, 'lexeme': '*'+i, 'position': {}};
+                                    var _input = input.slice();
+                                    _input.unshift(possibleItem);
+                                    if (tryParse(stack.slice(), _input)){
+                                        recovered = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (recovered) {
+                                input.unshift(possibleItem);
+                                next = input[0].abstract;
+                                curWarningMsg = 'MISSING \'' + next + '\' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                                warningMsgs.push(curWarningMsg);
+                            }
+                        }
+                        //TRY POPING UNTIL MATCH
+                        if (!recovered) {
+                            var _input = input.slice();
+                            var nextT =_input.shift();
+                            var next = nextT.abstract;
+                            var skipped = [];
+                            while (top != '$' && table[top][next] == 0) {
+                                skipped.push('\'' + next + '\'');
+                                nextT = _input.shift();
+                                next = nextT.abstract;
+                            }
+                            if (top != '$') {
+                                curWarningMsg = 'SKIPPED ' + skipped.join(', ');
+                                warningMsgs.push(curWarningMsg);
+                                recovered = true;
+                            }
+                            if (recovered) {
+                                _input.unshift(nextT);
+                                input = _input.slice();
+                            }
+                        }
+                        //RECOVERY END
+                        if (!recovered) {
+                            var expected = "";
+                            var i;
+                            for (i in table[top]) {
+                                if (table[top][i] != 0) {
+                                    expected += '\'' + i + '\'|';
+                                }
+                            }
+                            curStatus = status[2];
+                            expected = expected.substring(0, expected.length - 1);
+                            errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        }
+                        if (recovered) {
+                            curStatus = status[1];
+                            curMovement[2] = curWarningMsg;
+                            warningMsgs.push(curWarningMsg);
+                        }
+                        curStatus = recovered ? status[1] : status[2];
                     } else {
-                        stack.push(top);
-                        toBuild.push(building);
-                        input.shift();
-                        curStatus = status[1];
-                        curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.position.first_row + ', COL ' + nextT.position.first_col;
-                        curMovement[2] = curWarningMsg;
-                        warningMsgs.push(curWarningMsg);
+                        if (top != 'stmts') {
+                            curWarningMsg = ['UNEXPECTED',nextT.lexeme,'AT','ROW',lastPos.last_row + ',','COL',lastPos.last_col + '.','POPPED','OUT','\'' + top + '\''].join(' ');
+                            curMovement[2] = curWarningMsg;
+                            warningMsgs.push(curWarningMsg);
+                            building.parsed = true;
+                        } else {
+                            stack.push(top);
+                            toBuild.push(building);
+                            input.shift();
+                            curStatus = status[1];
+                            curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.position.first_row + ', COL ' + nextT.position.first_col;
+                            curMovement[2] = curWarningMsg;
+                            warningMsgs.push(curWarningMsg);
+                        }
+                            // if (next == '$') {
+                            //     curStatus = status[2];
+                            //     var expected = '';
+                            //     var i;
+                            //     for (i in table[top]) {
+                            //         if (table[top][i] != 0) {
+                            //             expected += '\'' + i + '\'|';
+                            //         }
+                            //     }
+                            //     curStatus = status[2];
+                            //     expected = expected.substring(0, expected.length - 1);
+                            //     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                            // } else {
+                            //     input.shift();
+                            //     curStatus = status[1];
+                            //     curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
+                            //     warningMsgs.push(curWarningMsg);
+                            //     curMovement[2] = curWarningMsg;
+                            // }
                     }
                 } else if (table[top][next] > 0) {
                     curFormula = table[top][next];
@@ -458,8 +615,10 @@ var Parser = {
                     if (product.length == 0) {
                         building.addSubNode(Node.epsilon());
                         building.parsed = true;
-                    } else if (rules[rule].interminal == 'stmts') {
+                    } else {
+                        if (rules[rule].interminal == 'stmts') {
                             lastStmtsNode = building;
+                        }
                     }
                     while(product.length > 0) {
                         item = product.pop();
@@ -472,8 +631,16 @@ var Parser = {
                 }
                 if (curStatus != status[2]) {
                     movements.push(curMovement);
-                } else {
-                    return false;
+                }
+                if (curStatus == status[2] || singleStepping) {
+                    singleSpot += 1;
+                    return curStatus != status[2];
+                }
+                if (!singleStepping) {
+                    curMovement = [stack.slice(), input.slice(), {}];
+                    top         = stack.pop();
+                    nextT       = input[0];
+                    next        = nextT.abstract;
                 }
             }
             if (top == next) {
@@ -491,9 +658,11 @@ var Parser = {
             }
         };
         parser.parseDone = function () {
+
             return curStatus == status[3];
         };
         parser.needPush = function () {
+
             return input.length == 0;
         };
         parser.getRootS = function () {
@@ -507,8 +676,11 @@ var Parser = {
                 nodeS.type = node.type;
                 nodeS.subNodes = subNodesS;
                 nodeS.fatherNode = fatherNode;
-                if (node.position != undefined) nodeS.position = node.position;
-                for (var i = 0; i < subNodes.length; i++) {
+                if (node.position != undefined) {
+                    nodeS.position = node.position;
+                }
+                var i;
+                for (i = 0; i < subNodes.length; i++) {
                     subNodesS.push(filterNode(subNodes[i], nodeS));
                 }
                 return nodeS;
@@ -540,11 +712,12 @@ var Parser = {
                         var cur = [thisID, node.abstract, 0, fartherID, onParsingBranch ? '1':'0', node.new ? '1':'0'];
                         var subSqu, subNodes = node.getSubNodes();
                         var countUnparsed = 0;
-                        for (var i = 0; i < subNodes.length; i += 1) {
+                        var i, j;
+                        for (i = 0; i < subNodes.length; i += 1) {
                             if (!subNodes[i].parsed) {
                                 countUnparsed += 1;
                                 subSqu = digNode(thisID, subNodes[i], countUnparsed == 1 && onParsingBranch);
-                                for (var j = 0; j < subSqu.length; j += 1) {
+                                for (j = 0; j < subSqu.length; j += 1) {
                                     sequentialNodes.push(subSqu[j]);
                                 }
                                 if (subSqu.length > 0) {
@@ -563,35 +736,37 @@ var Parser = {
             return generateSequentialNodes();
         };
         parser.treeChanged = function () {
+
             return true;
         };
         parser.getErrMsg = function () {
+
             return errorMsg;
         };
         parser.getWarningMsg = function () {
+
             return warningMsgs.join('\n');
         };
         parser.getMovementsF = function () {
             function padBlank(str, length) {
-                var arr = [];
-                while(arr.length < length - str.length){
-                    arr[arr.length] = " ";
+                while(str.length < length){
+                    str += ' ';
                 }
-                return str + arr.join("");
+                return str;
             }
             var arrMovements = [];
             var length0 = 0, length1 = 0, length2 = 0;
-            var move, arrSSS;
+            var move, thisMove;
             var sSTACK, sINPUT, sACTION;
             var i, j;
             var inputLimit = 22;
             for (i = 0; i < movements.length; i += 1) {
                 move = movements[i];
-                arrSSS = [];
+                thisMove = [];
 
                 sSTACK = move[0].join(' ');
                 length0 = Math.max(length0, sSTACK.length);
-                arrSSS.push(sSTACK);
+                thisMove.push(sSTACK);
 
                 sINPUT = "| ";
                 for (j = 0; j < move[1].length; j += 1) {
@@ -599,31 +774,38 @@ var Parser = {
                 }
                 if (sINPUT.indexOf(';') > -1)
                     sINPUT = sINPUT.split(';')[0] + ';';
-
-                if (sINPUT.length > inputLimit)
+                else
+                    sINPUT = sINPUT.split(';')[0];
+                if (sINPUT.length > inputLimit) {
                     sINPUT = sINPUT.substring(0, inputLimit) + ' ...';
+                }
                 length1 = Math.max(length1, sINPUT.length);
-                arrSSS.push(sINPUT);
+                thisMove.push(sINPUT);
 
                 sACTION = "| ";
                 if (move[2].hasOwnProperty('interminal')) {
                     sACTION += move[2].interminal + ' -> ';
-                    sACTION += move[2].product.length > 0 ? sACTION += move[2].product.join(' ') : sACTION += 'ε';
+                    if (move[2].product.length > 0)
+                        sACTION += move[2].product.join(' ');
+                    else
+                        sACTION += 'ε';
                     length2 = Math.max(length2, sACTION.length);
                 } else if (typeof(move[2]) == typeof('')) {
                     sACTION += move[2];
                 }
-                arrSSS.push(sACTION);
+                thisMove.push(sACTION);
 
                 arrMovements.push(thisMove);
             }
-            for (var i = 0; i < arrMovements.length; i += 1) {
+            var i;
+            for (i = 0; i < arrMovements.length; i += 1) {
                 arrMovements[i][0] = padBlank(arrMovements[i][0], length0);
                 arrMovements[i][1] = padBlank(arrMovements[i][1], length1);
                 arrMovements[i][2] = padBlank(arrMovements[i][2], length2);
             }
             var sMovements = '\n' + ([padBlank('STACK', length0), padBlank('INPUT', length1), padBlank('ACTION', length2)]).join('    ') + '\n';
-            for (var i = 0; i < arrMovements.length; i += 1) {
+            var i;
+            for (i = 0; i < arrMovements.length; i += 1) {
                 sMovements += ([arrMovements[i][0], arrMovements[i][1], arrMovements[i][2]]).join('    ') + '\n';
             }
             return sMovements;
@@ -631,7 +813,8 @@ var Parser = {
         parser.getCurMovementF = function () {
             var sSTACK = curMovement[0].join(' ');
             var sINPUT = '';
-            for (var i = 0; i < curMovement[1].length; i++) {
+            var i;
+            for (i = 0; i < curMovement[1].length; i++) {
                 sINPUT += curMovement[1][i].lexeme + ' ';
             }
             if (sINPUT.length > 20) {
@@ -727,9 +910,11 @@ var Paxer = {
             }
         };
         paxer.getStatus = function () {
+
             return curStatus;
         };
         paxer.getErrMsg = function () {
+
             return errorMsg;
         };
         paxer.getWarningMsg      = parser.getWarningMsg;

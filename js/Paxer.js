@@ -376,7 +376,6 @@ var Parser = {
         };
         var parser = {};
         var status = ['NORMAL', 'WARNING', 'ERROR', 'DONE'];
-        var recovering;
         var curStatus;
         var movements;
         var root;
@@ -410,7 +409,6 @@ var Parser = {
             singleSpot    = 0;
             curStatus     = status[3];
             curMovement   = [stack.slice(), input.slice(), {}];
-            recovering    = false;
         };
         parser.setInput = function (_input) {
             parser.reset();
@@ -463,53 +461,52 @@ var Parser = {
 
             curMovement = [stack.slice(), input.slice(), {}];
             var top = stack.pop(), nextT = input[0], next = nextT.abstract;
+            building = toBuild.pop();
             while (top != '$' && input.length > 0) {
                 cleanNewNodes();
                 if (top == next) {
                     lastPos = nextT.position;
-                    building = toBuild.pop();
                     building.setPosition(nextT.position);
                     building.parsed = true;
                     building.assign(nextT, curFormula);
                     input.shift();
-                } else if (isTerminal(top) || recovering) {
-                    recovering = true;
+                } else if (isTerminal(top)) {
                     curStatus = status[1];
-                    curWarningMsg = ['UNEXPECTED',nextT.lexeme,'AT','ROW',lastPos.last_row + ',','COL',lastPos.last_col + '.','POPPED','OUT','\'' + top + '\''].join(' ');
+                    curWarningMsg = ['UNEXPECTED', nextT.lexeme, 'AT', 'ROW', lastPos.last_row + ',', 'COL', lastPos.last_col + '.', 'POPPED', 'OUT', '\'' + top + '\''].join(' ');
                     curMovement[2] = curWarningMsg;
                     warningMsgs.push(curWarningMsg);
                     building.parsed = true;
-                    building = toBuild.pop();
                     var tempPop = stack.pop();
                     if (tempPop == 'stmts') {
-                        recovering = false;
+                        toBuild.pop();
                         toBuild.push(lastStmtsNode);
+                        stack.push('stmts');
                         while (lastStmtsNode.getSubNodes().length > 0) {
                             lastStmtsNode.shiftSubNode();
                         }
+                    } else {
+                        stack.push(tempPop);
                     }
-                    stack.push(tempPop);
-                    // if (next == '$') {
-                    //     curStatus = status[2];
-                    //     var expected = '';
-                    //     var i;
-                    //     for (i in table[top]) {
-                    //         if (table[top][i] != 0) {
-                    //             expected += '\'' + i + '\'|';
-                    //         }
-                    //     }
-                    //     curStatus = status[2];
-                    //     expected = expected.substring(0, expected.length - 1);
-                    //     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
-                    // } else {
-                    //     input.shift();
-                    //     curStatus = status[1];
-                    //     curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
-                    //     warningMsgs.push(curWarningMsg);
-                    //     curMovement[2] = curWarningMsg;
-                    // }
+                        // if (next == '$') {
+                        //     curStatus = status[2];
+                        //     var expected = '';
+                        //     var i;
+                        //     for (i in table[top]) {
+                        //         if (table[top][i] != 0) {
+                        //             expected += '\'' + i + '\'|';
+                        //         }
+                        //     }
+                        //     curStatus = status[2];
+                        //     expected = expected.substring(0, expected.length - 1);
+                        //     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                        // } else {
+                        //     input.shift();
+                        //     curStatus = status[1];
+                        //     curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
+                        //     warningMsgs.push(curWarningMsg);
+                        //     curMovement[2] = curWarningMsg;
+                        // }
                 } else if (table[top][next] == 0) {
-                    stack.push(top);
                     if (!singleStepping) {
                         //RECOVERY START
                         var recovered = false;
@@ -580,47 +577,41 @@ var Parser = {
                             curWarningMsg = ['UNEXPECTED',nextT.lexeme,'AT','ROW',lastPos.last_row + ',','COL',lastPos.last_col + '.','POPPED','OUT','\'' + top + '\''].join(' ');
                             curMovement[2] = curWarningMsg;
                             warningMsgs.push(curWarningMsg);
-                            top = stack.pop();
                             building.parsed = true;
-                            building = toBuild.pop();
                         } else {
-                            toBuild.push(lastStmtsNode);
-                            while (lastStmtsNode.getSubNodes().length > 0) {
-                                lastStmtsNode.shiftSubNode();
-                            }
+                            stack.push(top);
+                            toBuild.push(building);
                             input.shift();
                             curStatus = status[1];
                             curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.position.first_row + ', COL ' + nextT.position.first_col;
-                            warningMsgs.push(curWarningMsg);
                             curMovement[2] = curWarningMsg;
+                            warningMsgs.push(curWarningMsg);
                         }
-                        // if (next == '$') {
-                        //     curStatus = status[2];
-                        //     var expected = '';
-                        //     var i;
-                        //     for (i in table[top]) {
-                        //         if (table[top][i] != 0) {
-                        //             expected += '\'' + i + '\'|';
-                        //         }
-                        //     }
-                        //     curStatus = status[2];
-                        //     expected = expected.substring(0, expected.length - 1);
-                        //     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
-                        // } else {
-                        //     input.shift();
-                        //     curStatus = status[1];
-                        //     curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
-                        //     warningMsgs.push(curWarningMsg);
-                        //     curMovement[2] = curWarningMsg;
-                        // }
+                            // if (next == '$') {
+                            //     curStatus = status[2];
+                            //     var expected = '';
+                            //     var i;
+                            //     for (i in table[top]) {
+                            //         if (table[top][i] != 0) {
+                            //             expected += '\'' + i + '\'|';
+                            //         }
+                            //     }
+                            //     curStatus = status[2];
+                            //     expected = expected.substring(0, expected.length - 1);
+                            //     errorMsg = 'EXPECTING ' + expected + ' AT ROW ' + lastPos.last_row + ', COL ' + lastPos.last_col;
+                            // } else {
+                            //     input.shift();
+                            //     curStatus = status[1];
+                            //     curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.first_row + ', COL ' + nextT.first_col;
+                            //     warningMsgs.push(curWarningMsg);
+                            //     curMovement[2] = curWarningMsg;
+                            // }
                     }
                 } else if (table[top][next] > 0) {
-                    recovering = false;
                     curFormula = table[top][next];
                     var rule = table[top][next];
                     var product = rules[rule].product.slice();
                     var item, newNode;
-                    building = toBuild.pop();
                     if (product.length == 0) {
                         building.addSubNode(Node.epsilon());
                         building.parsed = true;

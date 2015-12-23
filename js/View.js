@@ -97,12 +97,12 @@ var View = (function () {
                         return function () {
                             View.editor.closeSession(session);
                             return false;
-                        }
+                        };
                     })(session));
                     $li.on("click", (function (session) {
                         return function () {
                             _editor.bringSessionToFront(session);
-                        }
+                        };
                     })(session));
                     $(".tab-group").append($li.append($a.append($span)));
                 }
@@ -118,7 +118,7 @@ var View = (function () {
                 $("#cursor-position").hide();
             }
             return _current;
-        }
+        };
     })();
 
     _editor.bringSessionToFront = function (session) {
@@ -164,7 +164,7 @@ var View = (function () {
     };
 
     _editor.newFile = function () {
-        _editor.openFile(new ToyFile);
+        _editor.openFile(new ToyFile());
     };
 
     var dialog = document.createElement("div"),
@@ -258,7 +258,7 @@ var View = (function () {
                     }).on("dblclick", (function (file) {
                         return function () {
                             View.editor.openFile(file);
-                        }
+                        };
                     })(renaming));
                     $("#file-list").append($li.prepend($icon));
                 }
@@ -302,7 +302,7 @@ var View = (function () {
     }
 
     function _lastNLines(str, n) {
-        return lines = str.split("\n").slice(-n).join("\n");
+        return str.split("\n").slice(-n).join("\n");
     }
 
     _console.log = function (str) {

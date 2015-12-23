@@ -186,3 +186,46 @@ for (var i = 0; i < n; i++) {
     _padStringRS(length);
 }
 console.timeEnd('padStringRS');
+
+
+var _randomString = (function () {
+
+    function _randomString(len) {
+        var result = "";
+        while (result.length < len) {
+            var letter = Math.floor(Math.random() * 26),
+                ca = Math.random() < 0.5 ? 0 : 1;
+            result += String.fromCharCode(65 + letter + ca * 32);
+        }
+        return result;
+    }
+
+    function _randomStringS(len) {
+        var result = "";
+        while (result.length < len) {
+            var letter = Math.floor(Math.random() * 52);
+            result += String.fromCharCode(65 + (letter > 25 ? letter + 6 : letter));
+        }
+        return result;
+    }
+
+    function _randomStringSS(len) {
+        if (len > 5) {
+            return _randomString(len - 5) + _randomStringS(5);
+        }
+        var result = "",
+            l = Math.pow(64, len),
+            r = Math.floor(Math.random() * l),
+            m = 51 / 63,
+            mod,
+            letter;
+        while (result.length < len) {
+            mod = r % 64;
+            letter = Math.floor(mod * m);
+            r = (r - mod) / 64;
+            result += String.fromCharCode(65 + (letter > 25 ? letter + 6 : letter));
+        }
+        return result;
+    }
+    return _randomStringSS;
+})();

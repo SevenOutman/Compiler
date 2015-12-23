@@ -22,16 +22,3 @@ ToyFile.prototype.serialize = function() {
         content: this.content
     });
 };
-
-function TreeFile(origin, nodeArr) {
-    this.origin = origin || new ToyFile;
-    this.nodeArr = nodeArr || [];
-}
-
-TreeFile.prototype.fileName = function () {
-    return this.origin.name + ".tree";
-};
-
-function AssemblyFile(origin) {
-    this.origin = origin || new ToyFile;
-}

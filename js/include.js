@@ -28,7 +28,7 @@ Array.prototype.remove = function (elem) {
     }
 };
 if (!String.prototype.repeat) {
-    String.prototype.repeat = function(n) {
+    String.prototype.repeat = function (n) {
         "use strict";
         var o = '', s = this;
         if (n < 1) return o;
@@ -38,7 +38,7 @@ if (!String.prototype.repeat) {
             s += s;
         }
         return o + s;
-    }
+    };
 }
 
 
@@ -51,49 +51,21 @@ Math.mid = function (x, y, z) {
     })[1];
 };
 
-var _randomString = (function () {
-
-    function _randomString(len) {
-        var result = "";
-        while (result.length < len) {
-            var letter = Math.floor(Math.random() * 26),
-                ca = Math.random() < 0.5 ? 0 : 1;
-            result += String.fromCharCode(65 + letter + ca * 32);
-        }
-        return result;
+var _randomString = function (len) {
+    if (len > 5) {
+        return _randomString(len - 5) + _randomString(5);
     }
-
-    function _randomStringS(len) {
-        var result = "";
-        while (result.length < len) {
-            var letter = Math.floor(Math.random() * 52);
-            result += String.fromCharCode(65 + (letter > 25 ? letter + 6 : letter));
-        }
-        return result;
+    var result = "",
+        l = Math.pow(64, len),
+        r = Math.floor(Math.random() * l),
+        m = 51 / 63,
+        mod,
+        letter;
+    while (result.length < len) {
+        mod = r % 64;
+        letter = Math.floor(mod * m);
+        r = (r - mod) / 64;
+        result += String.fromCharCode(65 + (letter > 25 ? letter + 6 : letter));
     }
-
-    function _randomStringSS(len) {
-        if (len > 5) {
-            return _randomString(len - 5) + _randomStringS(5);
-        }
-        var result = "",
-            l = Math.pow(64, len),
-            r = Math.floor(Math.random() * l),
-            m = 51 / 63,
-            mod,
-            letter;
-        while (result.length < len) {
-            mod = r % 64;
-            letter = Math.floor(mod * m);
-            r = (r - mod) / 64;
-            result += String.fromCharCode(65 + (letter > 25 ? letter + 6 : letter));
-        }
-        return result;
-    }
-
-    //    console.log(Benchmark.test(_randomString, 100, window, 128));
-    //    console.log(Benchmark.test(_randomStringS, 100, window, 128));
-    //    console.log(Benchmark.test(_randomStringSS, 100, window, 128));
-
-    return _randomStringSS;
-})();
+    return result;
+};

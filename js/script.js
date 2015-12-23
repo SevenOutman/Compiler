@@ -1,7 +1,3 @@
-CodeMirror.commands.save = function () {
-    View.editor.save();
-};
-
 window.onbeforeunload = function () {
     if (View.editor.needSave()) {
         return "未保存的修改将丢失";
@@ -16,22 +12,26 @@ window.onunload = function () {
         Storage.removeItem("last-editing");
     }
     var storedFiles = [];
-    for (var i = 0; i < Cache.files.length; i++) {
-        storedFiles.push(Cache.files[i].fileName());
+    for (var i = 0, len = Cache.files.length; i < len; i++) {
+        storedFiles[storedFiles.length] = Cache.files[i].fileName();
     }
     Storage.setItem("stored-files", JSON.stringify(storedFiles));
 };
 
 $(function () {
+    CodeMirror.commands.save = function () {
+        View.editor.save();
+    };
+
     var paxer = Paxer.new();
-    var semantic = new SemanticAnalyzer;
+    var semantic = new SemanticAnalyzer();
 
     document.getElementById("cover-open").onclick = function () {
         View.editor.newFile();
     };
     Cache.files = [];
     Cache.files.find = function (fileName) {
-        for (var i = 0; i < this.length; i++) {
+        for (var i = 0, len = this.length; i < len; i++) {
             if (this[i].fileName() === fileName) {
                 return this[i];
             }
@@ -41,7 +41,7 @@ $(function () {
 
     Cache.storedFileNames = JSON.parse(Storage.getItem("stored-files") || "[]");
 
-    for (var i = 0; i < Cache.storedFileNames.length; i++) {
+    for (var i = 0, len = Cache.storedFileNames.length; i < len; i++) {
         if ($("#file-list").length < 1 && Cache.files.length > 0) {
             var $ul = $("<ul></ul>").attr("id", "file-list").addClass("list");
             $(".left-box .placeholder").remove();
@@ -67,7 +67,7 @@ $(function () {
                 }).on("dblclick", (function (file) {
                     return function () {
                         View.editor.openFile(file);
-                    }
+                    };
                 })(file));
                 $("#file-list").append($li.prepend($icon));
             }
@@ -134,7 +134,7 @@ $(function () {
         View.editor.newFile();
     });
 
-    var fr = new FileReader,
+    var fr = new FileReader(),
         tmpFile = null;
     fr.onload = function () {
         if (null !== tmpFile) {
@@ -155,7 +155,7 @@ $(function () {
                 }).on("dblclick", (function (file) {
                     return function () {
                         View.editor.openFile(file);
-                    }
+                    };
                 })(tmpFile));
                 $("#file-list").append($li.prepend($icon));
             }
@@ -250,7 +250,7 @@ $(function () {
         {
             text: "New File...",
             action: function (e) {
-                View.editor.newFile()
+                View.editor.newFile();
             }
         },
         {
@@ -450,8 +450,8 @@ $(function () {
                 }).on("click", (function (symbol) {
                     return function () {
                         for (var k = 0; k < symbol.positions.length; k++) {
-                            var pos = symbol.positions[k]
-                            if (k == 0) {
+                            var pos = symbol.positions[k];
+                            if (0 === k) {
                                 View.editor.cm.doc.setSelection({
                                     line: pos.first_row - 1,
                                     ch: pos.first_col - 1
@@ -463,7 +463,7 @@ $(function () {
                                 }, {line: pos.last_row - 1, ch: pos.last_col - 1});
                             }
                         }
-                    }
+                    };
                 })(symbol)).appendTo($ul);
                 if (activemap[id]) {
                     $li.trigger("click");
@@ -487,7 +487,7 @@ $(function () {
                                 line: pos.first_row - 1,
                                 ch: pos.first_col - 1
                             }, {line: pos.last_row - 1, ch: pos.last_col - 1});
-                        }
+                        };
                     })(pos)).appendTo($ul);
                     if (activemap[$posli.attr("data-id")]) {
                         $posli.trigger("click");
@@ -503,7 +503,7 @@ $(function () {
             Cache.st = {};
             return false;
         }
-        for (var i = 0; i < nst.length; i++) {
+        for (var i = 0, len = nst.length; i < len; i++) {
             if (Cache.st[nst[i].name] != nst[i].positions.length) {
                 return false;
             }
@@ -536,7 +536,7 @@ $(function () {
         }
         var tst = paxer.getSymbolTable();
         if (!stEquals(tst)) {
-            for (var i = 0; i < tst.length; i++) {
+            for (var i = 0, len = tst.length; i < len; i++) {
                 Cache.st[tst[i].name] = tst[i].positions.length;
             }
             P("symboltablechanged", tst);
@@ -561,18 +561,14 @@ $(function () {
             }
             switch (paxer.getStatus()) {
                 case 'DONE':
-                    var paxTime = Benchmark.measure("parse");
                     semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
-                    var semaTime = Benchmark.measure("parse") - paxTime;
+                    var parseTime = Benchmark.measure("parse");
                     $(".tree-box").addClass("assembly");
                     View.assembly.cm.setValue(semantic.getAssembly());
                     View.console.success(paxer.getMovementsF());
-                    //var mfTime = Benchmark.measure("parse") - (paxTime + semaTime);
                     View.console.warn(paxer.getWarningMsg());
                     View.console.error(semantic.getErrorMsg());
-                    View.console.success("Compile finished in " + (paxTime + semaTime).toFixed(4) + " millisecs.");
-                    View.console.success("Paxer: " + paxTime.toFixed(4) + " ms. Semantic: " + semaTime.toFixed(4) + "ms.");
-                    //View.console.success("MovementsF: " + mfTime.toFixed(4) + " ms.");
+                    View.console.success("Compile finished in " + parseTime.toFixed(4) + " millisecs.");
                     View.console.success("Can we make it faster?");
                     break;
                 case 'ERROR':
@@ -593,3 +589,4 @@ $(function () {
     });
     View.console.log("Compiler lauched at " + new Date().toTimeString());
 });
+$(".loading-mask").remove();

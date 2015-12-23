@@ -2,37 +2,42 @@
  * Created by Doma on 15/12/16.
  */
 function SemanticAnalyzer() {
-    var symboltable = null;
-
-    var nodeStack = [];
-
-    var _errors = [];
-    var _assembly = [];
+    var symboltable, nodeStack, _assembly;
+    var _errors;
 
     var _t = 0,
-        _f = 0;
-
-
-    var _eat = function (tree, st) {
-        _t = 0;
-        _f = 0;
-        nodeStack = [];
-        _errors = [];
-        _assembly = [];
-        var root = tree;
-        symboltable = st;
-        symboltable.get = function (name) {
-            for (var i = 0; i < symboltable.length; i++) {
-                if (symboltable[i].name == name) {
-                    return symboltable[i];
-                }
-            }
+        _f = 0,
+        f = function (_F) {
+            return "f" + _F;
+        },
+        t = function (_T) {
+            return "t" + _T;
         };
-        _r(root);
-        _assembly[_assembly.length] = f(_f++);
 
-        P("symboltablechanged", symboltable);
-    };
+    var _reset = function () {
+            symboltable = null;
+            nodeStack = [];
+            _errors = [];
+            _assembly = [];
+            _t = 0;
+            _f = 0;
+        },
+        _eat = function (tree, st) {
+            _reset();
+            symboltable = st;
+            symboltable.get = function (name) {
+                for (var i = 0; i < symboltable.length; i++) {
+                    if (symboltable[i].name == name) {
+                        return symboltable[i];
+                    }
+                }
+            };
+            _r(tree);
+            _assembly[_assembly.length] = f(_f++);
+
+            P("symboltablechanged", symboltable);
+        };
+
 
     function l(type, ad1, ad2, ad3) {
         var a1 = ad1 === null ? "" : ad1,
@@ -41,16 +46,10 @@ function SemanticAnalyzer() {
         return "    " + type + " " + a1 + ", " + a2 + ", " + a3;
     }
 
-    function f(_F) {
-        return "f" + _F;
-    }
-
-    function t(_T) {
-        return "t" + _T;
-    }
 
     function _r(node) {
-        var father = nodeStack.rear();
+        var father = nodeStack.rear(),
+            first, second, boolop;
         nodeStack.push(node);
         switch (node.abstract) {
             case "program":
@@ -114,7 +113,7 @@ function SemanticAnalyzer() {
                     }
                     case "assgstmt":
                     {
-                        if (!symbol.type && 0 == symbol.occurance) {
+                        if (!symbol.type && 0 === symbol.occurance) {
                             _errors.push(new SemanticError("Undeclared identifier '" + symbol.name + "'", symbol.positions[symbol.occurance]));
                         }
                         break;
@@ -139,8 +138,8 @@ function SemanticAnalyzer() {
             }
             case "arithexpr":
             {
-                var first = _r(node.subNodes[0]),
-                    second = _r(node.subNodes[1]);
+                first = _r(node.subNodes[0]);
+                second = _r(node.subNodes[1]);
                 if (second.type) {
                     switch (second.type) {
                         case "+":
@@ -163,8 +162,8 @@ function SemanticAnalyzer() {
             }
             case "multexpr":
             {
-                var first = _r(node.subNodes[0]),
-                    second = _r(node.subNodes[1]);
+                first = _r(node.subNodes[0]);
+                second = _r(node.subNodes[1]);
                 if (second.type) {
                     switch (second.type) {
                         case "*":
@@ -176,7 +175,7 @@ function SemanticAnalyzer() {
                         case "/":
                         {
                             node.value = t(_t++);
-                            if (second.value == 0) {
+                            if (0 === second.value) {
                                 _errors.push(new SemanticError("Cannot be divided by 0"));
                                 _assembly[_assembly.length] = l("*div", node.value, first.value, second.value);
                             } else {
@@ -194,8 +193,8 @@ function SemanticAnalyzer() {
             {
                 if (node.subNodes[2]) {
                     node.type = node.subNodes[0].abstract;
-                    var first = _r(node.subNodes[1]),
-                        second = _r(node.subNodes[2]);
+                    first = _r(node.subNodes[1]);
+                    second = _r(node.subNodes[2]);
                     if (second.type) {
                         switch (second.type) {
                             case "+":
@@ -242,8 +241,8 @@ function SemanticAnalyzer() {
             {
                 if (node.subNodes[2]) {
                     node.type = node.subNodes[0].abstract;
-                    var first = _r(node.subNodes[1]),
-                        second = _r(node.subNodes[2]);
+                    first = _r(node.subNodes[1]);
+                    second = _r(node.subNodes[2]);
                     if (second.type) {
                         switch (second.type) {
                             case "*":
@@ -255,7 +254,7 @@ function SemanticAnalyzer() {
                             case "/":
                             {
                                 node.value = t(_t++);
-                                if (second.value == 0) {
+                                if (0 === second.value) {
                                     _errors.push(new SemanticError("Cannot be divided by 0"));
                                     _assembly[_assembly.length] = l("*div", node.value, first.value, second.value);
                                 } else {
@@ -283,11 +282,11 @@ function SemanticAnalyzer() {
             case "boolexpr":
             {
                 node.value = "t" + _t++;
+                boolop = node.subNodes[1];
                 var arithexpr1 = node.subNodes[0],
-                    boolop = node.subNodes[1],
                     arithexpr2 = node.subNodes[2];
-                var first = _r(arithexpr1),
-                    second = _r(arithexpr2);
+                first = _r(arithexpr1);
+                second = _r(arithexpr2);
                 switch (_r(boolop).value) {
                     case "<":
                     {
@@ -325,8 +324,8 @@ function SemanticAnalyzer() {
             }
             case "ifstmt":
             {
-                var boolop = node.subNodes[2],
-                    stmt1 = node.subNodes[5],
+                boolop = node.subNodes[2];
+                var stmt1 = node.subNodes[5],
                     stmt2 = node.subNodes[7];
 
                 _assembly[_assembly.length] = f(_f++);
@@ -352,7 +351,7 @@ function SemanticAnalyzer() {
         getAssembly: function () {
             return _assembly.join("\n");
         }
-    }
+    };
 }
 
 function SemanticError(msg, position) {

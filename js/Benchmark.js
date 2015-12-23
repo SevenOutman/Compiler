@@ -4,10 +4,10 @@
 var Benchmark = (function () {
     var marks = {};
     var _mark = function (name) {
-            marks[name] = window.performance ? window.performance.now() : (new Date).getTime();
+            marks[name] = window.performance ? window.performance.now() : (new Date()).getTime();
         },
         _measure = function (name) {
-            var now = window.performance ? window.performance.now() : (new Date).getTime();
+            var now = window.performance ? window.performance.now() : (new Date()).getTime();
             return now - marks[name];
         },
         _test = function (func, repeat, self) {

@@ -15,7 +15,8 @@ var Storage = (function() {
 
             return {
                 setItem: function(id, val) {
-                    return _data[id] = String(val);
+                    _data[id] = String(val);
+                    return _data[id];
                 },
 
                 getItem: function(id) {
@@ -27,7 +28,8 @@ var Storage = (function() {
                 },
 
                 clear: function() {
-                    return _data = {};
+                    _data = {};
+                    return _data;
                 }
             };
         })();

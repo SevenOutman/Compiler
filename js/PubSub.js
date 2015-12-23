@@ -10,7 +10,7 @@
                     setTimeout((function (act, self) {
                         return function () {
                             act.apply(self, args);
-                        }
+                        };
                     })(_topics[type][i], this), 0);
                 }
             }

@@ -776,10 +776,10 @@ var Parser = {
                 var subNodes = [];
                 node.fatherNode = fatherNode;
                 node.abstract = abstract;
-                node.name = Invalid;
-                node.value = Invalid;
-                node.type = Invalid;
-                node.formula = Invalid;
+                node.name = undefined;
+                node.value = undefined;
+                node.type = undefined;
+                node.formula = undefined;
                 node.new = true;
                 node.parsed = false;
                 node.addSubNode = function (sNode) {
@@ -822,13 +822,13 @@ var Parser = {
                 var node = {};
                 var subNodes = [];
                 node.abstract = 'ε';
-                node.name = Invalid;
-                node.value = Invalid;
-                node.type = Invalid;
+                node.name = undefined;
+                node.value = undefined;
+                node.type = undefined;
                 node.parsed = false;
                 node.getSubNodes = function () {
                     return subNodes.slice();
-                }
+                };
                 return node;
             }
         };
@@ -877,8 +877,6 @@ var Parser = {
             curStatus = status[0];
         };
         parser.pushToken = function (token) {
-            //nextT = token;
-            //next = nextT.abstract;
             input.push(token);
         };
         parser.parse = function (singleStepping) {
@@ -892,7 +890,7 @@ var Parser = {
             }
 
             function tryParse(stack, input) {
-                var top, next;
+                var top = "", next;
                 while (top != '$' && input.length > 0) {
                     next = input[0].abstract;
                     top = stack.pop();
@@ -923,7 +921,9 @@ var Parser = {
             if (curStatus != status[0] && curStatus != status[1]) return false;
 
             curMovement = [stack.slice(), input.slice(), {}];
-            var top = stack.pop(), nextT = input[0], next = nextT.abstract;
+            var top = stack.pop();
+            nextT = input[0];
+            next = nextT.abstract;
             while (top != '$' && input.length > 0) {
                 cleanNewNodes();
                 if (top == next) {
@@ -1223,7 +1223,7 @@ var Parser = {
         };
         parser.getMovementsF = function () {
             function padBlank(str, len) {
-                return str + "".repeat(len - str.length);
+                return str + " ".repeat(Math.max(0, len - str.length));
                 var arr = [];
                 for (var i = 0, l = len - str; i < l; i++) {
                     arr[arr.length] = " ";
@@ -1407,4 +1407,4 @@ var Paxer = {
         paxer.getTreeChanged = parser.getTreeChanged;
         return paxer;
     }
-}
+};

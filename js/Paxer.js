@@ -121,6 +121,7 @@ var Lexer = {
         var input;
         var curLexeme;
         var matched, next, token;
+        var needBlank = false;
         var lexing = 0;
         lexer.getErrMsg = function () {
 
@@ -147,6 +148,7 @@ var Lexer = {
             curLexeme = "";
             lexing = 0;
             curStatus = status[2];
+            needBlank = false;
         };
         lexer.lexDone = function () {
 
@@ -177,6 +179,11 @@ var Lexer = {
                 next = input[lexing];
                 matched = tryMatch(curLexeme + next);
                 if (!matched) {
+                    if (tryMatch(curLexeme).abstract == 'NUM' && tryMatch(next).abstract == 'ID') {
+                            errorMsg = "UNDEFINED SYMBOL '"+curLexeme+next+"' AT ROW "+pointer.get().first_row+", COL "+pointer.get().first_col;
+                            curStatus = status[1];
+                            return false;
+                    }
                     if (curLexeme=='') {
                         if (next.match(/\ /) != null)
                             pointer.shift(1);
@@ -506,16 +513,29 @@ var Parser = {
                     warningMsgs.push(curWarningMsg);
                     building.parsed = true;
                 } else if (table[top][next] == 0) {
-                    if (top!='stmts') {
-                        recovering = true;
+                    if (Number(nextT.position.first_row)>Number(lastPos.last_row)) {
+                        curStatus = status[1];
+                        curWarningMsg = ['EXPECTED', ';', 'AT', 'ROW', lastPos.last_row + ',', 'COL', lastPos.last_col].join(' ');
+                        curMovement[2] = curWarningMsg;
+                        warningMsgs.push(curWarningMsg);
+                        input.unshift({
+                            lexeme: ';',
+                            abstract: ';',
+                            position: lastPos,
+                            containValue: true
+                        });
+                    } else {
+                        if (top!='stmts') {
+                            recovering = true;
+                        }
+                        stack.push(top);
+                        toBuild.push(building);
+                        input.shift();
+                        curStatus = status[1];
+                        curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.position.first_row + ', COL ' + nextT.position.first_col;
+                        curMovement[2] = curWarningMsg;
+                        warningMsgs.push(curWarningMsg);
                     }
-                    stack.push(top);
-                    toBuild.push(building);
-                    input.shift();
-                    curStatus = status[1];
-                    curWarningMsg = 'SKIPPED ' + '\'' + next + '\'' + ' AT ROW ' + nextT.position.first_row + ', COL ' + nextT.position.first_col;
-                    curMovement[2] = curWarningMsg;
-                    warningMsgs.push(curWarningMsg);
                 } else if (table[top][next] > 0) {
                     curFormula = table[top][next];
                     var rule = table[top][next];

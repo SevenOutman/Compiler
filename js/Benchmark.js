@@ -1,7 +1,7 @@
 /**
  * Created by Doma on 15/12/19.
  */
-var Benchmark = (function () {
+var Benchmark = (function (window) {
     var marks = {};
     var _mark = function (name) {
             marks[name] = window.performance ? window.performance.now() : (new Date()).getTime();
@@ -28,4 +28,4 @@ var Benchmark = (function () {
         test: _test,
         clear: _clear
     };
-})();
+})(window);

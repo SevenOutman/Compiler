@@ -33,7 +33,9 @@ function SemanticAnalyzer() {
                 }
             };
             _r(tree);
-            _assembly[_assembly.length] = f(_f++);
+            if (_f > 0) {
+                _assembly[_assembly.length] = f(_f);
+            }
 
             P("symboltablechanged", symboltable);
         };
@@ -111,7 +113,7 @@ function SemanticAnalyzer() {
                         symbol.type = node.type;
                         break;
                     }
-                    case "assgstmt":
+                    default:
                     {
                         if (!symbol.type && 0 === symbol.occurance) {
                             _errors.push(new SemanticError("Undeclared identifier '" + symbol.name + "'", symbol.positions[symbol.occurance]));
@@ -221,7 +223,7 @@ function SemanticAnalyzer() {
                 if (node.subNodes[1]) {
                     node.value = _r(node.subNodes[1]).value;
                 } else {
-                    var ID_NUM = node.subNodes[0];
+                    var ID_NUM = _r(node.subNodes[0]);
                     switch (ID_NUM.abstract) {
                         case "ID":
                         {

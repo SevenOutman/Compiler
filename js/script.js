@@ -89,7 +89,7 @@ $(function () {
             processed = "",
             buffer = "";
         var findOperatorReg = /(\+|\-|\*|\/|!=|>=?|<=?|==?)/g,
-            findDelimiterReg = /(\(|\)|\{|}|;|\$)/g;
+            findDelimiterReg = /(\(|\)|\{|}|;|,|\$)/g;
         code = code.replace(findOperatorReg, " $1 ")
                 .replace(findDelimiterReg, " $1 ")
                 .replace(/[ ]+/g, " ")
@@ -97,10 +97,11 @@ $(function () {
                 .replace(/}\s+(else)/, "}$1")
                 .trim() + " ";
         processed = code.replace(/(then|else|then\{|else\{|}else\{|\{|}|;)\s/g, "$1\n")
-            .replace(/\s+(;|\))/g, "$1")
+            .replace(/\s+(,|;|\))/g, "$1")
             .replace(/\(\s+/g, "(")
             .replace(/(then|else)\{/g, "$1 {")
-            .replace(/}(else)/, "} $1");
+            .replace(/}(else)/, "} $1")
+            .replace(/([^\n]+)(?=else)/g, "$1\n");
         View.editor.setContent(processed);
         for (var i = 0; i < View.editor.cm.doc.lastLine(); i++) {
             View.editor.cm.indentLine(i, "smart");

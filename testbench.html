@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Compiler</title>
+    <link rel="stylesheet" href="lib/codemirror/lib/codemirror.css">
+    <link rel="stylesheet" href="lib/monokai-so.css">
+    <link rel="stylesheet" href="lib/codemirror/addon/dialog/dialog.css">
+    <link rel="stylesheet" href="lib/codemirror/addon/scroll/simplescrollbars.css">
+    <link rel="stylesheet" href="css/bootstrap.extract.css">
+    <link rel="stylesheet" href="css/glyphicon.extract.css">
+    <link rel="stylesheet" href="lib/contextjs/context.bootstrap.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="wrapper">
+    <div id="tree-mask"></div>
+    <div id="resizing-mask"></div>
+    <div id="dialog-mask">
+        <div class="dialog" id="rename-dialog">
+            <p>New name:</p>
+            <input type="text" id="filename">
+            <p>File type: .toy</p>
+            <div class="dialog-btn-group">
+                <button class="dialog-btn" id="rename-cancel">Cancel</button>
+                <button class="dialog-btn" id="rename-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+    <div id="about-mask">
+        <div class="dialog" id="about-dialog">
+            <div class="dialog-banner">
+                <h1><span class="glyphicon glyphicon-console"></span> Compiler</h1>
+                <p>Created by SevenOutman, ExinCoda and Rachel.</p>
+            </div>
+        </div>
+    </div>
+    <nav class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
+        <div class="container-fluid" style="padding-right: 15px">
+            <div class="navbar-header">
+                <a href class="navbar-brand">
+                    <span class="glyphicon glyphicon-console"></span> Compiler
+                </a>
+            </div>
+            <ul class="nav navbar-nav navbar-left">
+                <li>
+                    <button class="btn navbar-btn-o" id="btn-about">
+                        <span class="glyphicon glyphicon-cog"></span>
+                    </button>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right" id="editing-btn-group">
+                <li>
+                    <button class="btn navbar-btn-o" id="btn-save"><span
+                            class="glyphicon glyphicon-floppy-disk"></span> Save
+                    </button>
+                </li>
+                <li>
+                    <button class="btn navbar-btn" id="btn-tidy"><span
+                            class="glyphicon glyphicon-flash"></span> Tidy
+                    </button>
+                </li>
+                <li>
+                    <label class="btn navbar-btn" id="btn-import" for="source_file"><span
+                            class="glyphicon glyphicon-import"></span> Import</label>
+                </li>
+                <li>
+                    <button class="btn navbar-btn" id="btn-compile"><span
+                            class="glyphicon glyphicon-download-alt"></span> Compile
+                    </button>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right" id="compiling-btn-group" style="display: none;margin-right: -15px">
+                <li>
+                    <button class="btn navbar-btn-o" id="btn-stop"><span
+                            class="glyphicon glyphicon-stop"></span> Stop
+                    </button>
+                </li>
+                <li>
+                    <button class="btn navbar-btn" id="btn-next"><span
+                            class="glyphicon glyphicon-share-alt"></span> Next
+                    </button>
+                </li>
+                <li>
+                    <button class="btn navbar-btn" id="btn-ff"><span
+                            class="glyphicon glyphicon-fast-forward"></span> Fast Forward
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="main">
+        <div class="upper-box">
+            <div class="left-box resizable">
+                <div class="resizer vertical"></div>
+                <div class="box-header">
+                    <div class="box-title">Workspace</div>
+                    <span class="box-caret glyphicon glyphicon-menu-left"></span>
+                </div>
+                <div class="box-body">
+                    <div class="placeholder">Nothing to show</div>
+                </div>
+            </div>
+
+            <div class="right-box resizable hidden">
+                <div class="resizer vertical"></div>
+                <div class="box-header">
+                    <div class="box-title">Symbol Table</div>
+                    <span class="box-caret glyphicon glyphicon-menu-right"></span>
+                </div>
+                <div class="box-body">
+                    <div class="placeholder">Nothing to show</div>
+                </div>
+            </div>
+            <div class="center-box">
+                <div class="tree-box resizable hidden">
+                    <div class="resizer vertical"></div>
+                    <div class="box-header">
+                        <div class="box-title hidden-assembly">Parser Tree</div>
+                        <div class="box-title assembly-only">Assembly</div>
+                        <span class="box-caret glyphicon glyphicon-menu-right"></span>
+                    </div>
+                    <div class="box-body hidden-assembly" id="tree-pane">
+                        <div class="placeholder">Nothing to show</div>
+                    </div>
+                    <div class="box-body assembly-only" id="assembly-pane">
+                        <div style="float: left;height: 100%;width: 18px;background: rgb(60, 63, 65);"></div>
+                        <textarea id="assembly"></textarea>
+                    </div>
+                </div>
+                <div class="editor-box">
+                    <div class="editor-placeholder">
+                        Choose a file from workspace or <a id="cover-open">create a new file</a>
+                    </div>
+                    <div class="tab-bar">
+                        <div class="tab-bar-cover"><span id="compiling-filename"></span></div>
+                        <button class="tab-new">&plus;</button>
+                        <div class="tab-row">
+                            <div class="tab-group">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="editor-container">
+                        <textarea id="editor"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-box resizable hidden">
+            <div class="resizer horizontal"></div>
+            <div class="box-header">
+                <div class="box-title">Console</div>
+                <span class="box-caret glyphicon glyphicon-menu-down"></span>
+                <span class="box-expand glyphicon glyphicon-menu-up"></span>
+            </div>
+            <div class="console-container">
+                <div class="console-seal"></div>
+                <textarea id="console"></textarea>
+            </div>
+        </div>
+    </div>
+    <div id="footer">
+        <div class="footer-text">
+            <span class="glyphicon glyphicon-collapse-up" id="box-opener"></span>
+            <ul class="dropdown-menu box-open-menu">
+                <li>
+                    <a id="box-opener-workspace">Workspace</a>
+                </li>
+                <li>
+                    <a id="box-opener-tree">Parser Tree</a>
+                </li>
+                <li>
+                    <a id="box-opener-structure">Symbol Table</a>
+                </li>
+                <li>
+                    <a id="box-opener-console">Console</a>
+                </li>
+            </ul>
+        </div>
+        <div class="footer-text" id="cursor-position" style="display: none">
+            <span id="current-line">1</span>:<span id="current-ch">1</span>
+        </div>
+    </div>
+    <div id="extra">
+        <div id="other_div"></div>
+        <input type="file" name="" id="source_file" style="display: none;">
+    </div>
+</div>
+
+<script src="js/compiler.bundle.js"></script>
+
+<!--<script src="lib/jquery-2.1.4.min.js"></script>-->
+<!--<script>-->
+<!--$.browser = {};-->
+<!--$.browser.msie = !$.support.leadingWhitespace;-->
+<!--</script>-->
+
+<!--<script src="lib/contextjs/context.js"></script>-->
+<!--<script src="lib/datavjs/deps/d3.min.js"></script>-->
+<!--<script src="lib/datavjs/deps/d3.csv.js"></script>-->
+<!--<script src="lib/datavjs/deps/d3.layout.min.js"></script>-->
+<!--<script src="lib/datavjs/deps/raphael.js"></script>-->
+<!--<script src="lib/datavjs/deps/eventproxy.js"></script>-->
+<!--<script src="lib/datavjs/datav.js"></script>-->
+<!--<script src="lib/datavjs/libs/tree.js"></script>-->
+
+<!--<script src="lib/codemirror/lib/codemirror.js"></script>-->
+<!--<script src="lib/codemirror/addon/edit/matchbrackets.js"></script>-->
+<!--<script src="lib/codemirror/addon/edit/closebrackets.js"></script>-->
+<!--<script src="lib/codemirror/addon/selection/active-line.js"></script>-->
+<!--<script src="lib/codemirror/addon/scroll/simplescrollbars.js"></script>-->
+<!--<script src="lib/codemirror/addon/selection/selection-pointer.js"></script>-->
+<!--<script src="lib/codemirror/addon/selection/mark-selection.js"></script>-->
+
+<!--<script src="js/Benchmark.js"></script>-->
+<!--<script src="js/include.js"></script>R-->
+<!--<script src="lib/toy.js"></script>-->
+<!--<script src="lib/console.js"></script>-->
+<!--<script src="js/PubSub.js"></script>-->
+<!--<script src="js/Storage.js"></script>-->
+<!--<script src="js/Cache.js"></script>-->
+<!--<script src="js/ToyFile.js"></script>-->
+<!--<script src="js/View.js"></script>-->
+<!--<script src="js/PaxerR.js"></script>-->
+<!--<script src="js/Semantic.js"></script>-->
+<!--<script src="js/script.js"></script>-->
+</body>
+</html>

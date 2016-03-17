@@ -168,20 +168,6 @@ var View = (function () {
         _editor.openFile(new ToyFile());
     };
 
-    var dialog = document.createElement("div"),
-        input = document.createElement("input"),
-        span = document.createElement("span");
-    dialog.id = "dialog-save";
-    dialog.innerHTML = "File name: ";
-    input.size = "untitled".length;
-    input.value = "untitled";
-    input.oninput = function () {
-        input.size = Math.max(input.value.length, 1);
-    };
-    span.innerHTML = ".toy";
-    dialog.appendChild(input);
-    dialog.appendChild(span);
-
     _editor.save = function (force) {
         var session = _editor.currentSession();
         if (session) {
@@ -447,5 +433,4 @@ var View = (function () {
         control: _control,
         treePen: _treePen
     };
-})
-();
+})();

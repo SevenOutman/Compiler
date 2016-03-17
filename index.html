@@ -22,18 +22,20 @@
     </div>
     <div id="tree-mask"></div>
     <div id="resizing-mask"></div>
-    <div id="dialog-mask">
+    <!--ko with: editor.renameDialog-->
+    <div id="dialog-mask" data-bind="visible: isOpen">
         <div class="dialog" id="rename-dialog">
             <p>New name:</p>
-            <input type="text" id="filename">
+            <input type="text" id="filename" data-bind="textInput: name">
             <p>File type: .toy</p>
             <div class="dialog-btn-group">
-                <button class="dialog-btn" id="rename-cancel">Cancel</button>
-                <button class="dialog-btn" id="rename-confirm">Confirm</button>
+                <button class="dialog-btn" id="rename-cancel" data-bind="click: cancel">Cancel</button>
+                <button class="dialog-btn" id="rename-confirm" data-bind="click: confirm">Confirm</button>
             </div>
         </div>
     </div>
-    <div id="about-mask">
+    <!--/ko-->
+    <div id="about-mask" data-bind="visible: aboutCard.isOpen, click: aboutCard.close">
         <div class="dialog" id="about-dialog">
             <div class="dialog-banner">
                 <h1><span class="glyphicon glyphicon-console"></span> Compiler</h1>
@@ -41,6 +43,7 @@
             </div>
         </div>
     </div>
+
     <nav class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
         <div class="container-fluid" style="padding-right: 15px">
             <div class="navbar-header">
@@ -50,14 +53,14 @@
             </div>
             <ul class="nav navbar-nav navbar-left">
                 <li>
-                    <button class="btn navbar-btn-o" id="btn-about">
+                    <button class="btn navbar-btn-o" id="btn-about" data-bind="click: aboutCard.open">
                         <span class="glyphicon glyphicon-cog"></span>
                     </button>
                 </li>
             </ul>
             <ul class="nav navbar-nav navbar-right" id="editing-btn-group">
                 <li>
-                    <button class="btn navbar-btn-o" id="btn-save" data-bind="css: {unsaved: editor.unsaved}"><span
+                    <button class="btn navbar-btn-o" id="btn-save" data-bind="css: {unsaved: editor.unsaved}, click: editor.saveActiveTab"><span
                             class="glyphicon glyphicon-floppy-disk"></span> Save
                     </button>
                 </li>
@@ -67,8 +70,8 @@
                     </button>
                 </li>
                 <li>
-                    <label class="btn navbar-btn" id="btn-import" for="source_file"><span
-                            class="glyphicon glyphicon-import"></span> Import</label>
+                    <button class="btn navbar-btn" id="btn-import" data-bind="click: workspace.importFile"><span
+                            class="glyphicon glyphicon-import"></span> Import</button>
                 </li>
                 <li>
                     <button class="btn navbar-btn" id="btn-compile"><span
@@ -197,12 +200,12 @@
                 </li>
             </ul>
         </div>
-        <div class="footer-text" id="cursor-position" data-bind="text: editor.cursorPosText, visible: editor.activeTab">
+        <div class="footer-text" id="cursor-position" data-bind="text: editor.cursorPosText">
         </div>
     </div>
     <div id="extra">
         <div id="other_div"></div>
-        <input type="file" name="" id="source_file" style="display: none;">
+        <!--<input type="file" name="" id="source_file" style="display: none;">-->
     </div>
 </div>
 <script>

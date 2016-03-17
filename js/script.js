@@ -1,73 +1,27 @@
 $(function () {
-    CodeMirror.commands.save = function () {
-        View.editor.save();
-    };
 
     var paxer = Paxer.new();
     var semantic = new SemanticAnalyzer();
 
-    document.getElementById("cover-open").onclick = function () {
-        View.editor.newFile();
+    ko.applyBindings(mainView = new MainViewModel());
+    window.onbeforeunload = function () {
+        if (mainView.editor.unsaved()) {
+            return "未保存的修改将丢失";
+        }
     };
-    Cache.files = [];
-    Cache.files.find = function (fileName) {
-        for (var i = 0, len = this.length; i < len; i++) {
-            if (this[i].fileName() === fileName) {
-                return this[i];
-            }
-        }
-        return null;
-    }.bind(Cache.files);
 
-
-    //for (var i = 0, len = Cache.storedFileNames.length; i < len; i++) {
-    //if ($("#file-list").length < 1 && Cache.files.length > 0) {
-    //    var $ul = $("<ul></ul>").attr("id", "file-list").addClass("list");
-    //    $(".left-box .placeholder").remove();
-    //    $ul.appendTo($(".left-box .box-body"));
-    //}
-    //var item = Storage.getItem(Cache.storedFileNames[i]);
-    //if (item) {
-    //    var fileInfo = JSON.parse(item),
-    //        file = new ToyFile(fileInfo.name, fileInfo.content, false);
-    //    Cache.files.push(file);
-    //if ($("#" + id).length < 1) {
-    //    var $li = $("<li></li>").attr("id", id).text(file.fileName()),
-    //        $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
-    //    $li.on("click", function () {
-    //        var $self = $(this);
-    //        if (!$self.hasClass("active")) {
-    //            $self.siblings(".active").removeClass("active");
-    //            $self.addClass("active");
-    //        }
-    //    }).on("contextmenu", function () {
-    //        $(this).trigger("click");
-    //    }).on("dblclick", (function (file) {
-    //        return function () {
-    //            View.editor.openFile(file);
-    //        };
-    //    })(file));
-    //}
-    //}
-    //}
-
-
-    var last = Storage.getItem("last-editing");
-    if (last) {
-        var file = Cache.files.find(last);
-        if (file) {
-            View.editor.openFile(file);
-            $("#toy-" + file.name).trigger("click");
-        }
-    }
+    window.onunload = function () {
+        mainView.editor.save();
+        mainView.fileManager.save();
+    };
 
     document.getElementById("btn-tidy").onclick = function () {
-        var code = View.editor.getContent();
-        View.editor.setContent(_preprocesscode(code));
-        for (var i = 0; i < View.editor.cm.doc.lastLine(); i++) {
-            View.editor.cm.indentLine(i, "smart");
+        var code = mainView.editor.getEditorContent();
+        mainView.editor.setEditorContent(_preprocesscode(code));
+        for (var i = 0; i < mainView.editor.cm.doc.lastLine(); i++) {
+            mainView.editor.cm.indentLine(i, "smart");
         }
-        View.editor.cm.focus();
+        mainView.editor.cm.focus();
     };
     function _preprocesscode(code) {
         var processed;
@@ -100,55 +54,18 @@ $(function () {
             View.control.compilie(session.file);
             if (!session.file.isNewFile) {
                 View.editor.save();
-                View.console.log("Compile '" + session.file.fileName() + "'...");
+                mainView.console.log("Compile '" + session.file.fileName() + "'...");
                 code = View.editor.currentSession().content;
             } else {
-                View.console.log("Compile 'untitled'...");
+                mainView.console.log("Compile 'untitled'...");
                 code = View.editor.getContent();
             }
-            if (session.file.fileName() == "test.toy") {
-                code = _preprocesscode(code);
-                //code = "{\n\treal i, j;\n\t\ti = 10;\n\t\tj = 100;\n\t\twhile (i > 0) {\n\t\t\tif (i > 5) then\n\t\t\ti = i + 2\n\t\telse\n\t\t\tj = j - 5;\n\t\t\ti = i1;\n\t}\n}";
-            }
-            paxer.setInput(code);
-
+            paxer.setInput(_preprocesscode(code));
         }
     };
 
-    $(".tab-new").on("click", function () {
-        View.editor.newFile();
-    });
 
-    var fr = new FileReader(),
-        tmpFile = null;
-    fr.onload = function () {
-        if (null !== tmpFile) {
-            tmpFile.content = this.result;
-            Cache.files.push(tmpFile);
-            var id = "toy-" + tmpFile.name;
-            if ($("#" + id).length < 1) {
-                var $li = $("<li></li>").attr("id", id).text(tmpFile.fileName()),
-                    $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
-                $li.on("dblclick", (function (file) {
-                    return function () {
-                        View.editor.openFile(file);
-                    };
-                })(tmpFile));
-                $("#file-list").append($li.prepend($icon));
-            }
-            View.editor.openFile(tmpFile);
-            tmpFile = null;
-        }
-    };
-    document.getElementById("source_file").onchange = function () {
-        var file = this.files[0];
-        tmpFile = new ToyFile(file.name.replace(/(\.\w+)?$/, ".toy"));
-        tmpFile.isNewFile = false;
-        fr.readAsText(file);
-    };
-    document.getElementById("btn-save").onclick = function () {
-        View.editor.save();
-    };
+
     var moving_resizer = null,
         mouseOffsetY = 0,
         mouseOffsetX = 0;
@@ -270,13 +187,6 @@ $(function () {
         e.preventDefault();
         e.stopPropagation();
         $(".box-open-menu").show();
-    });
-    $("#rename-cancel").on("click", function (e) {
-        $("#dialog-mask").hide();
-        $("#filename").val("");
-    });
-    $("#rename-confirm").on("click", function (e) {
-        View.editor.confirmRename();
     });
     $.each($(".box-open-menu").find("a"), function (index, el) {
         $(el).on("click", function (e, prevent) {
@@ -498,19 +408,19 @@ $(function () {
         switch (paxer.getStatus()) {
             case "DONE":
                 semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
-                View.console.success(paxer.getCurMovementF());
-                View.console.success('code parsed.');
-                View.console.warn(paxer.getWarningMsg());
-                View.console.error(semantic.getErrorMsg());
+                mainView.console.success(paxer.getCurMovementF());
+                mainView.console.success('code parsed.');
+                mainView.console.warn(paxer.getWarningMsg());
+                mainView.console.error(semantic.getErrorMsg());
                 $(".tree-box").addClass("assembly");
                 View.assembly.cm.setValue(semantic.getAssembly());
                 return;
             case "ERROR":
-                View.console.error(paxer.getErrMsg());
+                mainView.console.error(paxer.getErrMsg());
                 return;
             case "WARNING":
             case "NORMAL":
-                View.console.success(paxer.getCurMovementF());
+                mainView.console.success(paxer.getCurMovementF());
                 View.treePen.setSource(paxer.getSequentialNodes());
                 View.treePen.render();
         }
@@ -525,15 +435,15 @@ $(function () {
 
     S("semantichaserror", function (errors) {
         for (var i = 0; i < errors.length; i++) {
-            View.console.error(errors[i].toString());
+            mainView.console.error(errors[i].toString());
         }
     });
 
     $("#btn-ff").on("click", function () {
         if (paxer.getStatus() == "DONE") {
-            View.console.success('code parsed.');
+            mainView.console.success('code parsed.');
         } else if (paxer.getStatus() == "ERROR") {
-            View.console.error(paxer.getErrMsg());
+            mainView.console.error(paxer.getErrMsg());
         } else {
             Benchmark.mark("parse");
             while (paxer.getStatus() != "DONE" && paxer.getStatus() != "ERROR") {
@@ -545,190 +455,18 @@ $(function () {
                     var parseTime = Benchmark.measure("parse");
                     $(".tree-box").addClass("assembly");
                     View.assembly.cm.setValue(semantic.getAssembly());
-                    View.console.success(paxer.getMovementsF());
-                    View.console.warn(paxer.getWarningMsg());
-                    View.console.error(semantic.getErrorMsg());
-                    View.console.success("Compile finished in " + parseTime.toFixed(4) + " millisecs.");
-                    View.console.success("Can we make it faster?");
+                    mainView.console.success(paxer.getMovementsF());
+                    mainView.console.warn(paxer.getWarningMsg());
+                    mainView.console.error(semantic.getErrorMsg());
+                    mainView.console.success("Compile finished in " + parseTime.toFixed(4) + " millisecs.");
+                    mainView.console.success("Can we make it faster?");
                     break;
                 case 'ERROR':
-                    View.console.error(paxer.getErrMsg());
+                    mainView.console.error(paxer.getErrMsg());
                     break;
             }
         }
     });
-    $("#about-mask").on("click", function () {
-        $(this).hide();
-    });
-    $("#about-dialog").on("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    $("#btn-about").on("click", function () {
-        $("#about-mask").show();
-    });
-    View.console.log("Compiler lauched at " + new Date().toTimeString());
-
-    function FileManager() {
-        var self = this;
-        self.files = ko.observableArray([]);
-        var cached = [];
-        self.newFile = function () {
-            var file = new File();
-            cached.push(file);
-            return file;
-        };
-        self.load = function () {
-            var storedFileNames = JSON.parse(Storage.getItem("stored-files") || "[]");
-            for (var i = 0, len = storedFileNames.length; i < len; i++) {
-                var item = Storage.getItem(storedFileNames[i]);
-
-                if (item) {
-                    var fileInfo = JSON.parse(item);
-                    self.files.push(new File(fileInfo.name, fileInfo.content, false));
-                }
-            }
-        };
-        self.save = function () {
-            var storedFiles = [];
-            for (var i = 0, files = self.files(), len = files.length; i < len; i++) {
-                self.saveFile(files[i]);
-                storedFiles[storedFiles.length] = files[i].fileName();
-            }
-            Storage.setItem("stored-files", JSON.stringify(storedFiles));
-        };
-        self.saveFile = function (file) {
-            Storage.setItem(file.fileName, file.toyfile.serialize());
-        };
-
-        self.load();
-
-        function File(name, content, isNew) {
-            var self = this;
-            self.isNew = ko.observable($defined(isNew) ? isNew : true);
-            self.name = ko.observable($defined(name) ? name.replace(/(\.toy)$/, "") : "untitled");
-            self.content = content || "";
-
-            self.open = function () {
-                View.editor.openFile(toyfile);
-            };
-
-            self.fileName = ko.computed(function () {
-                return self.isNew() ? self.name() : self.name() + ".toy";
-            });
-
-        }
-    }
-
-    function Editor(fileManager) {
-        var self = this;
-        self.tabs = ko.observableArray([]);
-        self.activeTab = ko.observable();
-        self.setActive = function (tab) {
-            var activeTab = self.activeTab();
-            if (activeTab != tab) {
-                !!activeTab && activeTab.isActive(false);
-                !!tab && tab.isActive(true);
-            }
-            self.activeTab(tab);
-        };
-        self.unsaved = ko.computed(function () {
-            var t = self.activeTab();
-            return t && t.unsaved();
-        });
-
-        self.openNewFile = function () {
-            self.openFile(fileManager.newFile());
-        };
-
-        self.openFile = function (file) {
-            var tab = new EditorTab(file);
-            self.tabs.push(tab);
-            self.setActive(tab);
-        };
-        self.closeTab = function (tab) {
-            self.tabs.remove(tab);
-            self.setActive(self.tabs().rear());
-        };
-
-        self.cursorPos = ko.observable({line: 1, ch: 1});
-        self.cursorPosText = ko.computed(function () {
-            var pos = self.cursorPos();
-            return pos.line + ":" + pos.ch;
-        });
-
-
-        self.load = function () {
-
-        };
-        self.save = function () {
-        };
-
-        self.load();
-
-        function EditorTab(file) {
-            var self = this;
-            self.file = file;
-            self.isActive = ko.observable(false);
-            self.unsaved = ko.observable(false);
-            self.cachedContent = ko.observable(file.content);
-        }
-    }
-
-    function Workspace(fileManager, editor) {
-        var self = this;
-
-        self.rows = ko.computed(function () {
-            return $.map(fileManager.files(), function (file) {
-                return new FileRow(file);
-            });
-        });
-
-        var activeRow = null;
-        self.setActive = function (row) {
-            if (activeRow) {
-                activeRow.isActive(false);
-            }
-            (activeRow = row).isActive(true);
-        };
-
-        self.openFileInEditor = function (row) {
-            editor.openFile(row.file);
-        };
-
-        function FileRow(file) {
-            var self = this;
-            self.file = file;
-            self.attrId = ko.computed(function () {
-                return "toy-" + self.file.name();
-            });
-            self.isActive = ko.observable(false);
-        }
-    }
-
-    function MainViewModel() {
-        var self = this;
-        var fileManager = self.fileManager = new FileManager();
-        var editor = self.editor = new Editor(fileManager);
-        self.workspace = new Workspace(fileManager, editor);
-    }
-
-    ko.applyBindings(mainView = new MainViewModel());
-
-    window.onbeforeunload = function () {
-        if (View.editor.needSave()) {
-            return "未保存的修改将丢失";
-        }
-    };
-
-    window.onunload = function () {
-        var session = View.editor.currentSession();
-        if (session && session.file) {
-            Storage.setItem("last-editing", session.file.fileName());
-        } else {
-            Storage.removeItem("last-editing");
-        }
-        //mainView.fileManager.save();
-    };
+    mainView.console.log("Compiler lauched at " + new Date().toTimeString());
     $(".loading-mask").remove();
 });

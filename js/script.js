@@ -1,8 +1,4 @@
 $(function () {
-
-    var paxer = Paxer.new();
-    var semantic = new SemanticAnalyzer();
-
     ko.applyBindings(mainView = new MainViewModel());
     window.onbeforeunload = function () {
         if (mainView.editor.unsaved()) {
@@ -14,57 +10,6 @@ $(function () {
         mainView.editor.save();
         mainView.fileManager.save();
     };
-
-    document.getElementById("btn-tidy").onclick = function () {
-        var code = mainView.editor.getEditorContent();
-        mainView.editor.setEditorContent(_preprocesscode(code));
-        for (var i = 0; i < mainView.editor.cm.doc.lastLine(); i++) {
-            mainView.editor.cm.indentLine(i, "smart");
-        }
-        mainView.editor.cm.focus();
-    };
-    function _preprocesscode(code) {
-        var processed;
-        var findOperatorReg = /(\+|\-|\*|\/|!=|>=?|<=?|==?)/g,
-            findDelimiterReg = /(\(|\)|\{|}|;|,|\$)/g;
-        code = code.replace(/\n/g, " ")
-                .replace(findOperatorReg, " $1 ")
-                .replace(findDelimiterReg, " $1 ")
-                .replace(/[ ]+/g, " ")
-                .replace(/(else|then)\s+\{/g, "$1{")
-                .replace(/}\s+(else)/, "}$1")
-                .trim() + " ";
-        processed = code.replace(/(then|else|then\{|else\{|}else\{|\{|}|;)\s/g, "$1\n")
-            .replace(/\s+(,|;|\))/g, "$1")
-            .replace(/\(\s+/g, "(")
-            .replace(/(then|else)\{/g, "$1 {")
-            .replace(/}(else)/, "} $1")
-            .replace(/([^\n]+)(?=else)/g, "$1\n");
-        return processed;
-    }
-
-    document.getElementById("btn-compile").onclick = function () {
-        var session = View.editor.currentSession();
-        if (null !== session) {
-
-            Cache.st = {};
-            P("symboltablechanged", []);
-
-            var code;
-            View.control.compilie(session.file);
-            if (!session.file.isNewFile) {
-                View.editor.save();
-                mainView.console.log("Compile '" + session.file.fileName() + "'...");
-                code = View.editor.currentSession().content;
-            } else {
-                mainView.console.log("Compile 'untitled'...");
-                code = View.editor.getContent();
-            }
-            paxer.setInput(_preprocesscode(code));
-        }
-    };
-
-
 
     var moving_resizer = null,
         mouseOffsetY = 0,
@@ -193,88 +138,7 @@ $(function () {
             e.preventDefault();
             e.stopPropagation();
             $(".box-open-menu").hide();
-            var id = $(this).attr("id");
-            if (id == "box-opener-console") {
-                var $box = $(".bottom-box");
-                if ($box.hasClass("hidden")) {
-                    $box.removeClass("hidden").css("height", "30%");
-                    $(".upper-box").css("height", "70%");
-                    if (!prevent) {
-                        P("treeboxresized");
-                    }
-                }
-            }
-            if (id == "box-opener-workspace") {
-                var $box = $(".left-box");
-                if ($box.hasClass("hidden")) {
-                    $box.removeClass("hidden").css("width", "200px");
-                    $(".center-box").css("margin-left", "200px");
-                }
-            }
-            if (id == "box-opener-structure") {
-                var $box = $(".right-box");
-                if ($box.hasClass("hidden")) {
-                    $box.removeClass("hidden").css("width", "350px");
-                    $(".center-box").css("margin-right", "350px");
-                }
-            }
-            if (id == "box-opener-tree") {
-                var $box = $(".tree-box");
-                if ($box.hasClass("hidden")) {
-                    $box.removeClass("hidden").css("width", "550px");
-                    $(".editor-box").css("margin-right", "550px");
-                }
-            }
         });
-    });
-    $.each($(".box-caret"), function (index, el) {
-        $(el).on("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var $box = $(this).parents(".resizable");
-            if ($box.hasClass("bottom-box")) {
-                if (!$box.hasClass("hidden")) {
-                    $box.addClass("hidden");
-                    $(".upper-box").css("height", "100%");
-                    P("treeboxresized");
-                }
-            }
-            if ($box.hasClass("left-box")) {
-                if (!$box.hasClass("hidden")) {
-                    $box.addClass("hidden");
-                    $(".center-box").css("margin-left", "0");
-                }
-            }
-            if ($box.hasClass("right-box")) {
-                if (!$box.hasClass("hidden")) {
-                    $box.addClass("hidden");
-                    $(".center-box").css("margin-right", "0");
-                }
-            }
-            if ($box.hasClass("tree-box")) {
-                if (!$box.hasClass("hidden")) {
-                    $box.addClass("hidden");
-                    $box.children(".box-body").css("padding-left", "0");
-                    $(".editor-box").css("margin-right", "0");
-                }
-            }
-        });
-    });
-    $.each($(".box-expand"), function (index, el) {
-        $(el).on("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var $box = $(this).parents(".resizable");
-            if ($box.hasClass("bottom-box")) {
-                if (!$box.hasClass("hidden")) {
-                    $(".upper-box").css("height", "0");
-                    $box.css("height", "100%");
-                }
-            }
-        });
-    });
-    $("#btn-stop").on("click", function () {
-        View.control.exitCompileMode();
     });
     S("symboltablechanged", function (st) {
         var $body = $(".right-box .box-body"),
@@ -360,7 +224,7 @@ $(function () {
                 for (var j = 0; j < symbol.positions.length; j++) {
                     var pos = symbol.positions[j],
                         liText = "[" + (j + 1) + "] line: " + pos.first_row + ", ch: " + pos.first_col,
-                        $posli = $("<li></li>").attr("data-id", "pos-" + symbol.name + "-" + j).attr("data-pos", id).text(liText).css("margin-left", "30px");
+                        $posli = $("<li></li>").attr("data-id", "pos-" + symbol.name + "-" + j).attr("data-pos", id).text(liText).css("padding-left", "30px");
                     if (!showmap[id]) {
                         $posli.hide();
                     }
@@ -388,85 +252,12 @@ $(function () {
             $placeholder.hide();
         }
     });
-    var stEquals = function (nst) {
-        if (!Cache.st) {
-            Cache.st = {};
-            return false;
-        }
-        for (var i = 0, len = nst.length; i < len; i++) {
-            if (Cache.st[nst[i].name] != nst[i].positions.length) {
-                return false;
-            }
-        }
-        return true;
-    };
-    $("#btn-next").on("click", function () {
-        if (paxer.getStatus() == 'DONE' || paxer.getStatus() == 'ERROR') {
-            return;
-        }
-        paxer.go();
-        switch (paxer.getStatus()) {
-            case "DONE":
-                semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
-                mainView.console.success(paxer.getCurMovementF());
-                mainView.console.success('code parsed.');
-                mainView.console.warn(paxer.getWarningMsg());
-                mainView.console.error(semantic.getErrorMsg());
-                $(".tree-box").addClass("assembly");
-                View.assembly.cm.setValue(semantic.getAssembly());
-                return;
-            case "ERROR":
-                mainView.console.error(paxer.getErrMsg());
-                return;
-            case "WARNING":
-            case "NORMAL":
-                mainView.console.success(paxer.getCurMovementF());
-                View.treePen.setSource(paxer.getSequentialNodes());
-                View.treePen.render();
-        }
-        var tst = paxer.getSymbolTable();
-        if (!stEquals(tst)) {
-            for (var i = 0, len = tst.length; i < len; i++) {
-                Cache.st[tst[i].name] = tst[i].positions.length;
-            }
-            P("symboltablechanged", tst);
-        }
-    });
-
     S("semantichaserror", function (errors) {
         for (var i = 0; i < errors.length; i++) {
             mainView.console.error(errors[i].toString());
         }
     });
 
-    $("#btn-ff").on("click", function () {
-        if (paxer.getStatus() == "DONE") {
-            mainView.console.success('code parsed.');
-        } else if (paxer.getStatus() == "ERROR") {
-            mainView.console.error(paxer.getErrMsg());
-        } else {
-            Benchmark.mark("parse");
-            while (paxer.getStatus() != "DONE" && paxer.getStatus() != "ERROR") {
-                paxer.go();
-            }
-            switch (paxer.getStatus()) {
-                case 'DONE':
-                    semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
-                    var parseTime = Benchmark.measure("parse");
-                    $(".tree-box").addClass("assembly");
-                    View.assembly.cm.setValue(semantic.getAssembly());
-                    mainView.console.success(paxer.getMovementsF());
-                    mainView.console.warn(paxer.getWarningMsg());
-                    mainView.console.error(semantic.getErrorMsg());
-                    mainView.console.success("Compile finished in " + parseTime.toFixed(4) + " millisecs.");
-                    mainView.console.success("Can we make it faster?");
-                    break;
-                case 'ERROR':
-                    mainView.console.error(paxer.getErrMsg());
-                    break;
-            }
-        }
-    });
     mainView.console.log("Compiler lauched at " + new Date().toTimeString());
     $(".loading-mask").remove();
 });

@@ -372,7 +372,6 @@ var View = (function () {
             });
             _treePen.setSource([
                 ["0", "program", 1, "", "1", "0"],
-                //["1", "compundstmt", 0, "0", "1", "0"]
             ]);
             _treePen.render();
             $(".tree-box .placeholder").hide();

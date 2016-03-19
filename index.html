@@ -14,7 +14,7 @@
     <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body>
+<body data-bind="css: {compiling: ui.compileMode}">
 <div class="wrapper">
     <div class="loading-mask">
         <h1><span class="glyphicon glyphicon-console"></span> Compiler</h1>
@@ -58,40 +58,44 @@
                     </button>
                 </li>
             </ul>
-            <ul class="nav navbar-nav navbar-right" id="editing-btn-group">
+            <ul class="nav navbar-nav navbar-right" id="editing-btn-group"
+                data-bind="visible: !ui.compileMode(), with: controls">
                 <li>
-                    <button class="btn navbar-btn-o" id="btn-save" data-bind="css: {unsaved: editor.unsaved}, click: editor.saveActiveTab"><span
+                    <button class="btn navbar-btn-o" id="btn-save"
+                            data-bind="css: {unsaved: needSave}, click: save"><span
                             class="glyphicon glyphicon-floppy-disk"></span> Save
                     </button>
                 </li>
                 <li>
-                    <button class="btn navbar-btn" id="btn-tidy"><span
+                    <button class="btn navbar-btn" id="btn-tidy" data-bind="click: tidy"><span
                             class="glyphicon glyphicon-flash"></span> Tidy
                     </button>
                 </li>
                 <li>
-                    <button class="btn navbar-btn" id="btn-import" data-bind="click: workspace.importFile"><span
-                            class="glyphicon glyphicon-import"></span> Import</button>
+                    <button class="btn navbar-btn" id="btn-import" data-bind="click: importFile"><span
+                            class="glyphicon glyphicon-import"></span> Import
+                    </button>
                 </li>
                 <li>
-                    <button class="btn navbar-btn" id="btn-compile"><span
+                    <button class="btn navbar-btn" id="btn-compile" data-bind="click: compile"><span
                             class="glyphicon glyphicon-download-alt"></span> Compile
                     </button>
                 </li>
             </ul>
-            <ul class="nav navbar-nav navbar-right" id="compiling-btn-group" style="display: none;margin-right: -15px">
+            <ul class="nav navbar-nav navbar-right" id="compiling-btn-group" style="margin-right: -15px"
+                data-bind="visible: ui.compileMode(), with: controls">
                 <li>
-                    <button class="btn navbar-btn-o" id="btn-stop"><span
+                    <button class="btn navbar-btn-o" id="btn-stop" data-bind="click: stop"><span
                             class="glyphicon glyphicon-stop"></span> Stop
                     </button>
                 </li>
                 <li>
-                    <button class="btn navbar-btn" id="btn-next"><span
+                    <button class="btn navbar-btn" id="btn-next" data-bind="click: next"><span
                             class="glyphicon glyphicon-share-alt"></span> Next
                     </button>
                 </li>
                 <li>
-                    <button class="btn navbar-btn" id="btn-ff"><span
+                    <button class="btn navbar-btn" id="btn-ff" data-bind="click: ff"><span
                             class="glyphicon glyphicon-fast-forward"></span> Fast Forward
                     </button>
                 </li>
@@ -101,11 +105,12 @@
 
     <div id="main">
         <div class="upper-box">
-            <div class="left-box resizable" data-bind="with: workspace">
+            <!--ko with: workspace-->
+            <div class="left-box resizable" data-bind="css: {hidden: !isOpen()}">
                 <div class="resizer vertical"></div>
                 <div class="box-header">
                     <div class="box-title">Workspace</div>
-                    <span class="box-caret glyphicon glyphicon-menu-left"></span>
+                    <span class="box-caret glyphicon glyphicon-menu-left" data-bind="click: close"></span>
                 </div>
                 <div class="box-body">
                     <div class="placeholder" data-bind="visible: rows().length < 1">Nothing to show</div>
@@ -118,24 +123,34 @@
                     </ul>
                 </div>
             </div>
-
-            <div class="right-box resizable hidden">
+            <!--/ko-->
+            <!--ko with: symbolTable-->
+            <div class="right-box resizable" data-bind="css: {hidden: !isOpen()}">
                 <div class="resizer vertical"></div>
                 <div class="box-header">
                     <div class="box-title">Symbol Table</div>
-                    <span class="box-caret glyphicon glyphicon-menu-right"></span>
+                    <span class="box-caret glyphicon glyphicon-menu-right" data-bind="click: close"></span>
                 </div>
                 <div class="box-body">
-                    <div class="placeholder">Nothing to show</div>
+                    <div class="placeholder" data-bind="visible: rows().length < 1">Nothing to show</div>
+                    <ul id="symbol-list" class="list" data-bind="foreach: rows, visible: rows().length > 0">
+                        <li data-bind="attr: {id: attrId}, css: {active: isActive}, event: {click: $parents[0].setActive.bind($data), dblclick: toggle}">
+                            <span class="glyphicon li-caret" data-bind="css: {'glyphicon-triangle-right': !isOpen(), 'glyphicon-triangle-bottom': isOpen}"></span>
+                            <span data-bind="text: symbol.name"></span>
+                            <span class="extra" data-bind="text: rowText"></span>
+                        </li>
+                    </ul>
                 </div>
             </div>
+            <!--/ko-->
             <div class="center-box">
-                <div class="tree-box resizable hidden">
+                <!--ko with: parseTree-->
+                <div class="tree-box resizable" data-bind="css: {hidden: !isOpen()}">
                     <div class="resizer vertical"></div>
                     <div class="box-header">
                         <div class="box-title hidden-assembly">Parser Tree</div>
                         <div class="box-title assembly-only">Assembly</div>
-                        <span class="box-caret glyphicon glyphicon-menu-right"></span>
+                        <span class="box-caret glyphicon glyphicon-menu-right" data-bind="click: close"></span>
                     </div>
                     <div class="box-body hidden-assembly" id="tree-pane">
                         <div class="placeholder">Nothing to show</div>
@@ -145,19 +160,27 @@
                         <textarea id="assembly"></textarea>
                     </div>
                 </div>
+                <!--/ko-->
                 <div class="editor-box" data-bind="with: editor">
                     <div class="editor-placeholder" data-bind="visible: tabs().length < 1">
-                        Choose a file from workspace or <a id="cover-open" data-bind="click: openNewFile">create a new file</a>
+                        Choose a file from workspace or <a id="cover-open" data-bind="click: openNewFile">create a new
+                        file</a>
                     </div>
                     <div class="tab-bar">
-                        <div class="tab-bar-cover"><span id="compiling-filename"></span></div>
+                        <!--ko with: $root.processor.compilee-->
+                        <div class="tab-bar-cover">
+                            <span id="compiling-filename" data-bind="text: fileName"></span>
+                        </div>
+                        <!--/ko-->
                         <button class="tab-new" data-bind="click: openNewFile">&plus;</button>
                         <div class="tab-row">
                             <div class="tab-group" data-bind="foreach: tabs">
-                                <div class="tab-cell" data-bind="css: {active: isActive}, click: $parents[0].setActive.bind($data)">
+                                <div class="tab-cell"
+                                     data-bind="css: {active: isActive}, click: $parents[0].setActive.bind($data)">
                                     <a>
                                         <span data-bind="text: file.fileName"></span>
-                                        <span class="tab-dismiss" data-bind="click: $parents[0].closeTab.bind($data)">&times;</span>
+                                        <span class="tab-dismiss"
+                                              data-bind="click: $parents[0].closeTab.bind($data)">&times;</span>
                                     </a>
                                 </div>
                             </div>
@@ -169,34 +192,36 @@
                 </div>
             </div>
         </div>
-        <div class="bottom-box resizable hidden">
+        <!--ko with: console-->
+        <div class="bottom-box resizable" data-bind="css: {hidden: !isOpen()}">
             <div class="resizer horizontal"></div>
             <div class="box-header">
                 <div class="box-title">Console</div>
-                <span class="box-caret glyphicon glyphicon-menu-down"></span>
-                <span class="box-expand glyphicon glyphicon-menu-up"></span>
+                <span class="box-caret glyphicon glyphicon-menu-down" data-bind="click: close"></span>
+                <span class="box-expand glyphicon glyphicon-menu-up" data-bind="click: expand"></span>
             </div>
             <div class="console-container">
                 <div class="console-seal"></div>
                 <textarea id="console"></textarea>
             </div>
         </div>
+        <!--/ko-->
     </div>
     <div id="footer">
         <div class="footer-text">
             <span class="glyphicon glyphicon-collapse-up" id="box-opener"></span>
             <ul class="dropdown-menu box-open-menu">
                 <li>
-                    <a id="box-opener-workspace">Workspace</a>
+                    <a id="box-opener-workspace" data-bind="click: workspace.open">Workspace</a>
                 </li>
                 <li>
-                    <a id="box-opener-tree">Parser Tree</a>
+                    <a id="box-opener-tree" data-bind="click: parseTree.open">Parser Tree</a>
                 </li>
                 <li>
-                    <a id="box-opener-structure">Symbol Table</a>
+                    <a id="box-opener-structure" data-bind="click: symbolTable.open">Symbol Table</a>
                 </li>
                 <li>
-                    <a id="box-opener-console">Console</a>
+                    <a id="box-opener-console" data-bind="click: console.open">Console</a>
                 </li>
             </ul>
         </div>

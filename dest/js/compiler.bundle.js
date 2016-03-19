@@ -143,8 +143,7 @@ function FileManager() {
             "    b = 2.0;\n" +
             "    if (a > b) then {\n" +
             "        b = a;\n" +
-            "    }\n" +
-            "    else {\n" +
+            "    } else {\n" +
             "        b = b - a;\n" +
             "    }\n" +
             "}", false);
@@ -577,7 +576,6 @@ function ConsoleViewModel() {
     };
     self.warn = function (str) {
         if (str) {
-
             if (self.cm) {
                 self.cm.setValue(_lastNLines(self.cm.getValue() + _preoutput("@ ", str), 1000));
             } else {
@@ -599,6 +597,7 @@ function ConsoleViewModel() {
         if (!prevent) {
             P("treeboxresized");
         }
+        self.cm.focus();
     };
 
     self.close = function () {
@@ -767,17 +766,20 @@ function ParseTreeViewModel() {
         self.showAssembly(false);
     };
 }
-function SymbolTableViewModel() {
+function SymbolTableViewModel(editor) {
     var self = this;
     var $box = $(".right-box");
 
-
-    self.symbols = ko.observable([]);
-    self.rows = ko.computed(function () {
-        return $.map(self.symbols(), function (symbol) {
-            return new SymbolRow(symbol);
-        });
-    });
+    self.symbols = ko.observableArray([]);
+    self.updateSymbols = function (table) {
+        var symbols = self.symbols();
+        for (var i = 0; i < symbols.length; i++) {
+            symbols[i].update(table[i]);
+        }
+        for (var i = symbols.length; i < table.length; i++) {
+            self.symbols.push(new SymbolRow(table[i]));
+        }
+    };
 
     var activeRow = null;
     self.setActive = function (row) {
@@ -797,22 +799,83 @@ function SymbolTableViewModel() {
     self.close = function () {
         self.isOpen(false);
         $(".center-box").css("margin-right", "0");
+        editor.cm.doc.setSelection({
+            line: 0,
+            ch: 0
+        });
     };
 
     function SymbolRow(symbol) {
         var self = this;
-        self.symbol = symbol;
-        self.attrId = "symbol-" + symbol.name;
-        self.rowText = "type: " + symbol.type + ", occurance: " + symbol.positions.length;
+        self.name = ko.observable(symbol.name);
+        self.type = ko.observable(symbol.type);
+        self.positions = ko.observableArray($.map(symbol.positions, function (position, index) {
+            return new PositionRow(position, index);
+        }));
+
+        self.attrId = ko.computed(function () {
+            return "symbol-" + self.name();
+        });
+        self.rowText = ko.computed(function () {
+            return "type: " + self.type() + ", occurance: " + self.positions().length;
+        });
+
+        self.update = function (symbol) {
+            console.log(symbol);
+            self.name(symbol.name);
+            self.type(symbol.type);
+            for (var i = self.positions().length; i < symbol.positions.length; i++) {
+                var pos = symbol.positions[i];
+                self.positions.push(new PositionRow(pos, i));
+                if (self.isActive()) {
+                    editor.cm.doc.addSelection({
+                        line: pos.first_row - 1,
+                        ch: pos.first_col - 1
+                    }, {line: pos.last_row - 1, ch: pos.last_col - 1});
+                }
+            }
+        };
         self.isActive = ko.observable(false);
+        self.isActive.subscribe(function (active) {
+            if (active) {
+                for (var k = 0, positions = self.positions(), len = positions.length; k < len; k++) {
+                    var pos = positions[k].position;
+                    if (0 === k) {
+                        editor.cm.doc.setSelection({
+                            line: pos.first_row - 1,
+                            ch: pos.first_col - 1
+                        }, {line: pos.last_row - 1, ch: pos.last_col - 1});
+                    } else {
+                        editor.cm.doc.addSelection({
+                            line: pos.first_row - 1,
+                            ch: pos.first_col - 1
+                        }, {line: pos.last_row - 1, ch: pos.last_col - 1});
+                    }
+                }
+            }
+        });
         self.isOpen = ko.observable(false);
         self.toggle = function () {
             self.isOpen(!self.isOpen());
         };
     }
 
-    function PositionRow(position) {
+    function PositionRow(position, index) {
         var self = this;
+        self.position = position;
+        self.rowText = "[" + (index + 1) + "] line: " + position.first_row + ", ch: " + position.first_col;
+        self.isActive = ko.observable(false);
+        self.isActive.subscribe(function (active) {
+            if (active) {
+                self.highlight();
+            }
+        });
+        self.highlight = function () {
+            editor.cm.doc.setSelection({
+                line: position.first_row - 1,
+                ch: position.first_col - 1
+            }, {line: position.last_row - 1, ch: position.last_col - 1})
+        }
     }
 }
 function Processor(console, parseTree, symbolTable) {
@@ -828,7 +891,7 @@ function Processor(console, parseTree, symbolTable) {
             Cache.st = {};
             symbolTable.symbols([]);
             console.log("Compile '" + file.fileName() + "'...");
-            self.paxer.setInput(self.preprocesscode(file.content()));
+            self.paxer.setInput(file.content());
         }
     };
 
@@ -852,18 +915,6 @@ function Processor(console, parseTree, symbolTable) {
         return processed;
     };
 
-    var stEquals = function (nst) {
-        if (!Cache.st) {
-            Cache.st = {};
-            return false;
-        }
-        for (var i = 0, len = nst.length; i < len; i++) {
-            if (Cache.st[nst[i].name] != nst[i].positions.length) {
-                return false;
-            }
-        }
-        return true;
-    };
     self.compileNext = function () {
         var status = paxer.getStatus();
         if (status == 'DONE' || status == 'ERROR') {
@@ -888,7 +939,7 @@ function Processor(console, parseTree, symbolTable) {
                 parseTree.pen.setSource(paxer.getSequentialNodes());
                 parseTree.pen.render();
         }
-        symbolTable.symbols(paxer.getSymbolTable());
+        symbolTable.updateSymbols(paxer.getSymbolTable());
         return status;
     };
     self.compileFF = function () {
@@ -918,6 +969,7 @@ function Processor(console, parseTree, symbolTable) {
                     break;
             }
         }
+        symbolTable.updateSymbols(paxer.getSymbolTable());
         return status;
     };
 }
@@ -970,7 +1022,7 @@ function MainViewModel() {
     var workspace = self.workspace = new WorkspaceViewModel(fileManager, editor);
     var console = self.console = new ConsoleViewModel();
     var treePen = self.parseTree = new ParseTreeViewModel();
-    var symbolTable = self.symbolTable = new SymbolTableViewModel();
+    var symbolTable = self.symbolTable = new SymbolTableViewModel(editor);
     var processor = self.processor = new Processor(console, treePen, symbolTable);
     var ui = self.ui = new UIViewModel(editor, workspace, console, treePen, symbolTable);
     var controls = self.controls = new ControlsViewModel(fileManager, editor, workspace, console, processor, ui);
@@ -2393,10 +2445,11 @@ function SemanticAnalyzer() {
             {
                 var boolexpr = node.subNodes[2],
                     stmt = node.subNodes[4];
-                _assembly[_assembly.length] = f(_f++);
+                var startf = _f++;
+                _assembly[_assembly.length] = f(startf);
                 _r(boolexpr);
                 _r(stmt);
-                _assembly[_assembly.length] = l("jmp", null, null, "f" + (_f - 1));
+                _assembly[_assembly.length] = l("jmp", null, null, "f" + (startf));
                 break;
             }
             case "boolexpr":
@@ -2448,7 +2501,7 @@ function SemanticAnalyzer() {
                 var stmt1 = node.subNodes[5],
                     stmt2 = node.subNodes[7];
 
-                _assembly[_assembly.length] = f(_f++);
+                // _assembly[_assembly.length] = f(_f++);
                 _r(boolop);
                 _r(stmt1);
                 _assembly[_assembly.length] = l("jmp", null, null, "f" + (_f + 1));
@@ -2557,118 +2610,6 @@ $(function () {
             e.stopPropagation();
             $(".box-open-menu").hide();
         });
-    });
-    S("symboltablechanged", function (st) {
-        var $body = $(".right-box .box-body"),
-            $placeholder = $(".right-box .placeholder"),
-            $ul,
-            showmap = {},
-            activemap = {};
-
-        if ($("#symbol-list").length < 1) {
-            $ul = $("<ul></ul>").attr("id", "symbol-list").addClass("list").appendTo($body);
-        } else {
-            $ul = $("#symbol-list");
-            $.each($ul.children("li"), function (index, el) {
-                var $li = $(el),
-                    id = $li.attr("data-id"),
-                    show = $li.children(".li-caret").hasClass("glyphicon-triangle-bottom"),
-                    active = $li.hasClass("active");
-                showmap[id] = show;
-                activemap[id] = active;
-            });
-            $ul.empty();
-        }
-
-        if (st.length < 1) {
-            $ul.hide();
-            $placeholder.show();
-        } else {
-            for (var i = 0; i < st.length; i++) {
-                var symbol = st[i],
-                    id = "symbol-" + symbol.name,
-                    $li = $("<li></li>").attr("data-id", id).html(symbol.name),
-                    $caret = $("<span></span>").addClass("glyphicon li-caret")
-                        .addClass(showmap[id] ? "glyphicon-triangle-bottom" : "glyphicon-triangle-right").prependTo($li),
-                    extraText = "type: " + symbol.type + ", occurance: " + symbol.positions.length,
-                    $extra = $("<span></span>").addClass("extra").text(extraText).appendTo($li);
-
-                $caret.on("click", function () {
-                    var $self = $(this),
-                        $li = $self.parent(),
-                        show = $self.hasClass("glyphicon-triangle-right");
-
-                    $.each($("[data-pos='" + $li.attr("data-id") + "']"), function (index, el) {
-                        if (show) {
-                            $(el).show();
-                        } else {
-                            $(el).hide();
-                        }
-                    });
-                    $self.toggleClass("glyphicon-triangle-right glyphicon-triangle-bottom");
-                });
-                $li.on("click", function () {
-                    var $self = $(this);
-                    if (!$self.hasClass("active")) {
-                        $self.siblings(".active").removeClass("active");
-                        $self.addClass("active");
-                    }
-                }).on("dblclick", function () {
-                    $(this).trigger("click");
-                    $(this).children(".li-caret").trigger("click");
-                }).on("click", (function (symbol) {
-                    return function () {
-                        return;
-
-                        for (var k = 0; k < symbol.positions.length; k++) {
-                            var pos = symbol.positions[k];
-                            if (0 === k) {
-                                View.editor.cm.doc.setSelection({
-                                    line: pos.first_row - 1,
-                                    ch: pos.first_col - 1
-                                }, {line: pos.last_row - 1, ch: pos.last_col - 1});
-                            } else {
-                                View.editor.cm.doc.addSelection({
-                                    line: pos.first_row - 1,
-                                    ch: pos.first_col - 1
-                                }, {line: pos.last_row - 1, ch: pos.last_col - 1});
-                            }
-                        }
-                    };
-                })(symbol)).appendTo($ul);
-                if (activemap[id]) {
-                    $li.trigger("click");
-                }
-                for (var j = 0; j < symbol.positions.length; j++) {
-                    var pos = symbol.positions[j],
-                        liText = "[" + (j + 1) + "] line: " + pos.first_row + ", ch: " + pos.first_col,
-                        $posli = $("<li></li>").attr("data-id", "pos-" + symbol.name + "-" + j).attr("data-pos", id).text(liText).css("padding-left", "30px");
-                    if (!showmap[id]) {
-                        $posli.hide();
-                    }
-                    $posli.on("click", function () {
-                        var $self = $(this);
-                        if (!$self.hasClass("active")) {
-                            $self.siblings(".active").removeClass("active");
-                            $self.addClass("active");
-                        }
-                    }).on("click", (function (pos) {
-                        return function () {
-                            return;
-                            View.editor.cm.doc.setSelection({
-                                line: pos.first_row - 1,
-                                ch: pos.first_col - 1
-                            }, {line: pos.last_row - 1, ch: pos.last_col - 1});
-                        };
-                    })(pos)).appendTo($ul);
-                    if (activemap[$posli.attr("data-id")]) {
-                        $posli.trigger("click");
-                    }
-                }
-            }
-            $ul.show();
-            $placeholder.hide();
-        }
     });
     S("semantichaserror", function (errors) {
         for (var i = 0; i < errors.length; i++) {

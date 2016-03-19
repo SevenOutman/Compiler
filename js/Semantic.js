@@ -280,10 +280,11 @@ function SemanticAnalyzer() {
             {
                 var boolexpr = node.subNodes[2],
                     stmt = node.subNodes[4];
-                _assembly[_assembly.length] = f(_f++);
+                var startf = _f++;
+                _assembly[_assembly.length] = f(startf);
                 _r(boolexpr);
                 _r(stmt);
-                _assembly[_assembly.length] = l("jmp", null, null, "f" + (_f - 1));
+                _assembly[_assembly.length] = l("jmp", null, null, "f" + (startf));
                 break;
             }
             case "boolexpr":
@@ -335,7 +336,7 @@ function SemanticAnalyzer() {
                 var stmt1 = node.subNodes[5],
                     stmt2 = node.subNodes[7];
 
-                _assembly[_assembly.length] = f(_f++);
+                // _assembly[_assembly.length] = f(_f++);
                 _r(boolop);
                 _r(stmt1);
                 _assembly[_assembly.length] = l("jmp", null, null, "f" + (_f + 1));

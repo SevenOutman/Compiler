@@ -40,7 +40,8 @@
         <div class="dialog" id="about-dialog">
             <div class="dialog-banner">
                 <h1><span class="glyphicon glyphicon-console"></span> Compiler</h1>
-                <p>Created by <a href="https://github.com/SevenOutman" target="_blank">SevenOutman</a> and <a href="https://github.com/ExinCoda" target="_blank">ExinCoda</a>.</p>
+                <p>Created by <a href="https://github.com/SevenOutman" target="_blank">SevenOutman</a> and <a
+                        href="https://github.com/ExinCoda" target="_blank">ExinCoda</a>.</p>
             </div>
         </div>
     </div>
@@ -133,13 +134,17 @@
                     <span class="box-caret glyphicon glyphicon-menu-right" data-bind="click: close"></span>
                 </div>
                 <div class="box-body">
-                    <div class="placeholder" data-bind="visible: rows().length < 1">Nothing to show</div>
-                    <ul id="symbol-list" class="list" data-bind="foreach: rows, visible: rows().length > 0">
+                    <div class="placeholder" data-bind="visible: symbols().length < 1">Nothing to show</div>
+                    <ul id="symbol-list" class="list" data-bind="foreach: symbols, visible: symbols().length > 0">
                         <li data-bind="attr: {id: attrId}, css: {active: isActive}, event: {click: $parents[0].setActive.bind($data), dblclick: toggle}">
-                            <span class="glyphicon li-caret" data-bind="css: {'glyphicon-triangle-right': !isOpen(), 'glyphicon-triangle-bottom': isOpen}"></span>
-                            <span data-bind="text: symbol.name"></span>
+                            <span class="glyphicon li-caret"
+                                  data-bind="css: {'glyphicon-triangle-right': !isOpen(), 'glyphicon-triangle-bottom': isOpen}"></span>
+                            <span data-bind="text: name"></span>
                             <span class="extra" data-bind="text: rowText"></span>
                         </li>
+                        <!--ko foreach: positions-->
+                        <li class="position-row" data-bind="text: rowText, visible: $parents[0].isOpen, css: {active: isActive}, click: $parents[1].setActive.bind($data)"></li>
+                        <!--/ko-->
                     </ul>
                 </div>
             </div>

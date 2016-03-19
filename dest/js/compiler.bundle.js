@@ -1028,6 +1028,14 @@ function MainViewModel() {
     var controls = self.controls = new ControlsViewModel(fileManager, editor, workspace, console, processor, ui);
 
     self.aboutCard = new Openable();
+    self.openMenu = new Openable();
+    self.openMenu.open = function (main, e) {
+        e.stopPropagation();
+        self.openMenu.isOpen(true);
+        $(document).one("click", function () {
+            self.openMenu.close();
+        });
+    }
 }
 /**
  * Created by Doma on 15/12/3.
@@ -2596,21 +2604,6 @@ $(function () {
             }
         }
     ]);
-    $(document).on("click", function (e) {
-        $(".box-open-menu").hide();
-    });
-    $("#box-opener").on("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $(".box-open-menu").show();
-    });
-    $.each($(".box-open-menu").find("a"), function (index, el) {
-        $(el).on("click", function (e, prevent) {
-            e.preventDefault();
-            e.stopPropagation();
-            $(".box-open-menu").hide();
-        });
-    });
     S("semantichaserror", function (errors) {
         for (var i = 0; i < errors.length; i++) {
             mainView.console.error(errors[i].toString());

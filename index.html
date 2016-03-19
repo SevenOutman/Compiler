@@ -138,12 +138,13 @@
                     <ul id="symbol-list" class="list" data-bind="foreach: symbols, visible: symbols().length > 0">
                         <li data-bind="attr: {id: attrId}, css: {active: isActive}, event: {click: $parents[0].setActive.bind($data), dblclick: toggle}">
                             <span class="glyphicon li-caret"
-                                  data-bind="css: {'glyphicon-triangle-right': !isOpen(), 'glyphicon-triangle-bottom': isOpen}"></span>
+                                  data-bind="css: {'glyphicon-triangle-right': !isOpen(), 'glyphicon-triangle-bottom': isOpen}, click: toggle"></span>
                             <span data-bind="text: name"></span>
                             <span class="extra" data-bind="text: rowText"></span>
                         </li>
                         <!--ko foreach: positions-->
-                        <li class="position-row" data-bind="text: rowText, visible: $parents[0].isOpen, css: {active: isActive}, click: $parents[1].setActive.bind($data)"></li>
+                        <li class="position-row"
+                            data-bind="text: rowText, visible: $parents[0].isOpen, css: {active: isActive}, click: $parents[1].setActive.bind($data)"></li>
                         <!--/ko-->
                     </ul>
                 </div>
@@ -215,8 +216,8 @@
     </div>
     <div id="footer">
         <div class="footer-text">
-            <span class="glyphicon glyphicon-collapse-up" id="box-opener"></span>
-            <ul class="dropdown-menu box-open-menu">
+            <span class="glyphicon glyphicon-collapse-up" id="box-opener" data-bind="click: openMenu.open"></span>
+            <ul class="dropdown-menu box-open-menu" data-bind="visible: openMenu.isOpen, click: openMenu.close">
                 <li>
                     <a id="box-opener-workspace" data-bind="click: workspace.open">Workspace</a>
                 </li>

@@ -915,4 +915,12 @@ function MainViewModel() {
     var controls = self.controls = new ControlsViewModel(fileManager, editor, workspace, console, processor, ui);
 
     self.aboutCard = new Openable();
+    self.openMenu = new Openable();
+    self.openMenu.open = function (main, e) {
+        e.stopPropagation();
+        self.openMenu.isOpen(true);
+        $(document).one("click", function () {
+            self.openMenu.close();
+        });
+    }
 }

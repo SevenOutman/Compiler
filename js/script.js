@@ -55,21 +55,6 @@ $(function () {
             }
         }
     ]);
-    $(document).on("click", function (e) {
-        $(".box-open-menu").hide();
-    });
-    $("#box-opener").on("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $(".box-open-menu").show();
-    });
-    $.each($(".box-open-menu").find("a"), function (index, el) {
-        $(el).on("click", function (e, prevent) {
-            e.preventDefault();
-            e.stopPropagation();
-            $(".box-open-menu").hide();
-        });
-    });
     S("semantichaserror", function (errors) {
         for (var i = 0; i < errors.length; i++) {
             mainView.console.error(errors[i].toString());

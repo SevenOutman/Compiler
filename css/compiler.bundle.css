@@ -2027,6 +2027,7 @@ a:focus:active {
 .list > li.active > .extra {
     color: rgb(187, 187, 187);
 }
+
 .list > li.position-row {
     padding-left: 35px;
 }
@@ -2041,7 +2042,6 @@ a:focus:active {
     border-left: 1px solid rgb(40, 40, 40);
     z-index: 300;
 }
-
 
 .center-box {
     width: auto;
@@ -2313,7 +2313,7 @@ a:focus:active {
 .box-open-menu {
     bottom: 100%;
     top: auto;
-    display: none;
+    display: block;
 }
 
 .box-open-menu > li {

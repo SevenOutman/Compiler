@@ -45,7 +45,12 @@ function SemanticAnalyzer() {
         var a1 = ad1 === null ? "" : ad1,
             a2 = ad2 === null ? "" : ad2,
             a3 = ad3 === null ? "" : ad3;
-        return "    " + type + " " + a1 + ", " + a2 + ", " + a3;
+        if (type.length == 3) {
+            type += " ";
+        } else if (type.length == 2) {
+            type += "  ";
+        }
+        return ["    ", type, " ", a1, ", ", a2, ", ", a3].join("");
     }
 
 

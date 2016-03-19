@@ -31,7 +31,7 @@ gulp.task('lint', function () {
             "js/Storage.js",
             "js/Cache.js",
             "js/ToyFile.js",
-            "js/View.js",
+            // "js/View.js",
             "js/Paxer.js",
             "js/Semantic.js",
             "js/script.js"
@@ -53,7 +53,7 @@ gulp.task('js', function () {
             "js/Storage.js",
             "js/Cache.js",
             "js/ToyFile.js",
-            "js/View.js",
+            // "js/View.js",
             "js/Paxer.js",
             "js/Semantic.js",
             "js/script.js"
@@ -93,7 +93,7 @@ gulp.task('default', function () {
         "js/Storage.js",
         "js/Cache.js",
         "js/ToyFile.js",
-        "js/View.js",
+        // "js/View.js",
         "js/Paxer.js",
         "js/Semantic.js",
         "js/script.js"

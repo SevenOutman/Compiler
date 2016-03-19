@@ -35,11 +35,12 @@
         </div>
     </div>
     <!--/ko-->
-    <div id="about-mask" data-bind="visible: aboutCard.isOpen, click: aboutCard.close">
+    <div id="about-mask" data-bind="visible: aboutCard.isOpen">
+        <div class="mask-backdrop" data-bind="click: aboutCard.close"></div>
         <div class="dialog" id="about-dialog">
             <div class="dialog-banner">
                 <h1><span class="glyphicon glyphicon-console"></span> Compiler</h1>
-                <p>Created by SevenOutman, ExinCoda and Rachel.</p>
+                <p>Created by <a href="https://github.com/SevenOutman" target="_blank">SevenOutman</a> and <a href="https://github.com/ExinCoda" target="_blank">ExinCoda</a>.</p>
             </div>
         </div>
     </div>
@@ -145,10 +146,10 @@
             <!--/ko-->
             <div class="center-box">
                 <!--ko with: parseTree-->
-                <div class="tree-box resizable" data-bind="css: {hidden: !isOpen()}">
+                <div class="tree-box resizable" data-bind="css: {hidden: !isOpen(), assembly: showAssembly}">
                     <div class="resizer vertical"></div>
                     <div class="box-header">
-                        <div class="box-title hidden-assembly">Parser Tree</div>
+                        <div class="box-title hidden-assembly">Syntax Tree</div>
                         <div class="box-title assembly-only">Assembly</div>
                         <span class="box-caret glyphicon glyphicon-menu-right" data-bind="click: close"></span>
                     </div>
@@ -215,7 +216,7 @@
                     <a id="box-opener-workspace" data-bind="click: workspace.open">Workspace</a>
                 </li>
                 <li>
-                    <a id="box-opener-tree" data-bind="click: parseTree.open">Parser Tree</a>
+                    <a id="box-opener-tree" data-bind="click: parseTree.open">Syntax Tree</a>
                 </li>
                 <li>
                     <a id="box-opener-structure" data-bind="click: symbolTable.open">Symbol Table</a>
@@ -227,10 +228,6 @@
         </div>
         <div class="footer-text" id="cursor-position" data-bind="text: editor.cursorPosText">
         </div>
-    </div>
-    <div id="extra">
-        <div id="other_div"></div>
-        <!--<input type="file" name="" id="source_file" style="display: none;">-->
     </div>
 </div>
 <script>

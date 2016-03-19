@@ -158,6 +158,10 @@ function FileManager() {
         return file;
     };
 
+    /**
+     * @param {string} fileName
+     * @returns {*}
+     */
     self.findFile = function (fileName) {
         for (var i = 0, files = self.files(), len = files.length; i < len; i++) {
             if (files[i].fileName() == fileName) {
@@ -172,6 +176,10 @@ function FileManager() {
             file.isNew(false);
         }
         Storage.setItem(file.fileName(), file.serialize());
+    };
+    self.deleteFile = function (file) {
+        self.files.remove(file);
+        Storage.removeItem(file.fileName());
     };
 
     self.load = function () {
@@ -301,6 +309,13 @@ function EditorViewModel(fileManager) {
             self.setActive(self.tabs().rear());
         }
     };
+    self.findFileTab = function (file) {
+        for (var i = 0, tabs = self.tabs(), len = tabs.length; i < len; i++) {
+            if (tabs[i].file == file) {
+                return tabs[i];
+            }
+        }
+    };
 
     self.cursorPosText = ko.computed(function () {
         var tab = self.activeTab();
@@ -311,10 +326,13 @@ function EditorViewModel(fileManager) {
         return "";
     });
 
+    self.isLocked = ko.observable(false);
     self.lock = function () {
+        self.isLocked(true);
         self.cm.setOption("readOnly", "nocursor");
     };
     self.unlock = function () {
+        self.isLocked(false);
         self.cm.setOption("readOnly", false);
     };
 
@@ -420,7 +438,9 @@ function WorkspaceViewModel(fileManager, editor) {
     };
 
     self.openFileInEditor = function (row) {
-        editor.openFile(row.file);
+        if (!editor.isLocked()) {
+            editor.openFile(row.file);
+        }
     };
 
     self.importFile = function () {
@@ -445,6 +465,23 @@ function WorkspaceViewModel(fileManager, editor) {
             fr.readAsText(file);
         });
         $fileInput.trigger("click");
+    };
+
+    self.renameFile = function (fileName) {
+        var file = fileManager.findFile(fileName);
+        if (file) {
+            editor.renameDialog.rename(file);
+        }
+    };
+    self.confirmDeleteFile = function (fileName) {
+        var file = fileManager.findFile(fileName);
+        if (file && confirm("Are you sure to delete '" + file.fileName() + "'?")) {
+            var tab = editor.findFileTab(file)
+            if (tab) {
+                editor.closeTab(tab);
+            }
+            fileManager.deleteFile(file);
+        }
     };
 
     self.isOpen = ko.observable(true);
@@ -599,6 +636,75 @@ function UIViewModel(editor, workspace, console, treePen, symbolTable) {
             }
         }
     });
+    self.initResizables = function () {
+        var moving_resizer = null,
+            mouseOffsetY = 0,
+            mouseOffsetX = 0;
+        $.each($(".resizer"), function (index, el) {
+            $(el).on("mousedown", function (e) {
+                moving_resizer = el;
+                mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
+                mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
+                $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
+
+            });
+        });
+        $(document).on("mouseup", function () {
+            var $box = $(moving_resizer).parent(".resizable");
+            if ($box.hasClass("bottom-box") || $box.hasClass("tree-box")) {
+                P("treeboxresized");
+            }
+            moving_resizer = null;
+            $("#resizing-mask").hide();
+        });
+        document.getElementById("resizing-mask").addEventListener("mousemove", function (e) {
+            if (moving_resizer instanceof HTMLElement) {
+                var $box = $(moving_resizer).parent(".resizable");
+                if ($box[0] instanceof HTMLElement) {
+                    var $main = $("#main"),
+                        $left = $(".left-box"),
+                        $right = $(".right-box"),
+                        $center = $(".center-box"),
+                        $upper = $(".upper-box"),
+                        $bottom = $(".bottom-box"),
+                        $editor = $(".editor-box"),
+                        $tree = $(".tree-box");
+                    if ($box.hasClass("left-box")) {
+                        var mouseX = e.clientX,
+                            leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
+                                1, $main.width() - $right.width() - 1);
+
+                        $box.width(leftWidth - 1);
+                        $center.css("margin-left", leftWidth + "px");
+
+                    }
+                    if ($box.hasClass("right-box")) {
+                        var mouseX = e.clientX,
+                            rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
+                                1, $main.width() - $tree.width() - 1);
+                        $box.width(rightWidth - 1);
+                        $center.css("margin-right", rightWidth + "px");
+                    }
+                    if ($box.hasClass("bottom-box")) {
+                        var mouseY = e.clientY,
+                            upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
+                                0, $main.height() - $box.children(".box-header").height() - 1);
+                        $box.height($main.height() - upperHeight);
+                        $upper.height(upperHeight);
+                    }
+                    if ($box.hasClass("tree-box")) {
+                        var mouseX = e.clientX,
+                            rightWidth = Math.mid($center.width() - (mouseX + mouseOffsetX + 5),
+                                1, $center.width() - 1);
+                        $box.width(rightWidth - 1);
+//                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
+                        $editor.css("margin-right", rightWidth + "px");
+                    }
+                }
+            }
+        }, false);
+    };
+    self.initResizables();
 }
 function ParseTreeViewModel() {
     var self = this;
@@ -640,9 +746,10 @@ function ParseTreeViewModel() {
         viewportMargin: Infinity
     });
     self.assembly = {
-        setContent: function (content) {
+        show: function (content) {
+            self.showAssembly(true);
             _assembly.cm.setValue(content);
-        }
+        },
     };
 
     self.isOpen = ko.observable(false);
@@ -657,6 +764,7 @@ function ParseTreeViewModel() {
         self.isOpen(false);
         $box.children(".box-body").css("padding-left", "0");
         $(".editor-box").css("margin-right", "0");
+        self.showAssembly(false);
     };
 }
 function SymbolTableViewModel() {
@@ -739,8 +847,8 @@ function Processor(console, parseTree, symbolTable) {
             .replace(/\s+(,|;|\))/g, "$1")
             .replace(/\(\s+/g, "(")
             .replace(/(then|else)\{/g, "$1 {")
-            .replace(/}(else)/, "} $1")
-            .replace(/([^\n]+)(?=else)/g, "$1\n");
+            .replace(/}(else)/, "} $1");
+        // .replace(/([^\n]+)(?=else)/g, "$1\n");
         return processed;
     };
 
@@ -769,8 +877,7 @@ function Processor(console, parseTree, symbolTable) {
                 console.success('code parsed.');
                 console.warn(paxer.getWarningMsg());
                 console.error(semantic.getErrorMsg());
-                $(".tree-box").addClass("assembly");
-                parseTree.assembly.setContent(semantic.getAssembly());
+                parseTree.assembly.show(semantic.getAssembly());
                 return;
             case "ERROR":
                 console.error(paxer.getErrMsg());
@@ -799,8 +906,7 @@ function Processor(console, parseTree, symbolTable) {
                 case 'DONE':
                     semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
                     var parseTime = Benchmark.measure("parse");
-                    $(".tree-box").addClass("assembly");
-                    parseTree.assembly.setContent(semantic.getAssembly());
+                    parseTree.assembly.show(semantic.getAssembly());
                     console.success(paxer.getMovementsF());
                     console.warn(paxer.getWarningMsg());
                     console.error(semantic.getErrorMsg());
@@ -1133,441 +1239,6 @@ ToyFile.prototype.serialize = function () {
         content: this.content
     });
 };
-/**
- * Created by Doma on 15/12/8.
- */
-var View = (function () {
-    var _editor = {};
-    _editor.cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
-        lineNumbers: true,
-        mode: "toy",
-        indentUnit: 4,
-        theme: "monokai-so",
-        autoCloseBrackets: true,
-        matchBrackets: true,
-        styleActiveLine: true,
-        showCursorWhenSelecting: true,
-        scrollbarStyle: "overlay",
-        selectionPointer: true,
-        styleSelectedText: true
-    });
-    _editor.cm.on("change", function (cm, change) {
-        var session = _editor.currentSession();
-        if (null === session) {
-            document.getElementById("btn-save").classList.remove("unsaved");
-            return;
-        }
-        if (session.saved) {
-            session.saved = false;
-        }
-        if (!document.getElementById("btn-save").classList.hasOwnProperty("unsaved")) {
-            document.getElementById("btn-save").classList.add("unsaved");
-        }
-    });
-
-    _editor.cm.on("cursorActivity", function (cm) {
-        var pos = cm.doc.getCursor();
-        $("#current-line").text(pos.line + 1);
-        $("#current-ch").text(pos.ch + 1);
-    });
-
-    _editor.getContent = function () {
-        return _editor.cm.getValue();
-    };
-
-    _editor.setContent = function (content) {
-        return _editor.cm.setValue(content);
-    };
-
-    function FileSession(file) {
-        this.id = _randomString(8);
-        this.file = file;
-        this.saved = true;
-        this.content = file.content;
-        this.history = {done: [], undone: []};
-        this.cursorPosition = {line: 0, ch: 0};
-    }
-
-    _editor.openedSessions = [];
-    _editor.openedSessions.find = function (sessionId) {
-        for (var i = 0; i < this.length; i++) {
-            if (this[i].id === sessionId) {
-                return this[i];
-            }
-        }
-        return null;
-    }.bind(_editor.openedSessions);
-
-    _editor.openedSessions.findFile = function (fileName) {
-        for (var i = 0; i < this.length; i++) {
-            if (this[i].file.fileName() === fileName) {
-                return this[i];
-            }
-        }
-        return null;
-    }.bind(_editor.openedSessions);
-
-    _editor.currentSession = (function () {
-        var _current = null;
-        return function (session) {
-            if (session && session !== _current) {
-                if (null !== _current) {
-                    _current.content = _editor.getContent();
-                    _current.history = _editor.cm.doc.getHistory();
-                    _current.cursorPosition = _editor.cm.doc.getCursor();
-                }
-                _current = session;
-                _editor.setContent(_current.content);
-                _editor.cm.doc.setHistory(_current.history);
-                _editor.cm.doc.setCursor(_current.cursorPosition);
-                var id = "session-" + _current.id,
-                    $li = $("#" + id);
-
-
-                if ($li.length < 1) {
-                    var $a = $("<a></a>").text(session.file.fileName()),
-                        $span = $("<span></span>").addClass("tab-dismiss").html("&times;");
-                    $li = $("<div></div>").attr("id", id).addClass("tab-cell");
-                    $span.on("click", (function (session) {
-                        return function () {
-                            View.editor.closeSession(session);
-                            return false;
-                        };
-                    })(session));
-                    $li.on("click", (function (session) {
-                        return function () {
-                            _editor.bringSessionToFront(session);
-                        };
-                    })(session));
-                    $(".tab-group").append($li.append($a.append($span)));
-                }
-
-                if (!$li.hasClass("active")) {
-                    $li.siblings(".active").removeClass("active");
-                    $li.addClass("active");
-                }
-            } else if (null === session) {
-                _current = null;
-                _editor.setContent("");
-                $(".editor-placeholder").show();
-                $("#cursor-position").hide();
-            }
-            return _current;
-        };
-    })();
-
-    _editor.bringSessionToFront = function (session) {
-        var saved = session.saved;
-        _editor.currentSession(session);
-        _editor.cm.focus();
-
-        if (saved) {
-            View.editor.save(true);
-        }
-    };
-
-    _editor.closeSession = function (session) {
-        _editor.openedSessions.remove(session);
-        var id = "session-" + session.id,
-            $li = $("#" + id);
-        $li.remove();
-        if (_editor.currentSession() == session) {
-            var s = _editor.openedSessions.front();
-            if (undefined === s) {
-                _editor.currentSession(null);
-            } else {
-                _editor.bringSessionToFront(s);
-            }
-        }
-    };
-
-    _editor.openFile = function (file) {
-        return;
-        $(".editor-placeholder").hide();
-        $("#cursor-position").show();
-        var session = file.isNewFile ? null : _editor.openedSessions.findFile(file.fileName());
-
-        if (null === session) {
-            session = new FileSession(file);
-            _editor.openedSessions.push(session);
-        }
-
-
-        var id = "toy-" + file.name,
-            $li = $("#" + id);
-        $li.trigger("click");
-        _editor.bringSessionToFront(session);
-    };
-
-    _editor.newFile = function () {
-        _editor.openFile(new ToyFile());
-    };
-
-    _editor.save = function (force) {
-        var session = _editor.currentSession();
-        if (session) {
-            if (!force) {
-                if (session.file.isNewFile) {
-                    _editor.dialogRenameFile(session.file);
-                    return;
-                }
-            }
-
-            if (force || !session.saved) {
-                session.file.content = session.content = _editor.getContent();
-                Storage.setItem(session.file.fileName(), session.file.serialize());
-                if (!force) {
-                    _console.log("Saved to '" + session.file.fileName() + "'");
-                }
-                session.saved = true;
-                //_editor.cm.doc.markClean();
-                document.getElementById("btn-save").classList.remove("unsaved");
-            }
-        }
-    };
-
-    _editor.needSave = function () {
-        if (!_editor.currentSession()) {
-            return false;
-        }
-        return !_editor.currentSession().saved;
-    };
-
-    var renaming = null;
-    _editor.dialogRenameFile = function (file) {
-        renaming = file;
-        if (renaming !== null) {
-
-            $("#filename").val(file.name);
-            $("#dialog-mask").show();
-            $("#filename").select();
-
-        }
-    };
-
-    _editor.confirmRename = function () {
-        if (renaming !== null) {
-            var newName = $("#filename").val();
-            if (null !== Cache.files.find(newName + ".toy")) {
-                if (!confirm("File '" + newName + ".toy' already exists. Want to overwrite?")) {
-                    $("#filename").select();
-                    return false;
-                }
-            }
-            $("#dialog-mask").hide();
-            $("#filename").val("");
-            var id = "toy-" + renaming.name;
-
-            renaming.name = newName;
-            //file.content = _editor.getContent();
-            if (renaming.isNewFile) {
-                renaming.isNewFile = false;
-                //session.saved = false;
-                _editor.save();
-                Cache.files.push(renaming);
-                id = "toy-" + newName;
-                if ($("#" + id).length < 1) {
-                    var $li = $("<li></li>").attr("id", id).text(renaming.fileName()),
-                        $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
-                    $li.on("click", function () {
-                        var $self = $(this);
-                        if (!$self.hasClass("active")) {
-                            $self.siblings(".active").removeClass("active");
-                            $self.addClass("active");
-                        }
-                    }).on("contextmenu", function () {
-                        $(this).trigger("click");
-                    }).on("dblclick", (function (file) {
-                        return function () {
-                            View.editor.openFile(file);
-                        };
-                    })(renaming));
-                    $("#file-list").append($li.prepend($icon));
-                }
-            } else {
-                var $li = $("#" + id),
-                    $icon = $("<span></span>").addClass("glyphicon glyphicon-file");
-                $li.attr("id", "toy-" + newName).text(renaming.fileName()).prepend($icon);
-            }
-            var session = _editor.openedSessions.findFile(renaming.fileName());
-            if (session) {
-                var cursor = _editor.cm.doc.getCursor();
-                _editor.closeSession(session);
-                _editor.openFile(renaming);
-                _editor.cm.doc.setCursor(cursor);
-            }
-            renaming = null;
-        }
-    };
-
-
-    var _console = {};
-
-    _console.cm = CodeMirror.fromTextArea(document.getElementById("console"), {
-        theme: "monokai-so",
-        mode: "console",
-        readOnly: "nocursor",
-        scrollbarStyle: "overlay",
-        viewportMargin: Infinity
-    });
-
-    _console.scollToEnd = function () {
-        _console.cm.scrollIntoView(_console.cm.doc.lastLine(), 1);
-    };
-
-    _console.cm.on("change", function (cm) {
-        cm.scrollIntoView(cm.doc.lastLine(), 1);
-    });
-
-    function _preoutput(addon, para) {
-        return addon + para.replace(/\s*\n/g, "\n  ") + "\n";
-    }
-
-    function _lastNLines(str, n) {
-        return str.split("\n").slice(-n).join("\n");
-    }
-
-    _console.log = function (str) {
-        if (_console.cm) {
-            _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput(": ", str), 1000));
-        } else {
-            window.console.log(str);
-        }
-    };
-
-    _console.error = function (str) {
-        if (str) {
-            if (_console.cm) {
-                if (str instanceof Object) {
-                    str = str.toString();
-                }
-                _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("- ", str), 1000));
-            } else {
-                window.console.log(str);
-            }
-        }
-    };
-
-    _console.success = function (str) {
-        if (str) {
-
-            if (_console.cm) {
-                _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("+ ", str), 1000));
-            } else {
-                window.console.log(str);
-            }
-
-        }
-    };
-    _console.warn = function (str) {
-        if (str) {
-
-            if (_console.cm) {
-                _console.cm.setValue(_lastNLines(_console.cm.getValue() + _preoutput("@ ", str), 1000));
-            } else {
-                window.console.log(str);
-            }
-
-        }
-    };
-
-    _console.popup = function () {
-        $("#box-opener-console").trigger("click");
-    };
-
-    var _control = {};
-    _control.compiling = null;
-    _control.compilie = function (file) {
-        _control.compiling = file;
-        _control.enterCompileMode();
-    };
-
-    _control.enterCompileMode = function () {
-        if (_control.compiling !== null) {
-            $("body").addClass("compiling");
-            $("#compiling-filename").text(_control.compiling.fileName());
-            $("#editing-btn-group").hide();
-            $("#compiling-btn-group").show();
-            $(".tab-bar-cover").show();
-            $(".tree-box").removeClass("assembly");
-            _assembly.cm.setValue("");
-            $("#box-opener-tree").trigger("click");
-            $("#box-opener-structure").trigger("click");
-            //$("#box-opener-console").trigger("click", true);
-
-            var $box = $(".bottom-box");
-            if ($box.hasClass("hidden")) {
-                $box.removeClass("hidden");
-            }
-            $box.css("height", "30%");
-            $(".upper-box").css("height", "70%");
-            _treePen.clear().setOptions({
-                width: $(".tree-box .box-body").width(),
-                height: $(".tree-box .box-body").height()
-            });
-            _treePen.setSource([
-                ["0", "program", 1, "", "1", "0"],
-            ]);
-            _treePen.render();
-            $(".tree-box .placeholder").hide();
-            $(".left-box .box-caret").trigger("click");
-            _editor.cm.setOption("readOnly", "nocursor");
-            _console.cm.setValue("");
-        }
-    };
-
-    _control.exitCompileMode = function () {
-        $("body").removeClass("compiling");
-
-        $("#compiling-btn-group").hide();
-        $("#editing-btn-group").show();
-        $(".tab-bar-cover").hide();
-        //$("#btn-compile").prop("disabled", false);
-        $("#box-opener-workspace").trigger("click");
-        $(".right-box .box-caret").trigger("click");
-        $(".tree-box .box-caret").trigger("click");
-        //$(".bottom-box .box-caret").trigger("click");
-        if (!$(".bottom-box").hasClass("hidden")) {
-            $(".bottom-box").css("height", "30%");
-            $(".upper-box").css("height", "70%");
-        }
-        _editor.cm.setOption("readOnly", false);
-        _control.compiling = null;
-        $("#compiling-filename").text("");
-    };
-
-    var _treePen = new Tree("tree-pane", {
-        radius: 10
-    });
-    _treePen.clear = function () {
-        _treePen.canvas.clear();
-        return _treePen;
-    };
-
-    S("treeboxresized", function () {
-        _treePen.render({
-            width: $(".tree-box .box-body").width(),
-            height: $(".tree-box .box-body").height()
-        });
-    });
-
-    var _assembly = {};
-    _assembly.cm = CodeMirror.fromTextArea(document.getElementById("assembly"), {
-        theme: "monokai-so",
-        mode: "console",
-        readOnly: "nocursor",
-        scrollbarStyle: "overlay",
-        viewportMargin: Infinity
-    });
-
-    return {
-        assembly: _assembly,
-        editor: _editor,
-        console: _console,
-        control: _control,
-        treePen: _treePen
-    };
-})();
 var SymbolTable = {
     new: function () {
         var symbolTable = {};
@@ -2487,7 +2158,12 @@ function SemanticAnalyzer() {
         var a1 = ad1 === null ? "" : ad1,
             a2 = ad2 === null ? "" : ad2,
             a3 = ad3 === null ? "" : ad3;
-        return "    " + type + " " + a1 + ", " + a2 + ", " + a3;
+        if (type.length == 3) {
+            type += " ";
+        } else if (type.length == 2) {
+            type += "  ";
+        }
+        return ["    ", type, " ", a1, ", ", a2, ", ", a3].join("");
     }
 
 
@@ -2811,84 +2487,17 @@ SemanticError.prototype.toString = function () {
 };
 
 $(function () {
-    ko.applyBindings(mainView = new MainViewModel());
+    ko.applyBindings(window.mainView = new MainViewModel());
     window.onbeforeunload = function () {
         if (mainView.editor.unsaved()) {
             return "未保存的修改将丢失";
         }
     };
-
     window.onunload = function () {
         mainView.editor.save();
         mainView.fileManager.save();
     };
 
-    var moving_resizer = null,
-        mouseOffsetY = 0,
-        mouseOffsetX = 0;
-    $.each($(".resizer"), function (index, el) {
-        $(el).on("mousedown", function (e) {
-            moving_resizer = el;
-            mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
-            mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
-            $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
-
-        });
-    });
-    $(document).on("mouseup", function () {
-        var $box = $(moving_resizer).parent(".resizable");
-        if ($box.hasClass("bottom-box") || $box.hasClass("tree-box")) {
-            P("treeboxresized");
-        }
-        moving_resizer = null;
-        $("#resizing-mask").hide();
-    });
-    document.getElementById("resizing-mask").addEventListener("mousemove", function (e) {
-        if (moving_resizer instanceof HTMLElement) {
-            var $box = $(moving_resizer).parent(".resizable");
-            if ($box[0] instanceof HTMLElement) {
-                var $main = $("#main"),
-                    $left = $(".left-box"),
-                    $right = $(".right-box"),
-                    $center = $(".center-box"),
-                    $upper = $(".upper-box"),
-                    $bottom = $(".bottom-box"),
-                    $editor = $(".editor-box"),
-                    $tree = $(".tree-box");
-                if ($box.hasClass("left-box")) {
-                    var mouseX = e.clientX,
-                        leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
-                            1, $main.width() - $right.width() - 1);
-
-                    $box.width(leftWidth - 1);
-                    $center.css("margin-left", leftWidth + "px");
-
-                }
-                if ($box.hasClass("right-box")) {
-                    var mouseX = e.clientX,
-                        rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
-                            1, $main.width() - $tree.width() - 1);
-                    $box.width(rightWidth - 1);
-                    $center.css("margin-right", rightWidth + "px");
-                }
-                if ($box.hasClass("bottom-box")) {
-                    var mouseY = e.clientY,
-                        upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
-                            0, $main.height() - $box.children(".box-header").height() - 1);
-                    $box.height($main.height() - upperHeight);
-                    $upper.height(upperHeight);
-                }
-                if ($box.hasClass("tree-box")) {
-                    var mouseX = e.clientX,
-                        rightWidth = Math.mid($center.width() - (mouseX + mouseOffsetX + 5),
-                            1, $center.width() - 1);
-                    $box.width(rightWidth - 1);
-//                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
-                    $editor.css("margin-right", rightWidth + "px");
-                }
-            }
-        }
-    }, false);
     $(document).on("contextmenu", function () {
         return false;
     });
@@ -2901,7 +2510,7 @@ $(function () {
         {
             text: "New File...",
             action: function (e) {
-                View.editor.newFile();
+                mainView.editor.openNewFile();
             }
         },
         {
@@ -2910,30 +2519,27 @@ $(function () {
         {
             text: "Rename",
             action: function (e) {
-                var $li = $("#file-list").children("li.active"),
+                var $li = $("#file-list").children(".active"),
                     name = $li.attr("id"),
                     fileName = name.replace(/^toy\-/, "") + ".toy";
-                View.editor.dialogRenameFile(Cache.files.find(fileName));
+                mainView.workspace.renameFile(fileName);
             }
         },
         {
             text: "Delete",
             action: function (e) {
-                var $li = $("#file-list li.active"),
+                var $li = $("#file-list").children(".active"),
                     name = $li.attr("id").replace(/^toy\-/, ""),
-                    fileName = name + ".toy",
-                    file = Cache.files.find(fileName);
-                if (confirm("Are you sure to delete '" + file.fileName() + "'?")) {
-                    if (file) {
-                        Cache.files.remove(file);
-                    }
-                    $li.remove();
-                    var session = View.editor.openedSessions.findFile(fileName);
-                    if (session) {
-                        View.editor.closeSession(session);
-                    }
-                    Storage.removeItem(fileName);
-                }
+                    fileName = name + ".toy";
+                mainView.workspace.confirmDeleteFile(fileName);
+            }
+        }
+    ]);
+    context.attach(".left-box .box-body", [
+        {
+            text: "New File...",
+            action: function (e) {
+                mainView.editor.openNewFile();
             }
         }
     ]);

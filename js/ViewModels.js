@@ -45,6 +45,10 @@ function FileManager() {
         return file;
     };
 
+    /**
+     * @param {string} fileName
+     * @returns {*}
+     */
     self.findFile = function (fileName) {
         for (var i = 0, files = self.files(), len = files.length; i < len; i++) {
             if (files[i].fileName() == fileName) {
@@ -59,6 +63,10 @@ function FileManager() {
             file.isNew(false);
         }
         Storage.setItem(file.fileName(), file.serialize());
+    };
+    self.deleteFile = function (file) {
+        self.files.remove(file);
+        Storage.removeItem(file.fileName());
     };
 
     self.load = function () {
@@ -188,6 +196,13 @@ function EditorViewModel(fileManager) {
             self.setActive(self.tabs().rear());
         }
     };
+    self.findFileTab = function (file) {
+        for (var i = 0, tabs = self.tabs(), len = tabs.length; i < len; i++) {
+            if (tabs[i].file == file) {
+                return tabs[i];
+            }
+        }
+    };
 
     self.cursorPosText = ko.computed(function () {
         var tab = self.activeTab();
@@ -198,10 +213,13 @@ function EditorViewModel(fileManager) {
         return "";
     });
 
+    self.isLocked = ko.observable(false);
     self.lock = function () {
+        self.isLocked(true);
         self.cm.setOption("readOnly", "nocursor");
     };
     self.unlock = function () {
+        self.isLocked(false);
         self.cm.setOption("readOnly", false);
     };
 
@@ -307,7 +325,9 @@ function WorkspaceViewModel(fileManager, editor) {
     };
 
     self.openFileInEditor = function (row) {
-        editor.openFile(row.file);
+        if (!editor.isLocked()) {
+            editor.openFile(row.file);
+        }
     };
 
     self.importFile = function () {
@@ -332,6 +352,23 @@ function WorkspaceViewModel(fileManager, editor) {
             fr.readAsText(file);
         });
         $fileInput.trigger("click");
+    };
+
+    self.renameFile = function (fileName) {
+        var file = fileManager.findFile(fileName);
+        if (file) {
+            editor.renameDialog.rename(file);
+        }
+    };
+    self.confirmDeleteFile = function (fileName) {
+        var file = fileManager.findFile(fileName);
+        if (file && confirm("Are you sure to delete '" + file.fileName() + "'?")) {
+            var tab = editor.findFileTab(file)
+            if (tab) {
+                editor.closeTab(tab);
+            }
+            fileManager.deleteFile(file);
+        }
     };
 
     self.isOpen = ko.observable(true);
@@ -486,6 +523,75 @@ function UIViewModel(editor, workspace, console, treePen, symbolTable) {
             }
         }
     });
+    self.initResizables = function () {
+        var moving_resizer = null,
+            mouseOffsetY = 0,
+            mouseOffsetX = 0;
+        $.each($(".resizer"), function (index, el) {
+            $(el).on("mousedown", function (e) {
+                moving_resizer = el;
+                mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
+                mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
+                $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
+
+            });
+        });
+        $(document).on("mouseup", function () {
+            var $box = $(moving_resizer).parent(".resizable");
+            if ($box.hasClass("bottom-box") || $box.hasClass("tree-box")) {
+                P("treeboxresized");
+            }
+            moving_resizer = null;
+            $("#resizing-mask").hide();
+        });
+        document.getElementById("resizing-mask").addEventListener("mousemove", function (e) {
+            if (moving_resizer instanceof HTMLElement) {
+                var $box = $(moving_resizer).parent(".resizable");
+                if ($box[0] instanceof HTMLElement) {
+                    var $main = $("#main"),
+                        $left = $(".left-box"),
+                        $right = $(".right-box"),
+                        $center = $(".center-box"),
+                        $upper = $(".upper-box"),
+                        $bottom = $(".bottom-box"),
+                        $editor = $(".editor-box"),
+                        $tree = $(".tree-box");
+                    if ($box.hasClass("left-box")) {
+                        var mouseX = e.clientX,
+                            leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
+                                1, $main.width() - $right.width() - 1);
+
+                        $box.width(leftWidth - 1);
+                        $center.css("margin-left", leftWidth + "px");
+
+                    }
+                    if ($box.hasClass("right-box")) {
+                        var mouseX = e.clientX,
+                            rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
+                                1, $main.width() - $tree.width() - 1);
+                        $box.width(rightWidth - 1);
+                        $center.css("margin-right", rightWidth + "px");
+                    }
+                    if ($box.hasClass("bottom-box")) {
+                        var mouseY = e.clientY,
+                            upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
+                                0, $main.height() - $box.children(".box-header").height() - 1);
+                        $box.height($main.height() - upperHeight);
+                        $upper.height(upperHeight);
+                    }
+                    if ($box.hasClass("tree-box")) {
+                        var mouseX = e.clientX,
+                            rightWidth = Math.mid($center.width() - (mouseX + mouseOffsetX + 5),
+                                1, $center.width() - 1);
+                        $box.width(rightWidth - 1);
+//                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
+                        $editor.css("margin-right", rightWidth + "px");
+                    }
+                }
+            }
+        }, false);
+    };
+    self.initResizables();
 }
 function ParseTreeViewModel() {
     var self = this;
@@ -527,9 +633,10 @@ function ParseTreeViewModel() {
         viewportMargin: Infinity
     });
     self.assembly = {
-        setContent: function (content) {
+        show: function (content) {
+            self.showAssembly(true);
             _assembly.cm.setValue(content);
-        }
+        },
     };
 
     self.isOpen = ko.observable(false);
@@ -544,6 +651,7 @@ function ParseTreeViewModel() {
         self.isOpen(false);
         $box.children(".box-body").css("padding-left", "0");
         $(".editor-box").css("margin-right", "0");
+        self.showAssembly(false);
     };
 }
 function SymbolTableViewModel() {
@@ -626,8 +734,8 @@ function Processor(console, parseTree, symbolTable) {
             .replace(/\s+(,|;|\))/g, "$1")
             .replace(/\(\s+/g, "(")
             .replace(/(then|else)\{/g, "$1 {")
-            .replace(/}(else)/, "} $1")
-            .replace(/([^\n]+)(?=else)/g, "$1\n");
+            .replace(/}(else)/, "} $1");
+        // .replace(/([^\n]+)(?=else)/g, "$1\n");
         return processed;
     };
 
@@ -656,8 +764,7 @@ function Processor(console, parseTree, symbolTable) {
                 console.success('code parsed.');
                 console.warn(paxer.getWarningMsg());
                 console.error(semantic.getErrorMsg());
-                $(".tree-box").addClass("assembly");
-                parseTree.assembly.setContent(semantic.getAssembly());
+                parseTree.assembly.show(semantic.getAssembly());
                 return;
             case "ERROR":
                 console.error(paxer.getErrMsg());
@@ -686,8 +793,7 @@ function Processor(console, parseTree, symbolTable) {
                 case 'DONE':
                     semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
                     var parseTime = Benchmark.measure("parse");
-                    $(".tree-box").addClass("assembly");
-                    parseTree.assembly.setContent(semantic.getAssembly());
+                    parseTree.assembly.show(semantic.getAssembly());
                     console.success(paxer.getMovementsF());
                     console.warn(paxer.getWarningMsg());
                     console.error(semantic.getErrorMsg());

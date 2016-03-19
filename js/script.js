@@ -1,82 +1,15 @@
 $(function () {
-    ko.applyBindings(mainView = new MainViewModel());
+    ko.applyBindings(window.mainView = new MainViewModel());
     window.onbeforeunload = function () {
         if (mainView.editor.unsaved()) {
             return "未保存的修改将丢失";
         }
     };
-
     window.onunload = function () {
         mainView.editor.save();
         mainView.fileManager.save();
     };
 
-    var moving_resizer = null,
-        mouseOffsetY = 0,
-        mouseOffsetX = 0;
-    $.each($(".resizer"), function (index, el) {
-        $(el).on("mousedown", function (e) {
-            moving_resizer = el;
-            mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
-            mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
-            $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
-
-        });
-    });
-    $(document).on("mouseup", function () {
-        var $box = $(moving_resizer).parent(".resizable");
-        if ($box.hasClass("bottom-box") || $box.hasClass("tree-box")) {
-            P("treeboxresized");
-        }
-        moving_resizer = null;
-        $("#resizing-mask").hide();
-    });
-    document.getElementById("resizing-mask").addEventListener("mousemove", function (e) {
-        if (moving_resizer instanceof HTMLElement) {
-            var $box = $(moving_resizer).parent(".resizable");
-            if ($box[0] instanceof HTMLElement) {
-                var $main = $("#main"),
-                    $left = $(".left-box"),
-                    $right = $(".right-box"),
-                    $center = $(".center-box"),
-                    $upper = $(".upper-box"),
-                    $bottom = $(".bottom-box"),
-                    $editor = $(".editor-box"),
-                    $tree = $(".tree-box");
-                if ($box.hasClass("left-box")) {
-                    var mouseX = e.clientX,
-                        leftWidth = Math.mid(mouseX + mouseOffsetX + 5,
-                            1, $main.width() - $right.width() - 1);
-
-                    $box.width(leftWidth - 1);
-                    $center.css("margin-left", leftWidth + "px");
-
-                }
-                if ($box.hasClass("right-box")) {
-                    var mouseX = e.clientX,
-                        rightWidth = Math.mid($main.width() - (mouseX + mouseOffsetX + 5),
-                            1, $main.width() - $tree.width() - 1);
-                    $box.width(rightWidth - 1);
-                    $center.css("margin-right", rightWidth + "px");
-                }
-                if ($box.hasClass("bottom-box")) {
-                    var mouseY = e.clientY,
-                        upperHeight = Math.mid(mouseY + mouseOffsetY + 5 - $(".navbar").height(),
-                            0, $main.height() - $box.children(".box-header").height() - 1);
-                    $box.height($main.height() - upperHeight);
-                    $upper.height(upperHeight);
-                }
-                if ($box.hasClass("tree-box")) {
-                    var mouseX = e.clientX,
-                        rightWidth = Math.mid($center.width() - (mouseX + mouseOffsetX + 5),
-                            1, $center.width() - 1);
-                    $box.width(rightWidth - 1);
-//                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
-                    $editor.css("margin-right", rightWidth + "px");
-                }
-            }
-        }
-    }, false);
     $(document).on("contextmenu", function () {
         return false;
     });
@@ -89,7 +22,7 @@ $(function () {
         {
             text: "New File...",
             action: function (e) {
-                View.editor.newFile();
+                mainView.editor.openNewFile();
             }
         },
         {
@@ -98,30 +31,27 @@ $(function () {
         {
             text: "Rename",
             action: function (e) {
-                var $li = $("#file-list").children("li.active"),
+                var $li = $("#file-list").children(".active"),
                     name = $li.attr("id"),
                     fileName = name.replace(/^toy\-/, "") + ".toy";
-                View.editor.dialogRenameFile(Cache.files.find(fileName));
+                mainView.workspace.renameFile(fileName);
             }
         },
         {
             text: "Delete",
             action: function (e) {
-                var $li = $("#file-list li.active"),
+                var $li = $("#file-list").children(".active"),
                     name = $li.attr("id").replace(/^toy\-/, ""),
-                    fileName = name + ".toy",
-                    file = Cache.files.find(fileName);
-                if (confirm("Are you sure to delete '" + file.fileName() + "'?")) {
-                    if (file) {
-                        Cache.files.remove(file);
-                    }
-                    $li.remove();
-                    var session = View.editor.openedSessions.findFile(fileName);
-                    if (session) {
-                        View.editor.closeSession(session);
-                    }
-                    Storage.removeItem(fileName);
-                }
+                    fileName = name + ".toy";
+                mainView.workspace.confirmDeleteFile(fileName);
+            }
+        }
+    ]);
+    context.attach(".left-box .box-body", [
+        {
+            text: "New File...",
+            action: function (e) {
+                mainView.editor.openNewFile();
             }
         }
     ]);

@@ -552,37 +552,27 @@ function ConsoleViewModel() {
         }
     };
 
-    self.error = function (str) {
+    self.outputWithAddon = function (addon, str) {
         if (str) {
             if (self.cm) {
                 if (str instanceof Object) {
                     str = str.toString();
                 }
-                self.cm.setValue(_lastNLines(self.cm.getValue() + _preoutput("- ", str), 1000));
+                self.cm.setValue(_lastNLines(self.cm.getValue() + _preoutput(addon, str), 1000));
             } else {
                 window.console.log(str);
             }
         }
+    };
+    self.error = function (str) {
+        self.outputWithAddon("- ", str);
     };
 
     self.success = function (str) {
-        if (str) {
-            if (self.cm) {
-                self.cm.setValue(_lastNLines(self.cm.getValue() + _preoutput("+ ", str), 1000));
-            } else {
-                window.console.log(str);
-            }
-        }
+        self.outputWithAddon("+ ", str);
     };
     self.warn = function (str) {
-        if (str) {
-            if (self.cm) {
-                self.cm.setValue(_lastNLines(self.cm.getValue() + _preoutput("@ ", str), 1000));
-            } else {
-                window.console.log(str);
-            }
-
-        }
+        self.outputWithAddon("+ ", str);
     };
 
     self.clear = function () {
@@ -611,7 +601,7 @@ function ConsoleViewModel() {
         $box.css("height", "100%");
     }
 }
-function UIViewModel(editor, workspace, console, treePen, symbolTable) {
+function UIViewModel(editor, workspace, console, parseTree, symbolTable) {
     var self = this;
     var compileMode = ko.observable(false);
     self.compileMode = ko.computed({
@@ -624,11 +614,11 @@ function UIViewModel(editor, workspace, console, treePen, symbolTable) {
                 editor.lock();
                 workspace.close();
                 symbolTable.open();
-                treePen.open();
+                parseTree.open();
                 console.open();
                 console.clear();
             } else {
-                treePen.close();
+                parseTree.close();
                 symbolTable.close();
                 workspace.open();
                 editor.unlock();
@@ -639,24 +629,28 @@ function UIViewModel(editor, workspace, console, treePen, symbolTable) {
         var moving_resizer = null,
             mouseOffsetY = 0,
             mouseOffsetX = 0;
+        var $document = $(document),
+            $body = $(document.body);
         $.each($(".resizer"), function (index, el) {
             $(el).on("mousedown", function (e) {
                 moving_resizer = el;
                 mouseOffsetY = $(moving_resizer).offset().top - e.clientY;
                 mouseOffsetX = $(moving_resizer).offset().left - e.clientX;
-                $("#resizing-mask").css("cursor", $(moving_resizer).css("cursor")).show();
+                $body.css("cursor", $(moving_resizer).css("cursor"));
 
+                $document.on('mousemove', resizeHandler);
+                $document.on("mouseup", function () {
+                    var $box = $(moving_resizer).parent(".resizable");
+                    if ($box.hasClass("bottom-box") || $box.hasClass("tree-box")) {
+                        parseTree.resizePen();
+                    }
+                    moving_resizer = null;
+                    $document.off('mousemove');
+                    $body.css("cursor", '');
+                });
             });
         });
-        $(document).on("mouseup", function () {
-            var $box = $(moving_resizer).parent(".resizable");
-            if ($box.hasClass("bottom-box") || $box.hasClass("tree-box")) {
-                P("treeboxresized");
-            }
-            moving_resizer = null;
-            $("#resizing-mask").hide();
-        });
-        document.getElementById("resizing-mask").addEventListener("mousemove", function (e) {
+        function resizeHandler(e) {
             if (moving_resizer instanceof HTMLElement) {
                 var $box = $(moving_resizer).parent(".resizable");
                 if ($box[0] instanceof HTMLElement) {
@@ -696,11 +690,15 @@ function UIViewModel(editor, workspace, console, treePen, symbolTable) {
                             rightWidth = Math.mid($center.width() - (mouseX + mouseOffsetX + 5),
                                 1, $center.width() - 1);
                         $box.width(rightWidth - 1);
-//                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
+                        $box.children(".box-body").css("padding-left", Math.max(0, (rightWidth - 551) / 2) + "px");
                         $editor.css("margin-right", rightWidth + "px");
                     }
                 }
             }
+        }
+
+        document.getElementById("resizing-mask").addEventListener("mousemove", function (e) {
+
         }, false);
     };
     self.initResizables();
@@ -730,8 +728,13 @@ function ParseTreeViewModel() {
     };
 
     S("treeboxresized", function () {
-        _treePen.resize();
+        self.resizePen();
     });
+    self.resizePen = function () {
+        if (self.isOpen() && !self.showAssembly()) {
+            _treePen.resize();
+        }
+    };
 
     self.pen = _treePen;
     self.showAssembly = ko.observable(false);
@@ -780,7 +783,6 @@ function SymbolTableViewModel(editor) {
             self.symbols.push(new SymbolRow(table[i]));
         }
     };
-
     var activeRow = null;
     self.setActive = function (row) {
         if (activeRow) {
@@ -821,7 +823,6 @@ function SymbolTableViewModel(editor) {
         });
 
         self.update = function (symbol) {
-            console.log(symbol);
             self.name(symbol.name);
             self.type(symbol.type);
             for (var i = self.positions().length; i < symbol.positions.length; i++) {
@@ -2209,8 +2210,6 @@ function SemanticAnalyzer() {
             if (_f > 0) {
                 _assembly[_assembly.length] = f(_f);
             }
-
-            P("symboltablechanged", symboltable);
         };
 
 
@@ -2604,11 +2603,11 @@ $(function () {
             }
         }
     ]);
-    S("semantichaserror", function (errors) {
-        for (var i = 0; i < errors.length; i++) {
-            mainView.console.error(errors[i].toString());
-        }
-    });
+    // S("semantichaserror", function (errors) {
+    //     for (var i = 0; i < errors.length; i++) {
+    //         mainView.console.error(errors[i].toString());
+    //     }
+    // });
 
     mainView.console.log("Compiler lauched at " + new Date().toTimeString());
     $(".loading-mask").remove();

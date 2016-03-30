@@ -36,8 +36,6 @@ function SemanticAnalyzer() {
             if (_f > 0) {
                 _assembly[_assembly.length] = f(_f);
             }
-
-            P("symboltablechanged", symboltable);
         };
 
 

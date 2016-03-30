@@ -55,11 +55,11 @@ $(function () {
             }
         }
     ]);
-    S("semantichaserror", function (errors) {
-        for (var i = 0; i < errors.length; i++) {
-            mainView.console.error(errors[i].toString());
-        }
-    });
+    // S("semantichaserror", function (errors) {
+    //     for (var i = 0; i < errors.length; i++) {
+    //         mainView.console.error(errors[i].toString());
+    //     }
+    // });
 
     mainView.console.log("Compiler lauched at " + new Date().toTimeString());
     $(".loading-mask").remove();

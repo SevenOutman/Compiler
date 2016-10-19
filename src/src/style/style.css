@@ -1,0 +1,724 @@
+html,
+body {
+    width: 100%;
+    height: 100%;
+    background: rgb(40, 40, 41);
+    font-family: "Lucida Grande", 'Lato', 'Open Sans', Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    -webkit-user-select: none;
+}
+
+button,
+button:hover,
+button:active,
+button:visited,
+button:focus,
+button:focus:active,
+input,
+input:focus {
+    -webkit-appearance: none;
+    outline: none;
+}
+
+a,
+a:hover,
+a:active,
+a:visited,
+a:focus,
+a:focus:active {
+    outline: none;
+}
+
+.CodeMirror {
+    height: 100%;
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace !important;
+    font-size: 13px;
+}
+
+.CodeMirror-overlayscroll-horizontal div, .CodeMirror-overlayscroll-vertical div {
+    background: rgba(128, 128, 128, .7);
+}
+
+
+.compiling .cm-s-monokai-so .CodeMirror-selectedtext {
+    color: #000 !important;
+    background: yellow;
+}
+
+
+.console-container .CodeMirror {
+    /*font-size: 10px;*/
+}
+
+#main {
+    position: relative;
+    /*height: calc(100% - 55px);*/
+    height: 100%;
+    padding-top: 55px;
+    padding-bottom: 20px;
+}
+
+#dialog-save {
+    color: #000;
+    text-align: center;
+    background: #FEDD31;
+}
+
+#dialog-save input {
+    width: auto;
+    position: relative;
+    font-family: inherit;
+    text-decoration: underline;
+}
+
+#tree-mask {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: #ffffff;
+    display: none;
+    z-index: 10001;
+}
+
+#resizing-mask {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: transparent;
+    display: none;
+    z-index: 10001;
+}
+
+#dialog-mask {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    padding-top: 20%;
+    background: transparent;
+    z-index: 10001;
+}
+
+#rename-dialog {
+    width: 300px;
+    height: auto;
+    margin: 0 auto;
+    padding: 10px;
+    max-width: 80%;
+    background: rgb(60, 63, 65);
+    color: rgb(187, 187, 187);
+    border-radius: 3px;
+    font-size: 13px;
+    -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+    -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+}
+
+#filename {
+    width: 100%;
+    background: rgb(69, 73, 74);
+    border-radius: 2px;
+    border: 1px solid rgb(94, 96, 96);
+    margin-bottom: 5px;
+}
+
+.dialog-btn-group {
+    text-align: right;
+}
+
+.dialog-btn {
+    min-width: 75px;
+    padding: 5px;
+    border-radius: 2px;
+    border: 1px solid rgb(94, 96, 96);
+    background: rgb(75, 80, 82);
+}
+
+
+.container-fluid {
+    max-width: 100%;
+    /*max-width: 960px;*/
+}
+
+.navbar-inverse {
+    background: #000;
+    /*background: rgb(60, 63, 65);*/
+    color: #fff;
+}
+
+.navbar-inverse .navbar-brand {
+    color: #ffffff;
+}
+
+.navbar-btn,
+.navbar-btn-o {
+    -webkit-appearance: none;
+    border: 3px solid #343436;
+    border-radius: 3px;
+    color: #ffffff;
+    margin-right: 10px;
+    outline: none;
+}
+
+.navbar-btn {
+    background: #343436;
+}
+
+.navbar-btn-o {
+    background: transparent;
+    margin-bottom: 8px;
+    margin-top: 8px;
+}
+
+.navbar-btn:hover,
+.navbar-btn-o:hover {
+    background: #4d4d50;
+    color: #ffffff;
+    outline: none;
+}
+
+.navbar-btn:disabled:hover {
+    background: #343436;
+}
+
+.navbar-btn:active,
+.navbar-btn-o:active {
+    -webkit-transform: translateY(1px);
+    -moz-transform: translateY(1px);
+    -ms-transform: translateY(1px);
+    -o-transform: translateY(1px);
+    transform: translateY(1px);
+}
+
+.navbar-btn:visited,
+.navbar-btn-o:visited {
+    color: #ffffff;
+    outline: none;
+}
+
+.navbar-btn:focus,
+.navbar-btn-o:focus,
+.navbar-btn:focus:active,
+.navbar-btn-o:focus:active {
+    color: #ffffff;
+    outline: none;
+}
+
+.navbar-btn .glyphicon,
+.navbar-btn-o .glyphicon {
+    color: #AEAEAE;
+}
+
+.unsaved {
+    position: relative;
+}
+
+.unsaved::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    top: 0;
+    left: 0;
+    background: #FEDD31;
+    border: none;
+    z-index: 1;
+}
+
+#btn-stop .glyphicon {
+    color: #561818;
+}
+
+#btn-stop:hover .glyphicon {
+    color: #dc0000;
+}
+
+.resizable {
+    position: relative;
+    /*overflow: hidden;*/
+}
+
+.resizer {
+    position: absolute;
+    /*background: rgb(52, 52, 54);*/
+    background: transparent;
+    z-index: 100;
+}
+
+.resizer.horizontal {
+    height: 12px;
+    width: 100%;
+    /*border-top: 1px solid #000;*/
+    /*border-bottom: 1px solid rgba(0, 0, 0, .5);*/
+    cursor: row-resize;
+    /*-webkit-box-shadow: 0 0 3px 0 rgba(0, 0, 0, .5);*/
+    /*-moz-box-shadow: 0 0 3px 0 rgba(0, 0, 0, .5);*/
+    /*box-shadow: 0 0 3px 0 rgba(0, 0, 0, .5);*/
+}
+
+.resizer.vertical {
+    height: 100%;
+    width: 10px;
+    /*border-left: 1px solid #000;*/
+    /*border-right: 1px solid rgba(0, 0, 0, .5);*/
+    cursor: col-resize;
+    float: left;
+    /*-webkit-box-shadow: 0 0 3px 0 rgba(0, 0, 0, .5);*/
+    /*-moz-box-shadow: 0 0 3px 0 rgba(0, 0, 0, .5);*/
+    /*box-shadow: 0 0 3px 0 rgba(0, 0, 0, .5);*/
+}
+
+.box-header {
+    width: 100%;
+    height: 22px;
+    background: -webkit-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Safari 5.1 - 6.0 */
+    background: -o-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Opera 11.1 - 12.0 */
+    background: -moz-linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* Firefox 3.6 - 15 */
+    background: linear-gradient(rgb(59, 62, 64), rgb(56, 59, 60)); /* 标准的语法 */
+    border-top: 1px solid rgb(82, 85, 86);
+    border-bottom: 1px solid rgb(36, 38, 39);
+    overflow: hidden;
+
+}
+
+.box-title {
+    float: left;
+    height: 100%;
+    padding: 5px;
+    font-size: 10px;
+    line-height: 10px;
+    color: rgb(128, 128, 128);
+    -webkit-user-select: none;
+    cursor: default;
+    white-space: nowrap;
+}
+
+.box-caret,
+.box-expand {
+    float: right;
+    margin-right: 5px;
+    top: 0;
+    line-height: 20px;
+    color: rgb(128, 128, 128);
+    cursor: pointer;
+}
+
+.box-body {
+    position: relative;
+    height: calc(100% - 22px);
+    overflow: auto;
+}
+
+.box-body .placeholder {
+    width: 100%;
+    padding-top: 35vh;
+    text-align: center;
+    white-space: nowrap;
+    color: rgb(187, 187, 187);
+    cursor: default;
+    -webkit-user-select: none;
+}
+
+.left-box {
+    width: 200px;
+    height: 100%;
+    float: left;
+    background: rgb(60, 63, 65);
+    border-top: 1px solid rgb(38, 40, 41);
+    border-right: 1px solid rgb(40, 40, 40);
+    z-index: 300;
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    color: rgb(187, 187, 187);
+}
+
+.list > li {
+    width: 100%;
+    height: 20px;
+    font-size: 10px;
+    line-height: 10px;
+    padding: 5px 0 5px 20px;
+    margin: 0;
+    white-space: nowrap;
+    cursor: default;
+    -webkit-user-select: none;
+}
+
+.list > li > span.glyphicon {
+    vertical-align: top;
+    line-height: 10px;
+    top: 0;
+    font-size: 15px;
+}
+
+.list > li > span.li-caret {
+    margin-left: -15px;
+    margin-right: 10px;
+    font-size: 10px;
+}
+
+.list > li > span.li-caret.no-child {
+    /*border-color: transparent;*/
+    opacity: 0;
+}
+
+.list > li > .extra {
+    margin-left: 1em;
+    color: rgb(128, 128, 128);
+}
+
+.list > li.active {
+    background: rgb(13, 41, 62);
+}
+
+.list > li.active > .extra {
+    color: rgb(187, 187, 187);
+}
+
+.right-box {
+    /*width: 200px;*/
+    width: 0;
+    height: 100%;
+    float: right;
+    background: rgb(60, 63, 65);
+    border-top: 1px solid rgb(38, 40, 41);
+    border-left: 1px solid rgb(40, 40, 40);
+    z-index: 300;
+}
+
+.center-box {
+    width: auto;
+    height: 100%;
+    margin: 0 0 0 200px;
+}
+
+.upper-box {
+    position: relative;
+    height: 100%;
+}
+
+.bottom-box {
+    height: 30%;
+    /*height: 23px;*/
+    border-top: 1px solid rgb(38, 40, 41);
+    z-index: 300;
+}
+
+.left-box.resizable .resizer:not(.resizing)  {
+    top: 0;
+    right: -5px;
+}
+
+.right-box.resizable .resizer:not(.resizing)  {
+    top: 0;
+    left: -5px;
+}
+
+.bottom-box.resizable .resizer:not(.resizing) {
+    top: -5px;
+    left: 0;
+}
+
+.editor-box {
+    position: relative;
+    height: 100%;
+    /*height: calc(100% - 23px);*/
+}
+
+.tree-box.resizable .resizer {
+    top: 0;
+    left: -5px;
+}
+
+.editor-placeholder {
+    position: absolute;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    text-align: center;
+    color: rgb(187, 187, 187);
+    padding-top: 35vh;
+    font-size: 24px;
+    background: rgb(40, 40, 41);
+    white-space: nowrap;
+    z-index: 195;
+    text-shadow: 1px 1px 0 #000;
+    cursor: default;
+    -webkit-user-select: none;
+}
+
+.tree-box {
+    width: 0;
+    height: 100%;
+    float: right;
+    background: rgb(60, 63, 65);
+    border-top: 1px solid rgb(38, 40, 41);
+    border-left: 1px solid rgb(40, 40, 40);
+    z-index: 300;
+}
+.assembly-only {
+    display: none;
+}
+
+.assembly .assembly-only {
+    display: block;
+}
+
+.assembly .hidden-assembly {
+    display: none;
+}
+.tree-box .box-body {
+    background: rgba(255, 255, 255, 1);
+    overflow: hidden;
+}
+
+.tree-box .placeholder {
+    background: rgb(60, 63, 65);
+}
+
+#cover-open {
+    cursor: pointer;
+}
+
+#cover-open:hover {
+    color: #6cf;
+}
+
+.tab-bar {
+    position: absolute;
+    width: 100%;
+    height: 24px;
+    left: 0;
+    top: 0;
+    background: rgb(60, 63, 65);
+    border-bottom: 1px solid rgb(40, 40, 40);
+}
+
+.tab-bar-cover {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    padding: 6px 0 5px 0;
+    background: rgb(60, 63, 65);
+    color: rgb(201, 201, 201);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .5);
+    text-align: center;
+    font-size: 10px;
+    line-height: 10px;
+    white-space: nowrap;
+    display: none;
+    z-index: 200;
+}
+
+.tab-new {
+    -webkit-appearance: none;
+    float: right;
+    width: 23px;
+    height: 100%;
+    background: rgb(60, 62, 63);
+    color: rgb(201, 201, 201);
+    border: none;
+    border-top: 1px solid rgb(40, 40, 40);
+    border-bottom: 1px solid rgb(40, 40, 40);
+    font-size: 10px;
+    line-height: 10px;
+    padding: 6px 0 5px 0;
+    border-radius: 0;
+    cursor: default;
+}
+
+.tab-new:hover {
+    background: rgb(81, 86, 88);
+}
+
+.tab-new:active {
+    background: rgb(43, 43, 43);
+}
+
+.tab-row {
+    position: relative;
+    width: auto;
+    height: 100%;
+    margin-right: 23px;
+    background: rgb(40, 40, 40);
+}
+
+.tab-group {
+    width: 100%;
+    height: 100%;
+    display: table;
+    border-collapse: separate;
+    border-spacing: 1px;
+}
+
+.tab-cell {
+    background: rgb(60, 62, 63);
+    text-align: center;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .5);
+    border-bottom: 1px solid rgb(40, 40, 40);
+    display: table-cell;
+    -webkit-transition: all .3s;
+    -moz-transition: all .3s;
+    -ms-transition: all .3s;
+    -o-transition: all .3s;
+    transition: all .3s;
+}
+
+.tab-cell.active {
+    background: rgb(81, 86, 88);
+    border-bottom: 1px solid rgb(81, 86, 88);
+}
+
+.tab-cell > a {
+    width: 100%;
+    height: 21px;
+    background: transparent;
+    border-radius: 0;
+    font-size: 10px;
+    line-height: 10px;
+    padding: 6px 0 5px 0;
+    color: rgb(201, 201, 201);
+    border: none;
+    display: block;
+    cursor: default;
+    text-decoration: none;
+    -webkit-user-select: none;
+}
+
+.tab-dismiss {
+    float: right;
+    margin-right: 5px;
+    font-weight: bolder;
+    color: rgb(121, 121, 121);
+}
+
+.tab-dismiss:hover {
+    color: rgb(135, 135, 135);
+}
+
+.editor-container {
+    height: 100%;
+    padding-top: 23px;
+    overflow: hidden;
+}
+
+.console-container {
+    position: relative;
+    height: calc(100% - 22px);
+    overflow: hidden;
+}
+
+.console-seal {
+    position: absolute;
+    width: 18px;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgb(60, 63, 65);
+    z-index: 195;
+}
+
+#footer {
+    position: fixed;
+    width: 100%;
+    height: 20px;
+    left: 0;
+    bottom: 0;
+    background: rgb(60, 63, 65);
+    border-top: 1px solid rgb(70, 70, 70);
+    z-index: 1000;
+
+}
+
+.footer-text {
+    float: left;
+    height: 100%;
+    padding: 5px;
+    margin: 0 5px;
+    color: rgb(187, 187, 187);
+    font-size: 10px;
+    line-height: 10px;
+    cursor: default;
+}
+
+#box-opener {
+    line-height: 16px;
+    top: -3px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.box-open-menu {
+    bottom: 100%;
+    top: auto;
+    display: none;
+}
+
+.box-open-menu > li {
+    cursor: pointer;
+}
+
+/*------ context.css -------*/
+.dropdown-menu::after, .dropdown-context::before {
+    display: none;
+}
+
+.dropdown-menu {
+    background: rgba(60, 63, 65, .99);
+    border-radius: 0;
+    padding: 3px 0;
+    font-family: "Lucida Grande", 'Lato', 'Open Sans', Helvetica, Arial, sans-serif;
+    -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+    -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+}
+
+.dropdown-menu > li > a {
+    color: rgb(183, 183, 183);
+}
+
+.dropdown-menu > li > a:hover {
+    color: rgb(249, 249, 249);
+    background: rgb(47, 99, 198);
+}
+
+.dropdown-menu > li.divider {
+    margin: 3px 1px;
+    background-color: rgba(81, 81, 81, .99);
+}
+
+/*------ tree.js ------*/
+tspan {
+    font-family: "Lucida Grande", 'Lato', 'Open Sans', Helvetica, Arial, sans-serif;
+}
+
+.loading-mask {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgb(40, 40, 41);
+    z-index: 10000;
+
+    text-align: center;
+    color: rgb(187, 187, 187);
+    padding-top: 35vh;
+    font-size: 24px;
+    white-space: nowrap;
+    text-shadow: 1px 1px 0 #000;
+    cursor: default;
+    -webkit-user-select: none;
+}

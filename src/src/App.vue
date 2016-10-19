@@ -1,64 +1,152 @@
 <template>
   <div id="app">
-    <img class="logo" src="./assets/logo.png">
-    <hello></hello>
-    <p>
-      Welcome to your Vue.js app!
-    </p>
-    <p>
-      To get a better understanding of how this boilerplate works, check out
-      <a href="http://vuejs-templates.github.io/webpack" target="_blank">its documentation</a>.
-      It is also recommended to go through the docs for
-      <a href="http://webpack.github.io/" target="_blank">Webpack</a> and
-      <a href="http://vuejs.github.io/vue-loader/" target="_blank">vue-loader</a>.
-      If you have any issues with the setup, please file an issue at this boilerplate's
-      <a href="https://github.com/vuejs-templates/webpack" target="_blank">repository</a>.
-    </p>
-    <p>
-      You may also want to checkout
-      <a href="https://github.com/vuejs/vue-router/" target="_blank">vue-router</a> for routing and
-      <a href="https://github.com/vuejs/vuex/" target="_blank">vuex</a> for state management.
-    </p>
+    <div id="about-mask" v-show="about.show">
+      <div class="mask-backdrop" @click="hideAbout"></div>
+      <div class="dialog" id="about-dialog">
+        <div class="dialog-banner">
+          <h1><span class="glyphicon glyphicon-console"></span> Compiler</h1>
+          <p>Presented by <a href="https://github.com/SevenOutman" target="_blank">SevenOutman</a>. Compiler implemented
+            by <a href="https://github.com/ExinCoda" target="_blank">ExinCoda</a>.</p>
+        </div>
+      </div>
+    </div>
+    <tool-bar></tool-bar>
+    <layout></layout>
+    <div id="footer">
+      <div class="footer-text footer-btn" :class="{ active: workspace.open }" @click="toggleWorkspace">Workspace
+      </div>
+      <div class="footer-text footer-btn" :class="{ active: console.open }" @click="toggleConsole">Console
+      </div>
+      <div class="footer-text footer-btn" :class="{ active: symbolTable.open }" @click="toggleSymbolTable">Symbol Table
+      </div>
+      <div class="footer-text" id="cursor-position" data-bind="text: editor.cursorPosText"></div>
+    </div>
   </div>
 </template>
 
 <script>
-import Hello from './components/Hello'
+  import ToolBar from './components/ToolBar.vue'
+  import Layout from './components/Layout.vue'
 
-export default {
-  components: {
-    Hello
+  import {mapState, mapMutations} from 'vuex'
+
+  export default {
+    components: {
+      ToolBar,
+      Layout,
+    },
+    computed: {
+      ...mapState([
+        'about',
+        'console',
+        'workspace',
+        'symbolTable'
+      ])
+    },
+    methods: {
+      ...mapMutations([
+        'updateStateAbout',
+        'updateStateConsole',
+        'updateStateWorkspace',
+        'updateStateSymbolTable'
+      ]),
+      hideAbout() {
+        this.updateStateAbout({
+          show: false
+        })
+      },
+      toggleConsole() {
+        this.updateStateConsole({
+          open: !this.console.open
+        })
+      },
+      toggleWorkspace() {
+        this.updateStateWorkspace({
+          open: !this.workspace.open
+        })
+      },
+      toggleSymbolTable() {
+        this.updateStateSymbolTable({
+          open: !this.symbolTable.open
+        })
+      }
+    }
   }
-}
 </script>
 
-<style>
-html {
-  height: 100%;
-}
+<style lang="less" rel="stylesheet/less">
+  @import "./style/bootstrap.extract.css";
+  @import "./style/glyphicon.extract.css";
+  @import "./style/style.css";
 
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
+  html {
+    height: 100%;
+  }
 
-#app {
-  color: #2c3e50;
-  margin-top: -100px;
-  max-width: 600px;
-  font-family: Source Sans Pro, Helvetica, sans-serif;
-  text-align: center;
-}
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
 
-#app a {
-  color: #42b983;
-  text-decoration: none;
-}
+  #app {
+    width: 100%;
+    height: 100%;
+    font-family: Source Sans Pro, Helvetica, sans-serif;
 
-.logo {
-  width: 100px;
-  height: 100px
-}
+    #about-mask {
+      .mask-backdrop {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background: rgba(0, 0, 0, .4);
+        z-index: 1050;
+      }
+
+      #about-dialog {
+        position: fixed;
+        width: 600px;
+        height: auto;
+        top: 50%;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0);
+        margin: 0 auto;
+        max-width: 80%;
+        background: rgb(60, 63, 65);
+        color: rgb(187, 187, 187);
+        border-radius: 3px;
+        font-size: 13px;
+        overflow: hidden;
+        box-shadow: 0 0 10px 0 rgba(0, 0, 0, .3);
+        z-index: 5000;
+
+        .dialog-banner {
+          width: 100%;
+          height: 200px;
+          background: #FEDD31;
+          color: #000000;
+          text-align: center;
+          padding: 40px;
+        }
+
+      }
+    }
+    #footer {
+      .footer-text {
+        &.footer-btn {
+          padding: 5px 1em;
+          margin: 0 0 0 1px;
+          &.active {
+            background-color: #2c2e2f;
+          }
+          &:not(.active):hover {
+            background-color: #353739;
+          }
+        }
+      }
+    }
+  }
 </style>

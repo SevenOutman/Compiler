@@ -55,14 +55,6 @@ a:focus:active {
     height: 100%;
 }
 
-#main {
-    position: relative;
-    /*height: calc(100% - 55px);*/
-    height: 100%;
-    padding-top: 55px;
-    padding-bottom: 20px;
-}
-
 #dialog-save {
     color: #000;
     text-align: center;
@@ -436,7 +428,6 @@ a:focus:active {
 .center-box {
     width: auto;
     height: 100%;
-    margin: 0 0 0 200px;
 }
 
 .upper-box {

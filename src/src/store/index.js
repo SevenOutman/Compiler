@@ -7,10 +7,12 @@ import Vuex from "vuex"
 Vue.use(Vuex)
 
 import fileManager from './modules/fileManager'
+import editor from './modules/editor'
 
 export default new Vuex.Store({
   modules: {
-    fileManager
+    fileManager,
+    editor
   },
   state: {
     ui: {

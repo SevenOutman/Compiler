@@ -1,11 +1,57 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Compiler</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+<head>
+  <meta charset="utf-8">
+  <title>Compiler</title>
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background: rgb(40, 40, 41);
+      font-family: "Lucida Grande", 'Lato', 'Open Sans', Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      -webkit-user-select: none;
+    }
+
+    #loading-mask {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: rgb(40, 40, 41);
+      z-index: 10000;
+
+      text-align: center;
+      color: rgb(187, 187, 187);
+      padding-top: 35vh;
+      font-size: 24px;
+      white-space: nowrap;
+      text-shadow: 1px 1px 0 #000;
+      cursor: default;
+      -webkit-user-select: none;
+    }
+  </style>
+</head>
+<body>
+<div id="loading-mask">
+  <h1>
+    <span>
+    <?xml version="1.0" standalone="no"?>
+      <svg style="display: inline-block; vertical-align: middle; margin: -4px 0 0 -4px" width="40"
+           viewBox="0 -240 1200 1200" version="1.1"
+           xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 825.0) scale(1, -1)">
+      <path d="M700 741v-182l-692 -323v221l413 193l-413 193v221zM1200 0h-800v200h800v-200z" fill="rgb(187, 187, 187)">
+      </path>
+    </g>
+  </svg>
+  </span>
+    Compiler
+  </h1>
+  <p id="loading-text">Launching...</p>
+</div>
+<!-- built files will be auto injected -->
+</body>
 </html>

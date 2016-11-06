@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" @contextmenu.prevent>
     <div id="about-mask" v-show="about.show">
       <div class="mask-backdrop" @click="hideAbout"></div>
       <div class="dialog" id="about-dialog">
@@ -15,11 +15,11 @@
     <div id="footer">
       <div class="footer-text footer-btn" :class="{ active: workspace.open }" @click="toggleWorkspace">Workspace
       </div>
-      <div class="footer-text footer-btn" :class="{ active: console.open }" @click="toggleConsole">Console
+      <div class="footer-text footer-btn" :class="{ active: console.open }" @click="toggleConsole">Output
       </div>
-      <div class="footer-text footer-btn" :class="{ active: symbolTable.open }" @click="toggleSymbolTable">Symbol Table
-      </div>
-      <div class="footer-text" id="cursor-position" data-bind="text: editor.cursorPosText"></div>
+      <!--<div class="footer-text footer-btn" :class="{ active: symbolTable.open }" @click="toggleSymbolTable">Symbol Table-->
+      <!--</div>-->
+      <div class="footer-text" id="cursor-position" v-if="currentCursorPos">{{ currentCursorPos.line + 1 }}:{{ currentCursorPos.ch + 1 }}</div>
     </div>
   </div>
 </template>
@@ -28,7 +28,8 @@
   import ToolBar from './components/ToolBar.vue'
   import Layout from './components/Layout.vue'
 
-  import {mapState, mapMutations} from 'vuex'
+  import {mapState, mapMutations, mapGetters} from 'vuex'
+  import bus from './helpers/EventBus'
 
   export default {
     components: {
@@ -41,6 +42,9 @@
         'console',
         'workspace',
         'symbolTable'
+      ]),
+      ...mapGetters([
+        'currentCursorPos'
       ])
     },
     methods: {
@@ -70,6 +74,9 @@
           open: !this.symbolTable.open
         })
       }
+    },
+    mounted() {
+      bus.$emit('sys:console.log', "Compiler lauched at " + new Date().toTimeString())
     }
   }
 </script>
@@ -79,21 +86,9 @@
   @import "./style/glyphicon.extract.css";
   @import "./style/style.css";
 
-  html {
-    height: 100%;
-  }
-
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-  }
-
   #app {
     width: 100%;
     height: 100%;
-    font-family: Source Sans Pro, Helvetica, sans-serif;
 
     #about-mask {
       .mask-backdrop {

@@ -1,51 +1,7 @@
-import Vue from 'vue'
-
-
 import getStorage from '../../helpers/storage'
 
 let Storage = window.Storage = getStorage(window.localStorage)
-
-function $defined(v) {
-  return v !== undefined
-}
-
-function File(name, content, isNew) {
-  return new Vue({
-    data: {
-      isNew: $defined(isNew) ? isNew : true,
-      name: $defined(name) ? name.replace(/(\.toy)$/, "") : "untitled",
-      content: content || ""
-    },
-    computed: {
-      fileName() {
-        return this.isNew ? this.name : this.name + ".toy"
-      }
-    },
-    methods: {
-      serialize() {
-        return JSON.stringify({
-          name: this.name,
-          content: this.content
-        })
-      }
-    }
-  })
-}
-
-File.example = function () {
-  return new File("example",
-    "{\n" +
-    "    int a;\n" +
-    "    real b;\n" +
-    "    a = 1;\n" +
-    "    b = 2.0;\n" +
-    "    if (a > b) then {\n" +
-    "        b = a;\n" +
-    "    } else {\n" +
-    "        b = b - a;\n" +
-    "    }\n" +
-    "}", false);
-};
+import File from '../../models/File'
 
 let fileMap = {}
 
@@ -68,6 +24,13 @@ let load = function () {
     addFile(File.example());
   }
 };
+const saveFile = function (file) {
+  // if (file.isNew()) {
+  //   self.files.push(cached.pop());
+  //   file.isNew(false);
+  // }
+  Storage.setItem(file.fileName, file.serialize());
+};
 load()
 
 export default  {
@@ -86,10 +49,17 @@ export default  {
     }
   },
   actions: {
-    newFile({commit}) {
+    createNewFile({commit}) {
       let file = new File()
       commit('newFile', file)
-      return file
+    },
+    saveFilesToStorage({getters}) {
+      let storedFiles = [];
+      for (let i = 0, files = getters.fileList, len = files.length; i < len; i++) {
+        saveFile(files[i]);
+        storedFiles[storedFiles.length] = files[i].fileName;
+      }
+      Storage.setItem("stored-files", JSON.stringify(storedFiles));
     }
   }
 }

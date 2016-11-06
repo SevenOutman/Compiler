@@ -5,14 +5,16 @@
         Compiler</a></div>
       <ul class="nav navbar-nav navbar-left">
         <li>
-          <button class="btn navbar-btn-o" id="btn-about" @click="showAbout"><span
-            class="glyphicon glyphicon-cog"></span></button>
+          <button class="btn navbar-btn-o" id="btn-about" @click="showAbout">
+            <!--<span class="glyphicon glyphicon-cog"></span>-->
+            <span>?</span>
+          </button>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right" id="editing-btn-group" v-show="ui.mode == 'edit'"
           data-bind="with: controls">
         <li>
-          <button class="btn navbar-btn-o" id="btn-save" data-bind="css: {unsaved: needSave}, click: save">
+          <button class="btn navbar-btn-o" id="btn-save" :class="{ unsaved: editorNeedSave }" @click="save">
             <span class="glyphicon glyphicon-floppy-disk"></span> Save
           </button>
         </li>
@@ -32,7 +34,8 @@
           </button>
         </li>
       </ul>
-      <ul class="nav navbar-nav navbar-right" id="compiling-btn-group" style="margin-right: -15px" v-show="ui.mode == 'compile'"
+      <ul class="nav navbar-nav navbar-right" id="compiling-btn-group" style="margin-right: -15px"
+          v-show="ui.mode == 'compile'"
           data-bind="with: controls">
         <li>
           <button class="btn navbar-btn-o" id="btn-stop" data-bind="click: stop"><span
@@ -55,11 +58,15 @@
 </template>
 
 <script>
-  import {mapState, mapMutations} from 'vuex'
+  import {mapState, mapMutations, mapGetters} from 'vuex'
+  import bus from '../helpers/EventBus'
   export default {
     computed: {
       ...mapState([
         'ui'
+      ]),
+      ...mapGetters([
+        'editorNeedSave'
       ])
     },
     methods: {
@@ -76,6 +83,9 @@
         this.updateStateUI({
           mode: mode
         })
+      },
+      save() {
+        bus.$emit('sys:editor.save')
       }
     }
   }

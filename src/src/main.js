@@ -6,7 +6,7 @@ import store from './store/index'
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#app',
+  el: '#loading-mask',
   store,
   render: h => h(App)
 })

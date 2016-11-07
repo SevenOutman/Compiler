@@ -19,7 +19,7 @@
           </button>
         </li>
         <li>
-          <button class="btn navbar-btn" id="btn-tidy" data-bind="click: tidy"><span
+          <button class="btn navbar-btn" id="btn-tidy"  @click="tidy"><span
             class="glyphicon glyphicon-flash"></span> Tidy
           </button>
         </li>
@@ -86,6 +86,9 @@
       },
       save() {
         bus.$emit('sys:editor.save')
+      },
+      tidy() {
+        bus.$emit('sys:editor.tidy')
       }
     }
   }

@@ -39,6 +39,8 @@
 
   import {mapState, mapGetters, mapActions} from 'vuex'
 
+  import Processor from '../helpers/Processor'
+
   export default {
     data() {
       return {
@@ -87,6 +89,14 @@
           tab.file.content = tab.cachedContent
         })
         this.saveFilesToStorage()
+      },
+      formatCode() {
+        let code = this.cm.getValue()
+        this.cm.setValue(Processor.preprocesscode(code));
+        for (let i = 0; i < this.cm.doc.lastLine(); i++) {
+          this.cm.indentLine(i, "smart");
+        }
+        this.cm.focus();
       }
     },
     watch: {
@@ -110,6 +120,7 @@
     {
       bus.$on('sys:editor.open', this.openFile)
       bus.$on('sys:editor.save', this.saveAllTabs)
+      bus.$on('sys:editor.tidy', this.formatCode)
     }
     ,
     mounted()

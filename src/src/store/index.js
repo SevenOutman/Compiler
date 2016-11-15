@@ -31,7 +31,12 @@ export default new Vuex.Store({
     },
     symbolTable: {
       open: false,
-      width: 200
+      width: 300,
+      symbols: []
+    },
+    parseTree: {
+      open: false,
+      width: 300
     }
   },
   mutations: {
@@ -70,6 +75,13 @@ export default new Vuex.Store({
       Object.keys(state.symbolTable).forEach(key => {
         if (payload.hasOwnProperty(key)) {
           state.symbolTable[key] = payload[key]
+        }
+      })
+    },
+    updateStateParseTree(state, payload) {
+      Object.keys(state.parseTree).forEach(key => {
+        if (payload.hasOwnProperty(key)) {
+          state.parseTree[key] = payload[key]
         }
       })
     },

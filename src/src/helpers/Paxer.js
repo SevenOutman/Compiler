@@ -1,6 +1,7 @@
 /**
  * Created by Doma on 2016/11/7.
  */
+const Invalid = undefined
 var SymbolTable = {
   new: function () {
     var symbolTable = {};
@@ -402,6 +403,9 @@ var Parser = {
     var curFormula;
     var lastStmtsNode;
     var recovering;
+    var parseErr;
+    var nextT;
+    var next;
     parser.getStatus = function () {
 
       return curStatus;

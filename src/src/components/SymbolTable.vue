@@ -7,24 +7,30 @@
       <span class="box-caret glyphicon glyphicon-menu-right" @click="$emit('symbol-table:close')"></span>
     </div>
     <div class="box-body">
-      <div class="placeholder" data-bind="visible: symbols().length < 1">Nothing to show</div>
-      <ul id="symbol-list" class="list" data-bind="foreach: symbols, visible: symbols().length > 0">
-        <li
-          data-bind="attr: {id: attrId}, css: {active: isActive}, event: {click: $parents[0].setActive.bind($data), dblclick: toggle}">
+      <div class="placeholder" v-show="symbols.length < 1">Nothing to show</div>
+      <ul id="symbol-list" class="list">
+        <template v-for="symbol of symbols">
+          <li
+            data-bind="attr: {id: attrId}, css: {active: isActive}, event: {click: $parents[0].setActive.bind($data), dblclick: toggle}">
                             <span class="glyphicon li-caret"
                                   data-bind="css: {'glyphicon-triangle-right': !isOpen(), 'glyphicon-triangle-bottom': isOpen}, click: toggle"></span>
-          <span data-bind="text: name"></span> <span class="extra" data-bind="text: rowText"></span>
-        </li><!--ko foreach: positions-->
-        <li class="position-row"
-            data-bind="text: rowText, visible: $parents[0].isOpen, css: {active: isActive}, click: $parents[1].setActive.bind($data)"></li>
-        <!--/ko--></ul>
+            <span>{{ symbol.name }}</span>
+            <span class="extra" data-bind="text: rowText">type: {{ symbol.type || 'unknown' }}, occurance: {{ symbol.positions.length }}</span>
+          </li><!--ko foreach: positions-->
+          <li class="position-row" v-for="(position, $index) of symbol.positions"
+              data-bind="text: rowText, visible: $parents[0].isOpen, css: {active: isActive}, click: $parents[1].setActive.bind($data)">
+            [{{ $index + 1 }}] line: {{ position.first_row }}, ch: {{ position.first_col }}
+          </li>
+          <!--/ko-->
+        </template>
+      </ul>
     </div>
   </div>
   <!--/ko-->
 </template>
 <script>
   import Resizer from './Resizer.vue'
-  import {mapGetters} from 'vuex'
+  import {mapState} from 'vuex'
   export default {
     components: {
       Resizer
@@ -38,9 +44,12 @@
       }
     },
     computed: {
-      ...mapGetters({
-        files: 'fileList'
-      })
+      ...mapState({
+        'symbolTableState': 'symbolTable'
+      }),
+      symbols() {
+        return this.symbolTableState.symbols
+      }
     },
     methods: {
       onResizeBegin() {

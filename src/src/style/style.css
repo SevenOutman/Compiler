@@ -524,7 +524,6 @@ a:focus:active {
   font-size: 10px;
   line-height: 10px;
   white-space: nowrap;
-  display: none;
   z-index: 200;
 }
 

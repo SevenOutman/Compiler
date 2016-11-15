@@ -4,10 +4,8 @@
       Choose a file from workspace or <a id="cover-open" @click="openNewFile">create a new file</a>
     </div>
     <div class="tab-bar">
-      <!--ko with: $root.processor.compilee-->
-      <div class="tab-bar-cover"><span id="compiling-filename" data-bind="text: fileName"></span>
+      <div class="tab-bar-cover" v-if="editorState.compilee"><span id="compiling-filename">{{ editorState.compilee.fileName}}</span>
       </div>
-      <!--/ko-->
       <button class="tab-new" @click="openNewFile">&plus;</button>
       <div class="tab-row">
         <div class="tab-group">
@@ -37,7 +35,7 @@
   require('../libs/codemirror/addon/scroll/simplescrollbars.js')
   require('../libs/toy.js')
 
-  import {mapState, mapGetters, mapActions} from 'vuex'
+  import {mapState, mapGetters, mapActions, mapMutations} from 'vuex'
 
   import Processor from '../helpers/Processor'
 
@@ -68,6 +66,10 @@
         'switchTab',
         'saveFilesToStorage'
       ]),
+      ...mapMutations([
+        'setCompilee',
+        'updateStateUI'
+      ]),
       openNewFile() {
         let newFile = new File()
         if (newFile) {
@@ -97,11 +99,35 @@
           this.cm.indentLine(i, "smart");
         }
         this.cm.focus();
+      },
+      compile() {
+        let tab = this.currentTab
+        if (tab) {
+          this.saveAllTabs()
+          let file = tab.file
+          if (file.isNew) {
+            return
+          }
+          this.lock()
+          this.setCompilee(file)
+          bus.$emit('sys:compile', true)
+          Processor.compile(file)
+        }
+      },
+      stop() {
+        this.unlock()
+        this.setCompilee(null)
+        bus.$emit('sys:compile', false)
+      },
+      lock () {
+        this.cm.setOption("readOnly", "nocursor")
+      },
+      unlock () {
+        this.cm.setOption("readOnly", false)
       }
     },
     watch: {
-      'editorState.currentTab'(newTab, oldTab)
-      {
+      'editorState.currentTab'(newTab, oldTab) {
         if (oldTab) {
           oldTab.cursorPosition = this.cm.doc.getCursor()
           oldTab.history = this.cm.doc.getHistory()
@@ -114,17 +140,15 @@
           this.cm.focus()
         }
       }
-    }
-    ,
-    created()
-    {
+    },
+    created() {
       bus.$on('sys:editor.open', this.openFile)
       bus.$on('sys:editor.save', this.saveAllTabs)
       bus.$on('sys:editor.tidy', this.formatCode)
-    }
-    ,
-    mounted()
-    {
+      bus.$on('sys:editor.compile', this.compile)
+      bus.$on('sys:editor.stop', this.stop)
+    },
+    mounted() {
       let cm = this.cm = CodeMirror.fromTextArea(this.$refs.textarea, {
         lineNumbers: true,
         mode: "toy",

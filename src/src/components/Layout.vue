@@ -4,13 +4,15 @@
       <div class="center-box">
         <!-- 双飞翼布局 -->
         <div class="center-box-inner" :style="centerStyleObj">
-          <parse-tree></parse-tree>
-          <editor></editor>
+          <parse-tree v-show="parseTree.open" :width="parseTreeWidth"
+                      @parse-tree:resize="onParseTreeResize" @parse-tree:close="onParseTreeClose"></parse-tree>
+          <editor :style="{ width: editorWidth + 'px' }"></editor>
         </div>
       </div>
       <workspace v-show="workspace.open" :width="workspaceWidth" :style="leftStyleObj"
                  @workspace:resize="onWorkspaceResize" @workspace:close="onWorkspaceClose"></workspace>
-      <symbol-table :width="symbolTableWidth" :style="rightStyleObj"
+
+      <symbol-table v-show="symbolTable.open" :width="symbolTableWidth" :style="rightStyleObj"
                     @symbol-table:resize="onSymbolTableResize" @symbol-table:close="onSymbolTableClose"></symbol-table>
     </div>
     <console v-show="console.open" :height="consoleHeight"
@@ -23,6 +25,8 @@
   import ParseTree from './ParseTree.vue'
   import Editor from './Editor.vue'
   import Console from './Console.vue'
+
+  import bus from '../helpers/EventBus'
 
   import {mapState, mapMutations} from 'vuex'
 
@@ -47,7 +51,8 @@
       ...mapState([
         'workspace',
         'console',
-        'symbolTable'
+        'symbolTable',
+        'parseTree'
       ]),
       consoleHeight() {
         return this.console.open ? this.console.height : 0
@@ -58,11 +63,14 @@
       symbolTableWidth() {
         return this.symbolTable.open ? this.symbolTable.width : 0
       },
+      parseTreeWidth() {
+        return this.parseTree.open ? this.parseTree.width : 0
+      },
       upperHeight() {
         return this.elHeight - this.consoleHeight - 75
       },
       editorWidth() {
-        return this.elWidth - this.workspaceWidth - this.symbolTableWidth
+        return this.elWidth - this.workspaceWidth - this.symbolTableWidth - this.parseTreeWidth
       },
       upperStyleObj() {
         return {
@@ -72,7 +80,7 @@
       centerStyleObj() {
         return {
           marginLeft: this.workspaceWidth + 'px',
-          marginRight: this.symbolTableWidth + 'px'
+          marginRight: (this.symbolTableWidth) + 'px'
         }
       },
       leftStyleObj() {
@@ -91,12 +99,16 @@
       ...mapMutations([
         'updateStateConsole',
         'updateStateWorkspace',
-        'updateStateSymbolTable'
+        'updateStateSymbolTable',
+        'updateStateParseTree'
       ]),
       onConsoleResize(height) {
         this.updateStateConsole({
           height: Math.max(0, Math.min(this.elHeight, height))
         })
+        if (this.parseTree.open) {
+          bus.$emit('sys:parse-tree.resize')
+        }
       },
       onConsoleClose() {
         this.updateStateConsole({
@@ -115,14 +127,25 @@
       },
       onSymbolTableResize(width) {
         this.updateStateSymbolTable({
-          width: Math.max(0, Math.min(this.elWidth - this.workspaceWidth, width))
+          width: Math.max(0, Math.min(this.elWidth - this.workspaceWidth - this.parseTreeWidth, width))
         })
       },
       onSymbolTableClose() {
         this.updateStateSymbolTable({
           open: false
         })
-      }
+      },
+      onParseTreeResize(width) {
+        this.updateStateParseTree({
+          width: Math.max(0, Math.min(this.elWidth - this.workspaceWidth - this.symbolTableWidth, width))
+        })
+        bus.$emit('sys:parse-tree.resize')
+      },
+      onParseTreeClose() {
+        this.updateStateParseTree({
+            open: false
+        })
+      },
     },
     mounted() {
       this.elHeight = this.$el.clientHeight

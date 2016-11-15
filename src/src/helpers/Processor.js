@@ -3,21 +3,27 @@
  */
 import Paxer from './Paxer'
 import SemanticAnalyzer from './Semantic'
+import Benchmark from './Benchmark'
+import store from '../store/index'
+import bus from '../helpers/EventBus'
 
 function Processor(console, parseTree, symbolTable) {
   var self = this;
   var paxer = self.paxer = Paxer.new();
   var semantic = self.semantic = new SemanticAnalyzer();
 
-  self.compilee = () => {}
+  self.compilee = () => {
+  }
 
   self.compile = function (file) {
     self.compilee(file);
     if (file) {
       Cache.st = {};
-      symbolTable.symbols([]);
-      console.log("Compile '" + file.fileName() + "'...");
-      self.paxer.setInput(file.content());
+      store.commit('updateStateUI', {
+        symbols: []
+      })
+      bus.$emit('sys:console.log', 'Compile \'' + file.fileName + '\'...')
+      self.paxer.setInput(file.content);
     }
   };
 
@@ -50,22 +56,25 @@ function Processor(console, parseTree, symbolTable) {
     switch (status = paxer.getStatus()) {
       case "DONE":
         semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
-        console.success(paxer.getCurMovementF());
-        console.success('code parsed.');
-        console.warn(paxer.getWarningMsg());
-        console.error(semantic.getErrorMsg());
-        parseTree.assembly.show(semantic.getAssembly());
+        bus.$emit('sys:console.success', paxer.getCurMovementF());
+        bus.$emit('sys:console.success', 'code parsed.');
+        bus.$emit('sys:console.warn', paxer.getWarningMsg());
+        bus.$emit('sys:console.error', semantic.getErrorMsg());
+        // parseTree.assembly.show(semantic.getAssembly());
         return;
       case "ERROR":
-        console.error(paxer.getErrMsg());
+        bus.$emit('sys:console.error', paxer.getErrMsg());
         return;
       case "WARNING":
       case "NORMAL":
-        console.success(paxer.getCurMovementF());
-        parseTree.pen.setSource(paxer.getSequentialNodes());
-        parseTree.pen.render();
+        bus.$emit('sys:console.success', paxer.getCurMovementF());
+        bus.$emit('sys:parse-tree.render', paxer.getSequentialNodes())
+        // parseTree.pen.setSource(paxer.getSequentialNodes());
+        // parseTree.pen.render();
     }
-    symbolTable.updateSymbols(paxer.getSymbolTable());
+    store.commit('updateStateSymbolTable', {
+      symbols: paxer.getSymbolTable()
+    })
     return status;
   };
   self.compileFF = function () {
@@ -83,19 +92,22 @@ function Processor(console, parseTree, symbolTable) {
         case 'DONE':
           semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
           var parseTime = Benchmark.measure("parse");
-          parseTree.assembly.show(semantic.getAssembly());
-          console.success(paxer.getMovementsF());
-          console.warn(paxer.getWarningMsg());
-          console.error(semantic.getErrorMsg());
-          console.success("Compile finished in " + parseTime.toFixed(4) + " millisecs.");
-          console.success("Can we make it faster?");
+          // parseTree.assembly.show(semantic.getAssembly());
+          bus.$emit('sys:console.success', paxer.getMovementsF());
+          bus.$emit('sys:console.warn', paxer.getWarningMsg());
+          bus.$emit('sys:console.error', semantic.getErrorMsg());
+          bus.$emit('sys:console.success', "Compile finished in " + parseTime.toFixed(4) + " millisecs.");
+          bus.$emit('sys:console.success', "Can we make it faster?");
           break;
         case 'ERROR':
-          console.error(paxer.getErrMsg());
+          bus.$emit('sys:console.error', paxer.getErrMsg());
           break;
       }
     }
-    symbolTable.updateSymbols(paxer.getSymbolTable());
+
+    store.commit('updateStateSymbolTable', {
+      symbols: paxer.getSymbolTable()
+    })
     return status;
   };
 }

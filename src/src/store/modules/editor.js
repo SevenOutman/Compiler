@@ -7,7 +7,8 @@ import EditorTab from '../../models/EditorTab'
 export default {
   state: {
     tabs: [],
-    currentTab: null
+    currentTab: null,
+    compilee: null
   },
   getters: {
     currentCursorPos(state) {
@@ -31,6 +32,9 @@ export default {
     },
     setCurrentTab(state, tab) {
       state.currentTab = tab
+    },
+    setCompilee(state, file) {
+      state.compilee = file
     }
   },
   actions: {

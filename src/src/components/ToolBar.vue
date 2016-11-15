@@ -19,7 +19,7 @@
           </button>
         </li>
         <li>
-          <button class="btn navbar-btn" id="btn-tidy"  @click="tidy"><span
+          <button class="btn navbar-btn" id="btn-tidy" @click="tidy"><span
             class="glyphicon glyphicon-flash"></span> Tidy
           </button>
         </li>
@@ -29,7 +29,7 @@
           </button>
         </li>
         <li>
-          <button class="btn navbar-btn" id="btn-compile" data-bind="click: compile"><span
+          <button class="btn navbar-btn" id="btn-compile" @click="compile"><span
             class="glyphicon glyphicon-download-alt"></span> Compile
           </button>
         </li>
@@ -38,17 +38,17 @@
           v-show="ui.mode == 'compile'"
           data-bind="with: controls">
         <li>
-          <button class="btn navbar-btn-o" id="btn-stop" data-bind="click: stop"><span
+          <button class="btn navbar-btn-o" id="btn-stop" @click="stop"><span
             class="glyphicon glyphicon-stop"></span> Stop
           </button>
         </li>
         <li>
-          <button class="btn navbar-btn" id="btn-next" data-bind="click: next"><span
+          <button class="btn navbar-btn" id="btn-next" @click="next"><span
             class="glyphicon glyphicon-share-alt"></span> Next
           </button>
         </li>
         <li>
-          <button class="btn navbar-btn" id="btn-ff" data-bind="click: ff"><span
+          <button class="btn navbar-btn" id="btn-ff" @click="ff"><span
             class="glyphicon glyphicon-fast-forward"></span> Fast Forward
           </button>
         </li>
@@ -60,6 +60,7 @@
 <script>
   import {mapState, mapMutations, mapGetters} from 'vuex'
   import bus from '../helpers/EventBus'
+  import Processor from '../helpers/Processor'
   export default {
     computed: {
       ...mapState([
@@ -89,6 +90,18 @@
       },
       tidy() {
         bus.$emit('sys:editor.tidy')
+      },
+      compile() {
+        bus.$emit('sys:editor.compile')
+      },
+      stop() {
+        bus.$emit('sys:editor.stop')
+      },
+      next() {
+          Processor.compileNext()
+      },
+      ff() {
+          Processor.compileFF()
       }
     }
   }

@@ -13,18 +13,25 @@
     <tool-bar></tool-bar>
     <layout></layout>
     <div id="footer">
-      <div class="footer-text footer-btn" :class="{ active: workspace.open }" @click="toggleWorkspace">Workspace
+      <div class="footer-text footer-btn" v-if="ui.mode != 'compile'" :class="{ active: workspace.open }"
+           @click="toggleWorkspace">Workspace
       </div>
       <div class="footer-text footer-btn" :class="{ active: console.open }" @click="toggleConsole">Output
       </div>
-      <!--<div class="footer-text footer-btn" :class="{ active: symbolTable.open }" @click="toggleSymbolTable">Symbol Table-->
-      <!--</div>-->
-      <div class="footer-text" id="cursor-position" v-if="currentCursorPos">{{ currentCursorPos.line + 1 }}:{{ currentCursorPos.ch + 1 }}</div>
+      <div class="footer-text footer-btn" v-if="ui.mode == 'compile'" :class="{ active: parseTree.open }"
+           @click="toggleParseTree">Syntax Tree
+      </div>
+      <div class="footer-text footer-btn" v-if="ui.mode == 'compile'" :class="{ active: symbolTable.open }"
+           @click="toggleSymbolTable">Symbol Table
+      </div>
+      <div class="footer-text" id="cursor-position" v-if="currentCursorPos">{{ currentCursorPos.line + 1 }}:{{
+        currentCursorPos.ch + 1 }}
+      </div>
     </div>
   </div>
 </template>
 
-<script>
+<script type="text/babel">
   import ToolBar from './components/ToolBar.vue'
   import Layout from './components/Layout.vue'
 
@@ -41,7 +48,9 @@
         'about',
         'console',
         'workspace',
-        'symbolTable'
+        'symbolTable',
+        'parseTree',
+        'ui'
       ]),
       ...mapGetters([
         'currentCursorPos'
@@ -52,7 +61,9 @@
         'updateStateAbout',
         'updateStateConsole',
         'updateStateWorkspace',
-        'updateStateSymbolTable'
+        'updateStateSymbolTable',
+        'updateStateParseTree',
+        'updateStateUI'
       ]),
       hideAbout() {
         this.updateStateAbout({
@@ -73,7 +84,59 @@
         this.updateStateSymbolTable({
           open: !this.symbolTable.open
         })
+      },
+      toggleParseTree() {
+        this.updateStateParseTree({
+          open: !this.parseTree.open
+        })
+      },
+      compileMode(compile) {
+        if (compile) {
+
+          this.updateStateUI({
+            mode: 'compile'
+          })
+
+          this.updateStateWorkspace({
+            open: false
+          })
+          this.updateStateSymbolTable({
+            open: true
+          })
+          this.updateStateParseTree({
+            open: true
+          })
+
+          this.updateStateConsole({
+            open: true
+          })
+
+          this.$nextTick(() => {
+            bus.$emit('sys:parse-tree.reset')
+            bus.$emit('sys:parse-tree.resize')
+            bus.$emit('sys:console.clear')
+
+          })
+
+        } else {
+          this.updateStateUI({
+            mode: 'edit'
+          })
+          this.updateStateWorkspace({
+            open: true
+          })
+          this.updateStateSymbolTable({
+            open: false
+          })
+
+          this.updateStateParseTree({
+            open: false
+          })
+        }
       }
+    },
+    created() {
+      bus.$on('sys:compile', this.compileMode)
     },
     mounted() {
       bus.$emit('sys:console.log', "Compiler lauched at " + new Date().toTimeString())

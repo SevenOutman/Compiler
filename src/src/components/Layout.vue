@@ -67,7 +67,7 @@
         return this.parseTree.open ? this.parseTree.width : 0
       },
       upperHeight() {
-        return this.elHeight - this.consoleHeight - 75
+        return this.elHeight - this.consoleHeight - 48
       },
       editorWidth() {
         return this.elWidth - this.workspaceWidth - this.symbolTableWidth - this.parseTreeWidth
@@ -161,7 +161,7 @@
   #main {
     position: relative;
     height: 100%;
-    padding-top: 55px;
+    padding-top: 28px;
     padding-bottom: 20px;
   }
 

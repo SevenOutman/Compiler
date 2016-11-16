@@ -7,7 +7,7 @@ import Benchmark from './Benchmark'
 import store from '../store/index'
 import bus from '../helpers/EventBus'
 
-function Processor(console, parseTree, symbolTable) {
+function Processor() {
   var self = this;
   var paxer = self.paxer = Paxer.new();
   var semantic = self.semantic = new SemanticAnalyzer();
@@ -19,7 +19,7 @@ function Processor(console, parseTree, symbolTable) {
     self.compilee(file);
     if (file) {
       Cache.st = {};
-      store.commit('updateStateUI', {
+      store.commit('updateStateSymbolTable', {
         symbols: []
       })
       bus.$emit('sys:console.log', 'Compile \'' + file.fileName + '\'...')

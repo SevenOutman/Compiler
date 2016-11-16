@@ -1,16 +1,12 @@
 <template>
-  <nav class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
+  <nav class="tool-bar navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
     <div class="container-fluid" style="padding-right: 15px">
-      <div class="navbar-header"><a href class="navbar-brand"><span class="glyphicon glyphicon-console"></span>
-        Compiler</a></div>
-      <ul class="nav navbar-nav navbar-left">
-        <li>
-          <button class="btn navbar-btn-o" id="btn-about" @click="showAbout">
-            <!--<span class="glyphicon glyphicon-cog"></span>-->
-            <span>?</span>
-          </button>
-        </li>
-      </ul>
+      <div class="navbar-header">
+        <a href class="navbar-brand">
+          <span class="glyphicon glyphicon-console"></span>
+          Compiler
+        </a>
+      </div>
       <ul class="nav navbar-nav navbar-right" id="editing-btn-group" v-show="ui.mode == 'edit'"
           data-bind="with: controls">
         <li>
@@ -72,14 +68,8 @@
     },
     methods: {
       ...mapMutations([
-        'updateStateAbout',
         'updateStateUI'
       ]),
-      showAbout() {
-        this.updateStateAbout({
-          show: true
-        })
-      },
       updateUIMode(mode) {
         this.updateStateUI({
           mode: mode
@@ -98,11 +88,53 @@
         bus.$emit('sys:editor.stop')
       },
       next() {
-          Processor.compileNext()
+        Processor.compileNext()
       },
       ff() {
-          Processor.compileFF()
+        Processor.compileFF()
       }
     }
   }
 </script>
+
+<style lang="less" rel="stylesheet/less">
+  .tool-bar {
+    height: 28px;
+    min-height: 28px;
+    .navbar-brand {
+      height: 28px;
+      padding: 0 15px;
+    }
+    .navbar-btn,
+    .navbar-btn-o {
+      margin-top: 1px;
+      margin-bottom: 1px;
+      font-size: 12px;
+      color: rgb(201, 201, 201);
+    }
+
+    .navbar-btn {
+      padding: 3px 12px;
+      margin-right: 1px;
+      border-radius: 0;
+      border-width: 0;
+    }
+    .navbar-btn-o {
+      padding: 1px 12px;
+      border-width: 2px;
+      border-radius: 2px;
+    }
+    #btn-save::after {
+      height: 1px;
+    }
+    #btn-ff, #btn-compile {
+      margin-right: 10px;
+      border-top-right-radius: 2px;
+      border-bottom-right-radius: 2px;
+    }
+    #btn-next, #btn-tidy {
+      border-top-left-radius: 2px;
+      border-bottom-left-radius: 2px;
+    }
+  }
+</style>

@@ -27,6 +27,10 @@
       <div class="footer-text" id="cursor-position" v-if="currentCursorPos">{{ currentCursorPos.line + 1 }}:{{
         currentCursorPos.ch + 1 }}
       </div>
+
+      <div class="footer-text footer-btn" style="float: right;margin: 0 1px 0 0;" :class="{ active: about.show }"
+           @click="toggleAbout">About
+      </div>
     </div>
   </div>
 </template>
@@ -68,6 +72,11 @@
       hideAbout() {
         this.updateStateAbout({
           show: false
+        })
+      },
+      toggleAbout() {
+        this.updateStateAbout({
+          show: !this.about.show
         })
       },
       toggleConsole() {

@@ -10,6 +10,18 @@
         </div>
       </div>
     </div>
+    <!--ko with: editor.renameDialog-->
+    <div id="dialog-mask" v-show="renameDialog.show">
+      <div class="dialog" id="rename-dialog">
+        <p>New name:</p>
+        <input type="text" id="filename" v-model="renameDialog.name">
+        <p>File type: .toy</p>
+        <div class="dialog-btn-group">
+          <button class="dialog-btn" id="rename-cancel" @click="onRenameCancel">Cancel</button>
+          <button class="dialog-btn" id="rename-confirm" @click="onRenameConfirm">Confirm</button>
+        </div>
+      </div>
+    </div><!--/ko-->
     <tool-bar></tool-bar>
     <layout></layout>
     <div id="footer">
@@ -39,7 +51,7 @@
   import ToolBar from './components/ToolBar.vue'
   import Layout from './components/Layout.vue'
 
-  import {mapState, mapMutations, mapGetters} from 'vuex'
+  import {mapState, mapMutations, mapGetters, mapActions} from 'vuex'
   import bus from './helpers/EventBus'
 
   export default {
@@ -54,7 +66,9 @@
         'workspace',
         'symbolTable',
         'parseTree',
-        'ui'
+        'ui',
+        'renameDialog',
+        'fileManager'
       ]),
       ...mapGetters([
         'currentCursorPos'
@@ -67,7 +81,12 @@
         'updateStateWorkspace',
         'updateStateSymbolTable',
         'updateStateParseTree',
-        'updateStateUI'
+        'updateStateUI',
+        'updateStateRenameDialog'
+      ]),
+      ...mapActions([
+        'saveFilesToStorage',
+        'cacheFile'
       ]),
       hideAbout() {
         this.updateStateAbout({
@@ -142,10 +161,44 @@
             open: false
           })
         }
+      },
+      renameFile(file) {
+        this.updateStateRenameDialog({
+          show: true,
+          renaming: file,
+          name: file.name
+        })
+      },
+      onRenameConfirm() {
+        let name = this.renameDialog.name.replace(/(\.toy)+$/, '')
+        if (this.fileManager.fileMap[name + '.toy']) {
+          if (!confirm("File '" + name + ".toy' already exists. Want to overwrite?")) {
+            return
+          }
+        }
+        this.renameDialog.renaming.name = name
+        this.renameDialog.renaming.isNew = false
+        this.cacheFile(this.renameDialog.renaming)
+        this.saveFilesToStorage()
+        bus.$emit('sys:rename.confirm', this.renameDialog.renaming)
+        this.updateStateRenameDialog({
+          show: false,
+          renaming: null,
+          name: ''
+        })
+      },
+      onRenameCancel() {
+        bus.$emit('sys:rename.cancel', this.renameDialog.renaming)
+        this.updateStateRenameDialog({
+          show: false,
+          renaming: null,
+          name: ''
+        })
       }
     },
     created() {
       bus.$on('sys:compile', this.compileMode)
+      bus.$on('sys:rename', this.renameFile)
     },
     mounted() {
       bus.$emit('sys:console.log', "Compiler lauched at " + new Date().toTimeString())

@@ -37,6 +37,11 @@ export default new Vuex.Store({
     parseTree: {
       open: false,
       width: 300
+    },
+    renameDialog: {
+      show: false,
+      name: '',
+      renaming: null
     }
   },
   mutations: {
@@ -89,6 +94,13 @@ export default new Vuex.Store({
       Object.keys(state.ui).forEach(key => {
         if (payload.hasOwnProperty(key)) {
           state.ui[key] = payload[key]
+        }
+      })
+    },
+    updateStateRenameDialog(state, payload) {
+      Object.keys(state.renameDialog).forEach(key => {
+        if (payload.hasOwnProperty(key)) {
+          state.renameDialog[key] = payload[key]
         }
       })
     }

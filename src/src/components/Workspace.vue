@@ -1,6 +1,5 @@
 <template>
-  <!--ko with: workspace-->
-  <div class="left-box resizable" id="workspace" :style="{ width: width + 'px' }">
+  <div class="left-box resizable" id="workspace" :style="{ width: width + 'px' }" @click="$emit('click')">
     <resizer type="vertical" @resizer:begin="onResizeBegin" @resizer:resize="onResize"></resizer>
     <div class="box-header">
       <div class="box-title">Workspace</div>
@@ -16,7 +15,6 @@
       </ul>
     </div>
   </div>
-  <!--/ko-->
 </template>
 <script>
   import Resizer from './Resizer.vue'

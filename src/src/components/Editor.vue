@@ -64,7 +64,7 @@
         'openFile',
         'closeTab',
         'switchTab',
-        'saveFilesToStorage'
+        'saveFilesToStorage',
       ]),
       ...mapMutations([
         'setCompilee',
@@ -73,7 +73,11 @@
       openNewFile() {
         let newFile = new File()
         if (newFile) {
-          this.openFile(newFile)
+          bus.$emit('sys:rename', newFile)
+          bus.$on('sys:rename.confirm', () => {
+            this.openFile(newFile)
+            bus.$off('sys:rename.confirm')
+          })
         }
       },
       saveAllTabs () {

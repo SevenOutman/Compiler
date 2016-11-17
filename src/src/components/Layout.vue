@@ -10,7 +10,7 @@
         </div>
       </div>
       <workspace v-show="workspace.open" :width="workspaceWidth" :style="leftStyleObj"
-                 @workspace:resize="onWorkspaceResize" @workspace:close="onWorkspaceClose"></workspace>
+                 @workspace:resize="onWorkspaceResize" @workspace:close="onWorkspaceClose" :class="{ 'active-box': currentActiveBox == 'workspace' }" @click="currentActiveBox = 'workspace'"></workspace>
 
       <symbol-table v-show="symbolTable.open" :width="symbolTableWidth" :style="rightStyleObj"
                     @symbol-table:resize="onSymbolTableResize" @symbol-table:close="onSymbolTableClose"></symbol-table>
@@ -44,7 +44,8 @@
         elWidth: 0,
         storedConsoleHeight: 0,
         workspaceWidth: 0,
-        symbolTableWidth: 0
+        symbolTableWidth: 0,
+        currentActiveBox: null
       }
     },
     computed: {
@@ -153,6 +154,9 @@
       this.updateStateConsole({
         height: this.elHeight * 0.3
       })
+      this.updateStateParseTree({
+        width: this.elWidth - 600
+      })
     }
   }
 </script>
@@ -166,6 +170,10 @@
   }
 
   .layout {
+    .active-box .box-header {
+      background-color: #424d5f;
+      color: #bbbbbb;
+    }
     .upper-box {
       zoom: 1;
       overflow: hidden;

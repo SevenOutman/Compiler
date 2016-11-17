@@ -30,8 +30,11 @@ const saveFile = function (file) {
   //   file.isNew(false);
   // }
   Storage.setItem(file.fileName, file.serialize());
+  file.isNew = false
 };
 load()
+
+import {set} from 'vue'
 
 export default  {
   state: {
@@ -46,12 +49,18 @@ export default  {
   mutations: {
     newFile(state, file) {
       state.cached.push(file)
+    },
+    addFile(state, file) {
+      set(state.fileMap, file.fileName, file)
     }
   },
   actions: {
     createNewFile({commit}) {
       let file = new File()
       commit('newFile', file)
+    },
+    cacheFile({commit}, file) {
+      commit('addFile', file)
     },
     saveFilesToStorage({getters}) {
       let storedFiles = [];

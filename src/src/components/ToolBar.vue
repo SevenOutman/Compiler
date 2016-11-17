@@ -2,10 +2,10 @@
   <nav class="tool-bar navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0">
     <div class="container-fluid" style="padding-right: 15px">
       <div class="navbar-header">
-        <a href class="navbar-brand">
+        <div class="navbar-brand">
           <span class="glyphicon glyphicon-console"></span>
           Compiler
-        </a>
+        </div>
       </div>
       <ul class="nav navbar-nav navbar-right" id="editing-btn-group" v-show="ui.mode == 'edit'"
           data-bind="with: controls">
@@ -103,11 +103,11 @@
     min-height: 28px;
     .navbar-brand {
       height: 28px;
-      padding: 0 15px;
+      padding: 4px 15px;
     }
     .navbar-btn,
     .navbar-btn-o {
-      margin-top: 1px;
+      margin-top: 3px;
       margin-bottom: 1px;
       font-size: 12px;
       color: rgb(201, 201, 201);

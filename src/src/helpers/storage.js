@@ -1,6 +1,7 @@
 /**
  * Created by Doma on 2016/10/12.
  */
+let fakeStorage
 export default (storage) => {
   var testKey = "test";
 
@@ -9,6 +10,9 @@ export default (storage) => {
     storage.removeItem(testKey);
     return storage;
   } catch (error) {
+    if (fakeStorage) {
+      return fakeStorage
+    }
     storage = (function () {
       var _data = {};
 
@@ -32,6 +36,6 @@ export default (storage) => {
         }
       };
     })();
-    return storage;
+    return (fakeStorage = storage)
   }
 }

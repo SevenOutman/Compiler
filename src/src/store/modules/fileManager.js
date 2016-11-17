@@ -9,6 +9,7 @@ let addFile = file => {
   fileMap[file.fileName] = file;
 }
 
+
 let load = function () {
   var storedFileNames = JSON.parse(Storage.getItem("stored-files") || "[]");
   for (var i = 0, len = storedFileNames.length; i < len; i++) {

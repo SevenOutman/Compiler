@@ -71,7 +71,8 @@
         'fileManager'
       ]),
       ...mapGetters([
-        'currentCursorPos'
+        'currentCursorPos',
+        'editorNeedSave'
       ])
     },
     methods: {
@@ -199,6 +200,15 @@
     created() {
       bus.$on('sys:compile', this.compileMode)
       bus.$on('sys:rename', this.renameFile)
+      window.onbeforeunload = () => {
+        if (this.editorNeedSave) {
+          return "未保存的修改将丢失"
+        }
+      }
+      window.onunload = function () {
+        bus.$emit('sys:editor.save')
+        this.saveFilesToStorage()
+      }
     },
     mounted() {
       bus.$emit('sys:console.log', "Compiler lauched at " + new Date().toTimeString())

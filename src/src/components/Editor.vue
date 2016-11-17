@@ -38,6 +38,8 @@
   import {mapState, mapGetters, mapActions, mapMutations} from 'vuex'
 
   import Processor from '../helpers/Processor'
+  import getStorage from '../helpers/storage'
+  const Storage = getStorage(window.localStorage)
 
   export default {
     data() {
@@ -47,7 +49,9 @@
     },
     computed: {
       ...mapState({
-        'editorState': 'editor'
+        'editorState': 'editor',
+
+        'fileManager': 'fileManager'
       }),
       ...mapGetters([
         'unsavedTabs'
@@ -81,20 +85,19 @@
         }
       },
       saveAllTabs () {
-//        var tab = self.activeTab();
-//        if (tab.unsaved() || tab.file.isNew()) {
-//          if (tab.file.isNew()) {
-//            self.renameDialog.rename(tab.file);
-//          } else {
-//            tab.cachedContent(self.getEditorContent());
-//            tab.file.content(tab.cachedContent());
-//            fileManager.saveFile(tab.file);
-//          }
-//        }
         this.unsavedTabs.forEach(tab => {
           tab.file.content = tab.cachedContent
         })
         this.saveFilesToStorage()
+
+        let openedFiles = [];
+        this.editorState.tabs.forEach(tab => {
+          openedFiles.push(tab.file.fileName)
+          if (tab == this.currentTab) {
+            Storage.setItem("last-editing", tab.file.fileName)
+          }
+        })
+        Storage.setItem("opened-files", JSON.stringify(openedFiles));
       },
       formatCode() {
         let code = this.cm.getValue()
@@ -128,6 +131,17 @@
       },
       unlock () {
         this.cm.setOption("readOnly", false)
+      },
+      loadOpenedFiles() {
+        let openedFiles = JSON.parse(Storage.getItem("opened-files") || "[]"),
+          lastEditing = Storage.getItem("last-editing");
+        openedFiles.push(lastEditing);
+        openedFiles.forEach(opened => {
+          let file = this.fileManager.fileMap[opened]
+          if (file) {
+            this.openFile(file)
+          }
+        })
       }
     },
     watch: {
@@ -151,6 +165,7 @@
       bus.$on('sys:editor.tidy', this.formatCode)
       bus.$on('sys:editor.compile', this.compile)
       bus.$on('sys:editor.stop', this.stop)
+      this.loadOpenedFiles()
     },
     mounted() {
       let cm = this.cm = CodeMirror.fromTextArea(this.$refs.textarea, {

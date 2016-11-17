@@ -1,7 +1,7 @@
 <template>
   <!--ko with: parseTree-->
   <div class="tree-box resizable" :style="{ width: width + 'px' }"
-       data-bind="css: {hidden: !isOpen(), assembly: showAssembly}">
+       data-bind="css: {hidden: !isOpen(), assembly: showAssembly}"  @click="$emit('click')">
     <resizer type="vertical" @resizer:begin="onResizeBegin" @resizer:resize="onResize"></resizer>
     <div class="box-header">
       <div class="box-title hidden-assembly">Syntax Tree</div>

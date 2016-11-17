@@ -1,6 +1,6 @@
 <template>
   <!--ko with: console-->
-  <div class="bottom-box resizable" :style="{ height: height + 'px' }">
+  <div class="bottom-box resizable" :style="{ height: height + 'px' }" @click="$emit('click')">
     <!--<div class="resizer horizontal"></div>-->
     <resizer type="horizontal" @resizer:begin="onResizeBegin" @resizer:resize="onResize"></resizer>
     <div class="box-header">

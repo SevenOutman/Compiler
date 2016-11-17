@@ -1,6 +1,6 @@
 <template>
   <!--ko with: symbolTable-->
-  <div class="right-box resizable" :style="{ width: width + 'px' }">
+  <div class="right-box resizable" :style="{ width: width + 'px' }" @click="$emit('click')">
     <resizer type="vertical" @resizer:begin="onResizeBegin" @resizer:resize="onResize"></resizer>
     <div class="box-header">
       <div class="box-title">Symbol Table</div>

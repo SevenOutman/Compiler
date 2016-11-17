@@ -5,18 +5,27 @@
         <!-- 双飞翼布局 -->
         <div class="center-box-inner" :style="centerStyleObj">
           <parse-tree v-show="parseTree.open" :width="parseTreeWidth"
-                      @parse-tree:resize="onParseTreeResize" @parse-tree:close="onParseTreeClose"></parse-tree>
-          <editor :style="{ width: editorWidth + 'px' }"></editor>
+                      @parse-tree:resize="onParseTreeResize" @parse-tree:close="onParseTreeClose"
+                      :class="{ 'active-box': currentActiveBox == 'parseTree' }"
+                      @click="currentActiveBox = 'parseTree'"></parse-tree>
+          <editor :style="{ width: editorWidth + 'px' }"
+                  @click="currentActiveBox = 'editor'"></editor>
         </div>
       </div>
       <workspace v-show="workspace.open" :width="workspaceWidth" :style="leftStyleObj"
-                 @workspace:resize="onWorkspaceResize" @workspace:close="onWorkspaceClose" :class="{ 'active-box': currentActiveBox == 'workspace' }" @click="currentActiveBox = 'workspace'"></workspace>
+                 @workspace:resize="onWorkspaceResize" @workspace:close="onWorkspaceClose"
+                 :class="{ 'active-box': currentActiveBox == 'workspace' }"
+                 @click="currentActiveBox = 'workspace'"></workspace>
 
       <symbol-table v-show="symbolTable.open" :width="symbolTableWidth" :style="rightStyleObj"
-                    @symbol-table:resize="onSymbolTableResize" @symbol-table:close="onSymbolTableClose"></symbol-table>
+                    @symbol-table:resize="onSymbolTableResize" @symbol-table:close="onSymbolTableClose"
+                    :class="{ 'active-box': currentActiveBox == 'symbolTable' }"
+                    @click="currentActiveBox = 'symbolTable'"></symbol-table>
     </div>
     <console v-show="console.open" :height="consoleHeight"
-             @console:close="onConsoleClose" @console:resize="onConsoleResize"></console>
+             @console:close="onConsoleClose" @console:resize="onConsoleResize"
+             :class="{ 'active-box': currentActiveBox == 'console' }"
+             @click="currentActiveBox = 'console'"></console>
   </div>
 </template>
 <script>
@@ -144,7 +153,7 @@
       },
       onParseTreeClose() {
         this.updateStateParseTree({
-            open: false
+          open: false
         })
       },
     },
@@ -170,9 +179,18 @@
   }
 
   .layout {
-    .active-box .box-header {
-      background-color: #424d5f;
-      color: #bbbbbb;
+    .active-box {
+      .box-header {
+        background: linear-gradient(#434f60, #414c5b);
+        .box-title {
+          color: #bbbbbb;
+        }
+      }
+      .box-body li.active {
+        background-color: #2f65ca;
+        color: #FFFFFF;
+      }
+
     }
     .upper-box {
       zoom: 1;

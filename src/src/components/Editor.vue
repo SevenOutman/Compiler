@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-box">
+  <div class="editor-box" @click="$emit('click')">
     <div class="editor-placeholder" v-show="!editorState.tabs.length">
       Choose a file from workspace or <a id="cover-open" @click="openNewFile">create a new file</a>
     </div>

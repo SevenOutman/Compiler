@@ -92,7 +92,7 @@
         this.outputWithAddon("+ ", str);
       },
       warn(str) {
-        this.outputWithAddon("+ ", str);
+        this.outputWithAddon("@ ", str);
       },
       clear() {
         this.cm.setValue("");

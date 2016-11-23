@@ -61,6 +61,8 @@ function Processor() {
         bus.$emit('sys:console.warn', paxer.getWarningMsg());
         bus.$emit('sys:console.error', semantic.getErrorMsg());
         // parseTree.assembly.show(semantic.getAssembly());
+        bus.$emit('sys:parse-tree.assembly', semantic.getAssembly())
+
         return;
       case "ERROR":
         bus.$emit('sys:console.error', paxer.getErrMsg());
@@ -80,9 +82,9 @@ function Processor() {
   self.compileFF = function () {
     var status = paxer.getStatus();
     if (status == "DONE") {
-      console.success('code parsed.');
+      bus.$emit('sys:console.success', 'code parsed.');
     } else if (paxer.getStatus() == "ERROR") {
-      console.error(paxer.getErrMsg());
+      bus.$emit('sys:console.error', paxer.getErrMsg());
     } else {
       Benchmark.mark("parse");
       while (paxer.getStatus() != "DONE" && paxer.getStatus() != "ERROR") {
@@ -93,6 +95,8 @@ function Processor() {
           semantic.eat(paxer.getRootS(), paxer.getSymbolTable());
           var parseTime = Benchmark.measure("parse");
           // parseTree.assembly.show(semantic.getAssembly());
+          bus.$emit('sys:parse-tree.assembly', semantic.getAssembly())
+
           bus.$emit('sys:console.success', paxer.getMovementsF());
           bus.$emit('sys:console.warn', paxer.getWarningMsg());
           bus.$emit('sys:console.error', semantic.getErrorMsg());

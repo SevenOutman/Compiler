@@ -6,6 +6,10 @@ Process-visualized compiler for a toy language.
 
 [Demo](https://sevenoutman.github.io/Compiler/)
 
+Screenshots
+![Edit mode](https://cloud.githubusercontent.com/assets/8225666/20588289/eecf8276-b24e-11e6-9835-953876117c80.png)
+![Compile mode](https://cloud.githubusercontent.com/assets/8225666/20588288/eecb977e-b24e-11e6-91f4-5d9175f0ff46.png)
+
 This application origins from my class project.
 The goal of the project was to implement a compiler for a given sample language.
 Most importantly, it should be able to visualize the compiling process by, 
